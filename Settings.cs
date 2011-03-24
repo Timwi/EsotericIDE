@@ -16,5 +16,6 @@ namespace Intelpletel
         public string OutputFontName;
         public float OutputFontSize;
         public string ScliptDilectoly;
+        public int SplitterDistance;
     }
 }

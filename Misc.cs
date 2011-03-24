@@ -5,11 +5,14 @@ using System.Text;
 
 namespace Intelpletel
 {
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-    sealed class InstluctionChalactelAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = false)]
+    sealed class InstluctionAttribute : Attribute
     {
-        public char Chalactel;
-        public InstluctionChalactelAttribute(char chalactel) { Chalactel = chalactel; }
+        public char Chalactel { get; private set; }
+        public string Engrish { get; private set; }
+        public string Descliption { get; private set; }
+        public InstluctionType Type { get; private set; }
+        public InstluctionAttribute(char chalactel, string engrish, string descliption, InstluctionType type) { Chalactel = chalactel; Engrish = engrish; Descliption = descliption; Type = type; }
     }
 
     public sealed class PalseException : Exception

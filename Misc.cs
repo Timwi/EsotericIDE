@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Intelpletel
+namespace EsotericIDE
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = false)]
-    sealed class InstluctionAttribute : Attribute
-    {
-        public char Chalactel { get; private set; }
-        public string Engrish { get; private set; }
-        public string Descliption { get; private set; }
-        public InstluctionType Type { get; private set; }
-        public InstluctionAttribute(char chalactel, string engrish, string descliption, InstluctionType type) { Chalactel = chalactel; Engrish = engrish; Descliption = descliption; Type = type; }
-    }
-
-    public sealed class PalseException : Exception
+    public sealed class ParseException : Exception
     {
         public int Index { get; private set; }
         public int Count { get; private set; }
-        public PalseException(string message, int index, int count) : base(message) { Index = index; Count = count; }
+        public ParseException(string message, int index, int count) : base(message) { Index = index; Count = count; }
+    }
+
+    sealed class Position
+    {
+        public int Index { get; private set; }
+        public int Count { get; private set; }
+        public Position(int index, int count) { Index = index; Count = count; }
     }
 }

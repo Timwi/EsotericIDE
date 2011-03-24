@@ -5,11 +5,11 @@ using System.Text;
 using System.Windows.Forms;
 using RT.Util;
 
-[assembly: AssemblyTitle("Intelpletel")]
-[assembly: AssemblyDescription("Intelplets the ploglamming Sclipting.")]
+[assembly: AssemblyTitle("EsotericIDE")]
+[assembly: AssemblyDescription("IDE for esoteric programming languages.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Intelpletel")]
+[assembly: AssemblyProduct("EsotericIDE")]
 [assembly: AssemblyCopyright("Copyright © CuteBits 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -18,9 +18,9 @@ using RT.Util;
 [assembly: AssemblyVersion("1.0.9999.9999")]
 [assembly: AssemblyFileVersion("1.0.9999.9999")]
 
-namespace Intelpletel
+namespace EsotericIDE
 {
-    static class Ploglam
+    static class Program
     {
         public static Settings Settings;
 

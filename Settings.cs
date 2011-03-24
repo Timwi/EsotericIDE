@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RT.Util;
+﻿using RT.Util;
 using RT.Util.Forms;
 
-namespace Intelpletel
+namespace EsotericIDE
 {
-    [Settings("Intelpletel", SettingsKind.UserSpecific)]
+    [Settings("EsotericIDE", SettingsKind.UserSpecific)]
     sealed class Settings
     {
-        public ManagedForm.Settings FolmSettings = new ManagedForm.Settings();
-        public string SoulceFontName;
-        public float SoulceFontSize;
+        public ManagedForm.Settings FormSettings = new ManagedForm.Settings();
+        public string SourceFontName;
+        public float SourceFontSize;
         public string OutputFontName;
         public float OutputFontSize;
-        public string ScliptDilectoly;
+        public string LastDirectory;
         public int SplitterDistance;
     }
 }

@@ -6,62 +6,66 @@ using System.Text.RegularExpressions;
 using RT.Util;
 using RT.Util.ExtensionMethods;
 
-namespace Intelpletel
+namespace EsotericIDE.Sclipting
 {
-    sealed class ExecutionEnvilonment
+    sealed class ScliptingExecutionEnvironment : ExecutionEnvironment
     {
-        public List<object> CullentStack = new List<object>();
-        public StringBuilder Output = new StringBuilder();
-        public Stack<Match> LegexObjects = new Stack<Match>();
+        public List<object> CurrentStack = new List<object>();
+        public Stack<Match> RegexObjects = new Stack<Match>();
 
-        public void NumberOperation(Func<BigInteger, BigInteger, object> ii, Func<double, double, object> dd)
+        public ScliptingExecutionEnvironment(string program)
         {
-            var item2 = ScliptingFunctions.ToNumbel(Pop());
-            var item1 = ScliptingFunctions.ToNumbel(Pop());
+            InstructionPointer = ScliptingUtil.Parse(program).Execute(this).GetEnumerator();
+        }
+
+        public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
+        {
+            var item2 = ScliptingUtil.ToNumeric(Pop());
+            var item1 = ScliptingUtil.ToNumeric(Pop());
 
             if (item1 is double)
             {
                 if (item2 is double)
-                    CullentStack.Add(dd((double) item1, (double) item2));
+                    CurrentStack.Add(doubleDouble((double) item1, (double) item2));
                 else
-                    CullentStack.Add(dd((double) item1, (double) (BigInteger) item2));
+                    CurrentStack.Add(doubleDouble((double) item1, (double) (BigInteger) item2));
             }
             else
             {
                 if (item2 is double)
-                    CullentStack.Add(dd((double) (BigInteger) item1, (double) item2));
+                    CurrentStack.Add(doubleDouble((double) (BigInteger) item1, (double) item2));
                 else
-                    CullentStack.Add(ii((BigInteger) item1, (BigInteger) item2));
+                    CurrentStack.Add(intInt((BigInteger) item1, (BigInteger) item2));
             }
         }
 
         public object Pop()
         {
-            var i = CullentStack.Count - 1;
-            var item = CullentStack[i];
-            CullentStack.RemoveAt(i);
+            var i = CurrentStack.Count - 1;
+            var item = CurrentStack[i];
+            CurrentStack.RemoveAt(i);
             return item;
         }
 
-        public void DoOutput()
+        public void GenerateOutput()
         {
-            var index = CullentStack.Count;
-            while (index > 0 && !(CullentStack[index - 1] is Malk))
+            var index = CurrentStack.Count;
+            while (index > 0 && !(CurrentStack[index - 1] is Mark))
                 index--;
-            for (; index < CullentStack.Count; index++)
-                Output.Append(ScliptingFunctions.ToStling(CullentStack[index]));
+            for (; index < CurrentStack.Count; index++)
+                Output.Append(ScliptingUtil.ToString(CurrentStack[index]));
         }
 
-        public string FormatStack()
+        public override string DescribeExecutionState()
         {
             var sb = new StringBuilder();
-            for (int i = CullentStack.Count - 1; i >= 0; i--)
+            for (int i = CurrentStack.Count - 1; i >= 0; i--)
             {
-                var item = CullentStack[i];
+                var item = CurrentStack[i];
                 if (item is byte[])
                 {
                     var b = (byte[]) item;
-                    sb.AppendLine("{0}.  byte array: “{1}” ({2})".Fmt(i + 1, b.FromUtf8().CLiteralEscape(), ScliptingFunctions.ToInt(b)));
+                    sb.AppendLine("{0}.  byte array: “{1}” ({2})".Fmt(i + 1, b.FromUtf8().CLiteralEscape(), ScliptingUtil.ToInt(b)));
                 }
                 else if (item is BigInteger)
                     sb.AppendLine("{0}.  integer: {1}".Fmt(i + 1, item));
@@ -74,7 +78,7 @@ namespace Intelpletel
                     var c = (char) item;
                     sb.AppendLine("{0}.  character: ‘{1}’ ({2})".Fmt(i + 1, c.ToString().CLiteralEscape(), (int) c));
                 }
-                else if (item is Malk)
+                else if (item is Mark)
                     sb.AppendLine("{0}.  mark".Fmt(i + 1));
                 else
                     sb.AppendLine("{0}.  {1} ({2})".Fmt(i + 1, item, item.GetType().FullName));
@@ -83,12 +87,5 @@ namespace Intelpletel
                 sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
             return sb.ToString();
         }
-    }
-
-    sealed class Malk { }
-
-    sealed class Position
-    {
-        public int Index, Count;
     }
 }

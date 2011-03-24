@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 using RT.Util.Controls;
 using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
 using RT.Util.Forms;
+using RT.Util.Lingo;
 
 namespace EsotericIDE
 {
@@ -17,6 +19,21 @@ namespace EsotericIDE
             : base(settings.FormSettings)
         {
             InitializeComponent();
+
+#if DEBUG
+            // Auto-generate the translation classes for automated form translation
+            using (var generator = new Lingo.TranslationFileGenerator(@"..\..\users\timwi\EsotericIDE\Translation.g.cs"))
+            {
+                using (var form = new AboutBox(false))
+                    generator.TranslateControl(form, Program.Tr.AboutBox);
+                generator.TranslateControl(this, Program.Tr.Mainform);
+            }
+
+            Lingo.WarnOfUnusedStrings(typeof(Translation), Assembly.GetExecutingAssembly());
+#else
+            Lingo.TranslateControl(this, Program.Tr.Mainform);
+#endif
+
             ctMenu.Renderer = new NativeToolStripRenderer();
             if (settings.SourceFontName != null)
                 txtSource.Font = new Font(settings.SourceFontName, settings.SourceFontSize);
@@ -38,6 +55,26 @@ namespace EsotericIDE
         }
 
         private ProgrammingLanguage _currentLanguage = new Sclipting.ScliptingLanguage();
+
+        private string _input
+        {
+            get { return Program.Settings.DebugInput; }
+            set
+            {
+                Program.Settings.DebugInput = value;
+                updateUi();
+            }
+        }
+
+        private bool _saveWhenRun
+        {
+            get { return Program.Settings.SaveWhenRun; }
+            set
+            {
+                Program.Settings.SaveWhenRun = value;
+                updateUi();
+            }
+        }
 
         private string _currentFilePathBacking;
         private string _currentFilePath
@@ -74,20 +111,31 @@ namespace EsotericIDE
 
         private void updateUi()
         {
-            Text = (_currentFilePath == null ? "(no name)" : _currentFilePath) + " — Esoteric IDE" + (_anyChanges ? " •" : "") + (_currentEnvironment != null ? " (running)" : "");
+            // Construct the window titlebar
+            var text = _currentFilePath == null ? Program.Tr.Mainform.UnnamedFile.Translation : _currentFilePath;
+            text += " — Esoteric IDE";
+            if (_anyChanges)
+                text += " •";
+            if (_currentEnvironment != null)
+                text += Program.Tr.Mainform.Running.Translation;
+            Text = text;
+
+            lblOutput.Text = _currentEnvironment != null ? Program.Tr.LabelExecutionState : Program.Tr.LabelOutput;
             txtSource.ReadOnly = _currentEnvironment != null;
             miGoToCurrentInstruction.Visible = _currentEnvironment != null;
             miStopDebugging.Visible = _currentEnvironment != null;
+            miClearInput.Visible = _input != null;
+            miSaveWhenRun.Checked = _saveWhenRun;
         }
 
         private bool canDestroy()
         {
-            int answel;
+            int result;
 
             if (_currentEnvironment != null)
             {
-                answel = DlgMessage.Show("Abolt debugging?", "Cullently lunning", DlgType.Question, "&Yes", "&No");
-                if (answel == 1)
+                result = DlgMessage.Show(Program.Tr.CancelDebugging, "Esoteric IDE", DlgType.Question, Program.Tr.Yes, Program.Tr.No);
+                if (result == 1)
                     return false;
                 finishExecution(false);
             }
@@ -95,10 +143,10 @@ namespace EsotericIDE
             if (!_anyChanges)
                 return true;
 
-            answel = DlgMessage.Show("Sclipt changes can save, want?", "Changes made", DlgType.Question, "&Wlite", "&Discald", "&Abolt");
-            if (answel == 2)
+            result = DlgMessage.Show(Program.Tr.SaveChanges, "Esoteric IDE", DlgType.Question, Program.Tr.SaveChangesSave, Program.Tr.SaveChangesDiscard, Program.Tr.SaveChangesCancel);
+            if (result == 2)
                 return false;
-            if (answel == 1)
+            if (result == 1)
                 return true;
 
             return save() == DialogResult.OK;
@@ -114,7 +162,7 @@ namespace EsotericIDE
 
         private DialogResult saveAs()
         {
-            using (var save = new SaveFileDialog { Title = "Save Sclipt", DefaultExt = "sclipt" })
+            using (var save = new SaveFileDialog { Title = Program.Tr.SaveFile, DefaultExt = _currentLanguage.DefaultFileExtension })
             {
                 var result = save.ShowDialog();
                 if (result == DialogResult.OK)
@@ -132,7 +180,7 @@ namespace EsotericIDE
             _anyChanges = false;
         }
 
-        private void newSclipt(object _, EventArgs __)
+        private void newFile(object _, EventArgs __)
         {
             if (!canDestroy())
                 return;
@@ -140,6 +188,7 @@ namespace EsotericIDE
             _anyChanges = false;
 
             txtSource.Text = "";
+            txtOutput.Text = "";
             _timerPreviousSource = "";
             _timerPreviousCursorPosition = -1;
             sourceTextboxFixHack();
@@ -159,7 +208,7 @@ namespace EsotericIDE
         {
             if (!canDestroy())
                 return;
-            using (var open = new OpenFileDialog { Title = "Open Sclipt", DefaultExt = "sclipt" })
+            using (var open = new OpenFileDialog { Title = Program.Tr.OpenFile, DefaultExt = _currentLanguage.DefaultFileExtension })
             {
                 if (Program.Settings.LastDirectory != null)
                     try { open.InitialDirectory = Program.Settings.LastDirectory; }
@@ -169,6 +218,7 @@ namespace EsotericIDE
                 Program.Settings.LastDirectory = open.InitialDirectory;
 
                 txtSource.Text = File.ReadAllText(_currentFilePath = open.FileName);
+                txtOutput.Text = "";
                 _timerPreviousSource = txtSource.Text;
                 _timerPreviousCursorPosition = -1;
                 sourceTextboxFixHack();
@@ -213,16 +263,22 @@ namespace EsotericIDE
         {
             if (_currentEnvironment != null)
                 return true;
+            if (_saveWhenRun)
+                save();
             try
             {
+                var input = _input ?? InputBox.GetLine(Program.Tr.Input, "", "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel);
+                if (input == null)
+                    return false;
                 _currentEnvironment = _currentLanguage.StartDebugging(txtSource.Text);
+                _currentEnvironment.Input = input;
                 return true;
             }
             catch (ParseException e)
             {
                 txtSource.SelectionStart = e.Index;
                 txtSource.SelectionLength = e.Count;
-                DlgMessage.Show(e.Message, "Ellol", DlgType.Error, "&OK");
+                DlgMessage.Show(Program.Tr.CompilationFailed + Environment.NewLine + e.Message, "Esoteric IDE", DlgType.Error, Program.Tr.Ok);
                 return false;
             }
         }
@@ -237,8 +293,7 @@ namespace EsotericIDE
 
         private void finishExecution(bool output)
         {
-            lblOutput.Text = "&Output:";
-            txtOutput.Text = output ? _currentEnvironment.Output.ToString().UnifyLineEndings() : "<execution stopped>";
+            txtOutput.Text = output ? _currentEnvironment.Output.ToString().UnifyLineEndings() : Program.Tr.ExecutionStopped.Translation;
             _currentEnvironment = null;
         }
 
@@ -254,7 +309,6 @@ namespace EsotericIDE
 
         private void pauseExecution()
         {
-            lblOutput.Text = "Cullent St&ack:";
             txtOutput.Text = _currentEnvironment.DescribeExecutionState();
             txtSource.Focus();
             txtSource.SelectionStart = _currentEnvironment.InstructionPointer.Current.Index;
@@ -322,6 +376,27 @@ namespace EsotericIDE
         {
             if (_splitterDistanceBugWorkaround)
                 Program.Settings.SplitterDistance = ctSplit.SplitterDistance;
+        }
+
+        private void about(object sender, EventArgs e)
+        {
+            using (var a = new AboutBox())
+                a.ShowDialog();
+        }
+
+        private void input(object sender, EventArgs e)
+        {
+            _input = InputBox.GetLine(Program.Tr.Input, _input, "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel) ?? _input;
+        }
+
+        private void clearInput(object sender, EventArgs e)
+        {
+            _input = null;
+        }
+
+        private void toggleSaveWhenRun(object sender, EventArgs e)
+        {
+            _saveWhenRun = !_saveWhenRun;
         }
     }
 }

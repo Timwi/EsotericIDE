@@ -22,10 +22,7 @@ namespace EsotericIDE.Sclipting
         public List<Instruction> Instructions;
         public override IEnumerable<Position> Execute(ScliptingExecutionEnvironment environment)
         {
-            var input = InputBox.GetLine("Input?", "", "Input", "&OK", "&Abolt");
-            if (input == null)
-                yield break;
-            environment.CurrentStack.Add(input);
+            environment.CurrentStack.Add(environment.Input);
             foreach (var instruction in Instructions)
                 foreach (var position in instruction.Execute(environment))
                     yield return position;
@@ -72,17 +69,17 @@ namespace EsotericIDE.Sclipting
                 // STRING MANIPULATION
 
                 case ScliptingInstructions.Length:
-                    return e => { e.CurrentStack.Add(new BigInteger(ScliptingUtil.ToString(e.Pop()).Length)); };
+                    return e => { e.CurrentStack.Add(new BigInteger(ScliptingLanguage.ToString(e.Pop()).Length)); };
 
                 case ScliptingInstructions.Repeat:
                     return e =>
                     {
-                        var numTimes = ScliptingUtil.ToInt(e.Pop());
+                        var numTimes = ScliptingLanguage.ToInt(e.Pop());
                         var item = e.Pop();
                         if (numTimes < 1) e.CurrentStack.Add("");
                         else
                         {
-                            var stling = ScliptingUtil.ToString(item);
+                            var stling = ScliptingLanguage.ToString(item);
                             if (numTimes == 1) e.CurrentStack.Add(stling);
                             else if (numTimes == 2) e.CurrentStack.Add(stling + stling);
                             else if (numTimes == 3) e.CurrentStack.Add(stling + stling + stling);
@@ -105,7 +102,7 @@ namespace EsotericIDE.Sclipting
                             index--;
                         var sb = new StringBuilder();
                         for (int i = index + 1; i < e.CurrentStack.Count; i++)
-                            sb.Append(ScliptingUtil.ToString(e.CurrentStack[i]));
+                            sb.Append(ScliptingLanguage.ToString(e.CurrentStack[i]));
                         if (index == -1)
                             index = 0;
                         e.CurrentStack.RemoveRange(index, e.CurrentStack.Count - index);
@@ -115,15 +112,15 @@ namespace EsotericIDE.Sclipting
                 case ScliptingInstructions.Excavate:
                     return e =>
                     {
-                        var i = ScliptingUtil.ToInt(e.Pop());
-                        var s = ScliptingUtil.ToString(e.Pop());
+                        var i = ScliptingLanguage.ToInt(e.Pop());
+                        var s = ScliptingLanguage.ToString(e.Pop());
                         e.CurrentStack.Add(i < 0 || i >= s.Length ? (object) "" : s[(int) i]);
                     };
                 case ScliptingInstructions.DigOut:
                     return e =>
                     {
-                        var i = ScliptingUtil.ToInt(e.Pop());
-                        var s = ScliptingUtil.ToString(e.CurrentStack.Last());
+                        var i = ScliptingLanguage.ToInt(e.Pop());
+                        var s = ScliptingLanguage.ToString(e.CurrentStack.Last());
                         e.CurrentStack.Add(i < 0 || i >= s.Length ? (object) "" : s[(int) i]);
                     };
                 case ScliptingInstructions.Explain:
@@ -134,19 +131,19 @@ namespace EsotericIDE.Sclipting
                             e.CurrentStack.Add((BigInteger) (char) item);
                         else
                         {
-                            var stling = ScliptingUtil.ToString(item);
+                            var stling = ScliptingLanguage.ToString(item);
                             e.CurrentStack.Add(stling.Length == 0 ? (object) double.NaN : (BigInteger) stling[0]);
                         }
                     };
                 case ScliptingInstructions.Character: return e =>
                 {
-                    var codepoint = ScliptingUtil.ToInt(e.Pop());
+                    var codepoint = ScliptingLanguage.ToInt(e.Pop());
                     e.CurrentStack.Add(codepoint < 0 || codepoint > 0x10ffff ? "" : char.ConvertFromUtf32((int) codepoint));
                 };
 
                 case ScliptingInstructions.Reverse: return e =>
                 {
-                    var c = ScliptingUtil.ToString(e.Pop());
+                    var c = ScliptingLanguage.ToString(e.Pop());
                     var n = new char[c.Length];
                     var m = c.Length - 1;
                     for (int i = m; i >= 0; i--)
@@ -164,28 +161,28 @@ namespace EsotericIDE.Sclipting
                 case ScliptingInstructions.Subtract: return e => { e.NumericOperation((i1, i2) => i1 - i2, (i1, i2) => i1 - i2); };
                 case ScliptingInstructions.Multiply: return e => { e.NumericOperation((i1, i2) => i1 * i2, (i1, i2) => i1 * i2); };
                 case ScliptingInstructions.DivideFloat: return e => { e.NumericOperation((i1, i2) => i2 == 0 ? double.NaN : (double) i1 / (double) i2, (i1, i2) => i2 == 0 ? double.NaN : i1 / i2); };
-                case ScliptingInstructions.DivideInt: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); var item1 = ScliptingUtil.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 / item2); };
-                case ScliptingInstructions.Leftovers: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); var item1 = ScliptingUtil.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 % item2); };
-                case ScliptingInstructions.Negative: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) -(double) item : -ScliptingUtil.ToInt(item)); };
-                case ScliptingInstructions.Increase: return e => { e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) + 1); };
-                case ScliptingInstructions.Decrease: return e => { e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) - 1); };
-                case ScliptingInstructions.Left: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); var item1 = ScliptingUtil.ToInt(e.Pop()); if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) item1 *= 2; e.CurrentStack.Add(item1); } };
-                case ScliptingInstructions.Right: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); var item1 = ScliptingUtil.ToInt(e.Pop()); var negative = item1 < 0; if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) { item1 /= 2; if (negative) item1--; } e.CurrentStack.Add(item1); } };
-                case ScliptingInstructions.Both: return e => { e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) & ScliptingUtil.ToInt(e.Pop())); };
-                case ScliptingInstructions.Other: return e => { e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) | ScliptingUtil.ToInt(e.Pop())); };
-                case ScliptingInstructions.Clever: return e => { e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) ^ ScliptingUtil.ToInt(e.Pop())); };
+                case ScliptingInstructions.DivideInt: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 / item2); };
+                case ScliptingInstructions.Leftovers: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 % item2); };
+                case ScliptingInstructions.Negative: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) -(double) item : -ScliptingLanguage.ToInt(item)); };
+                case ScliptingInstructions.Increase: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) + 1); };
+                case ScliptingInstructions.Decrease: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) - 1); };
+                case ScliptingInstructions.Left: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) item1 *= 2; e.CurrentStack.Add(item1); } };
+                case ScliptingInstructions.Right: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); var negative = item1 < 0; if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) { item1 /= 2; if (negative) item1--; } e.CurrentStack.Add(item1); } };
+                case ScliptingInstructions.Both: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) & ScliptingLanguage.ToInt(e.Pop())); };
+                case ScliptingInstructions.Other: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) | ScliptingLanguage.ToInt(e.Pop())); };
+                case ScliptingInstructions.Clever: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) ^ ScliptingLanguage.ToInt(e.Pop())); };
 
                 // LOGIC
 
                 case ScliptingInstructions.Small: return e => { e.NumericOperation((i1, i2) => i1 < i2 ? BigInteger.One : BigInteger.Zero, (i1, i2) => i1 < i2 ? BigInteger.One : BigInteger.Zero); };
                 case ScliptingInstructions.Great: return e => { e.NumericOperation((i1, i2) => i1 > i2 ? BigInteger.One : BigInteger.Zero, (i1, i2) => i1 > i2 ? BigInteger.One : BigInteger.Zero); };
-                case ScliptingInstructions.And: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); var item1 = ScliptingUtil.ToInt(e.Pop()); e.CurrentStack.Add(item1 != 0 && item2 != 0 ? BigInteger.One : BigInteger.Zero); };
-                case ScliptingInstructions.Or: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); var item1 = ScliptingUtil.ToInt(e.Pop()); e.CurrentStack.Add(item1 != 0 || item2 != 0 ? BigInteger.One : BigInteger.Zero); };
-                case ScliptingInstructions.OneOfPair: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) != 0 ^ item2 != 0 ? BigInteger.One : BigInteger.Zero); };
+                case ScliptingInstructions.And: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(item1 != 0 && item2 != 0 ? BigInteger.One : BigInteger.Zero); };
+                case ScliptingInstructions.Or: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(item1 != 0 || item2 != 0 ? BigInteger.One : BigInteger.Zero); };
+                case ScliptingInstructions.OneOfPair: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) != 0 ^ item2 != 0 ? BigInteger.One : BigInteger.Zero); };
                 case ScliptingInstructions.Same: return e => { var item2 = e.Pop(); e.CurrentStack.Add(e.Pop().Equals(item2) ? BigInteger.One : BigInteger.Zero); };
-                case ScliptingInstructions.Equal: return e => { var item2 = ScliptingUtil.ToInt(e.Pop()); e.CurrentStack.Add(ScliptingUtil.ToInt(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
-                case ScliptingInstructions.Resemble: return e => { var item2 = ScliptingUtil.ToString(e.Pop()); e.CurrentStack.Add(ScliptingUtil.ToString(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
-                case ScliptingInstructions.IsIt: return e => { var no = e.Pop(); var yes = e.Pop(); e.CurrentStack.Add(ScliptingUtil.IsTrue(e.Pop()) ? yes : no); };
+                case ScliptingInstructions.Equal: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
+                case ScliptingInstructions.Resemble: return e => { var item2 = ScliptingLanguage.ToString(e.Pop()); e.CurrentStack.Add(ScliptingLanguage.ToString(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
+                case ScliptingInstructions.IsIt: return e => { var no = e.Pop(); var yes = e.Pop(); e.CurrentStack.Add(ScliptingLanguage.IsTrue(e.Pop()) ? yes : no); };
                 case ScliptingInstructions.Power: return e =>
                 {
                     e.NumericOperation((i1, i2) =>
@@ -290,8 +287,8 @@ namespace EsotericIDE.Sclipting
         public override IEnumerable<Position> Execute(ScliptingExecutionEnvironment environment)
         {
             yield return new Position(Index, 1);
-            var b = ScliptingUtil.ToInt(environment.Pop());
-            var a = ScliptingUtil.ToInt(environment.Pop());
+            var b = ScliptingLanguage.ToInt(environment.Pop());
+            var a = ScliptingLanguage.ToInt(environment.Pop());
             if (a > b)
             {
                 // “End” instruction
@@ -318,7 +315,7 @@ namespace EsotericIDE.Sclipting
         public override IEnumerable<Position> Execute(ScliptingExecutionEnvironment environment)
         {
             yield return new Position(Index, 1);
-            var list = ScliptingUtil.ToList(environment.Pop());
+            var list = ScliptingLanguage.ToList(environment.Pop());
             bool any = false;
             foreach (var item in list)
             {
@@ -345,7 +342,7 @@ namespace EsotericIDE.Sclipting
         {
             yield return new Position(Index, 1);
             var item = environment.CurrentStack.Last();
-            if (ScliptingUtil.IsTrue(item))
+            if (ScliptingLanguage.IsTrue(item))
             {
                 if (PrimaryBlockPops)
                     environment.Pop();
@@ -379,7 +376,7 @@ namespace EsotericIDE.Sclipting
         {
             yield return new Position(Index, 1);
             var item = environment.CurrentStack.Last();
-            if (ScliptingUtil.IsTrue(item) != WhileTrue)
+            if (ScliptingLanguage.IsTrue(item) != WhileTrue)
             {
                 if (ElseBlock != null)
                 {
@@ -406,7 +403,7 @@ namespace EsotericIDE.Sclipting
                     yield return new Position(Index, 1);
                     item = environment.CurrentStack.Last();
                 }
-                while (ScliptingUtil.IsTrue(item) == WhileTrue);
+                while (ScliptingLanguage.IsTrue(item) == WhileTrue);
                 if (PrimaryBlockPops)
                     environment.Pop();
             }
@@ -423,8 +420,8 @@ namespace EsotericIDE.Sclipting
         public override IEnumerable<Position> Execute(ScliptingExecutionEnvironment environment)
         {
             yield return new Position(Index, 1);
-            var regex = ScliptingUtil.ToString(environment.Pop());
-            var input = ScliptingUtil.ToString(environment.CurrentStack.Last());
+            var regex = ScliptingLanguage.ToString(environment.Pop());
+            var input = ScliptingLanguage.ToString(environment.CurrentStack.Last());
             List<Match> matches = null;
             Match match = null;
 
@@ -461,7 +458,7 @@ namespace EsotericIDE.Sclipting
                         foreach (var position in instruction.Execute(environment))
                             yield return position;
                     yield return new Position(Index + Count - 1, 1);
-                    var subst = ScliptingUtil.ToString(environment.Pop());
+                    var subst = ScliptingLanguage.ToString(environment.Pop());
                     input = input.Substring(0, m.Index + offset) + subst + input.Substring(m.Index + offset + m.Length);
                     offset += subst.Length - m.Length;
                     environment.RegexObjects.Pop();

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using RT.Util;
@@ -12,16 +14,20 @@ namespace EsotericIDE.Sclipting
     {
         public List<object> CurrentStack = new List<object>();
         public Stack<Match> RegexObjects = new Stack<Match>();
+        private Translation _tr;
+        private ScliptingLanguage _language;
 
-        public ScliptingExecutionEnvironment(string program)
+        public ScliptingExecutionEnvironment(string program, Translation tr, ScliptingLanguage language)
         {
-            InstructionPointer = ScliptingUtil.Parse(program).Execute(this).GetEnumerator();
+            _tr = tr;
+            _language = language;
+            InstructionPointer = language.Parse(program).Execute(this).GetEnumerator();
         }
 
         public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
         {
-            var item2 = ScliptingUtil.ToNumeric(Pop());
-            var item1 = ScliptingUtil.ToNumeric(Pop());
+            var item2 = ScliptingLanguage.ToNumeric(Pop());
+            var item1 = ScliptingLanguage.ToNumeric(Pop());
 
             if (item1 is double)
             {
@@ -53,7 +59,7 @@ namespace EsotericIDE.Sclipting
             while (index > 0 && !(CurrentStack[index - 1] is Mark))
                 index--;
             for (; index < CurrentStack.Count; index++)
-                Output.Append(ScliptingUtil.ToString(CurrentStack[index]));
+                Output.Append(ScliptingLanguage.ToString(CurrentStack[index]));
         }
 
         public override string DescribeExecutionState()
@@ -65,21 +71,21 @@ namespace EsotericIDE.Sclipting
                 if (item is byte[])
                 {
                     var b = (byte[]) item;
-                    sb.AppendLine("{0}.  byte array: “{1}” ({2})".Fmt(i + 1, b.FromUtf8().CLiteralEscape(), ScliptingUtil.ToInt(b)));
+                    sb.AppendLine("{0}.  {3} “{1}” ({2})".Fmt(i + 1, b.FromUtf8().CLiteralEscape(), ScliptingLanguage.ToInt(b), _tr.ByteArray));
                 }
                 else if (item is BigInteger)
-                    sb.AppendLine("{0}.  integer: {1}".Fmt(i + 1, item));
+                    sb.AppendLine("{0}.  {2} {1}".Fmt(i + 1, item, _tr.Integer));
                 else if (item is string)
-                    sb.AppendLine("{0}.  string: “{1}”".Fmt(i + 1, ((string) item).CLiteralEscape()));
+                    sb.AppendLine("{0}.  {2} “{1}”".Fmt(i + 1, ((string) item).CLiteralEscape(), _tr.String));
                 else if (item is double)
-                    sb.AppendLine("{0}.  float: {1}".Fmt(i + 1, ExactConvert.ToString((double) item)));
+                    sb.AppendLine("{0}.  {2} {1}".Fmt(i + 1, ExactConvert.ToString((double) item), _tr.Float));
                 else if (item is char)
                 {
                     var c = (char) item;
-                    sb.AppendLine("{0}.  character: ‘{1}’ ({2})".Fmt(i + 1, c.ToString().CLiteralEscape(), (int) c));
+                    sb.AppendLine("{0}.  {3} ‘{1}’ ({2})".Fmt(i + 1, c.ToString().CLiteralEscape(), (int) c, _tr.Character));
                 }
                 else if (item is Mark)
-                    sb.AppendLine("{0}.  mark".Fmt(i + 1));
+                    sb.AppendLine("{0}.  {1}".Fmt(i + 1, _tr.Mark));
                 else
                     sb.AppendLine("{0}.  {1} ({2})".Fmt(i + 1, item, item.GetType().FullName));
             }

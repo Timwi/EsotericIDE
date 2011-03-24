@@ -51,6 +51,13 @@
             this.miStep = new System.Windows.Forms.ToolStripMenuItem();
             this.miRunToCursor = new System.Windows.Forms.ToolStripMenuItem();
             this.miGoToCurrentInstruction = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSep2 = new System.Windows.Forms.ToolStripSeparator();
+            this.miInput = new System.Windows.Forms.ToolStripMenuItem();
+            this.miClearInput = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSaveWhenRun = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ctTimer = new System.Windows.Forms.Timer(this.components);
             this.ctSplit = new RT.Util.Controls.SplitContainerEx();
             this.ctLayoutTop = new System.Windows.Forms.TableLayoutPanel();
@@ -102,9 +109,10 @@
             this.lblOutput.Location = new System.Drawing.Point(5, 5);
             this.lblOutput.Margin = new System.Windows.Forms.Padding(5);
             this.lblOutput.Name = "lblOutput";
-            this.lblOutput.Size = new System.Drawing.Size(73, 13);
+            this.lblOutput.Size = new System.Drawing.Size(294, 13);
             this.lblOutput.TabIndex = 2;
-            this.lblOutput.Text = "Cullent St&ack:";
+            this.lblOutput.Tag = "notranslate";
+            this.lblOutput.Text = "O&utput: (this label text is updated by updateUi(), not by Lingo)";
             // 
             // lblSource
             // 
@@ -114,7 +122,7 @@
             this.lblSource.Name = "lblSource";
             this.lblSource.Size = new System.Drawing.Size(71, 13);
             this.lblSource.TabIndex = 0;
-            this.lblSource.Text = "Soulce &Code:";
+            this.lblSource.Text = "Source &code:\t";
             // 
             // ctMenu
             // 
@@ -122,7 +130,9 @@
             this.mnuFile,
             this.mnuView,
             this.mnuInsert,
-            this.mnuDebug});
+            this.mnuDebug,
+            this.optionsToolStripMenuItem,
+            this.mnuHelp});
             this.ctMenu.Location = new System.Drawing.Point(0, 0);
             this.ctMenu.Name = "ctMenu";
             this.ctMenu.Size = new System.Drawing.Size(966, 24);
@@ -148,7 +158,7 @@
             this.miNew.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
             this.miNew.Size = new System.Drawing.Size(152, 22);
             this.miNew.Text = "&New";
-            this.miNew.Click += new System.EventHandler(this.newSclipt);
+            this.miNew.Click += new System.EventHandler(this.newFile);
             // 
             // miOpen
             // 
@@ -196,22 +206,22 @@
             // miSourceFont
             // 
             this.miSourceFont.Name = "miSourceFont";
-            this.miSourceFont.Size = new System.Drawing.Size(152, 22);
-            this.miSourceFont.Text = "&Soulce Font...";
+            this.miSourceFont.Size = new System.Drawing.Size(145, 22);
+            this.miSourceFont.Text = "&Source Font...";
             this.miSourceFont.Click += new System.EventHandler(this.font);
             // 
             // miOutputFont
             // 
             this.miOutputFont.Name = "miOutputFont";
-            this.miOutputFont.Size = new System.Drawing.Size(152, 22);
+            this.miOutputFont.Size = new System.Drawing.Size(145, 22);
             this.miOutputFont.Text = "&Output Font...";
             this.miOutputFont.Click += new System.EventHandler(this.font);
             // 
             // mnuInsert
             // 
             this.mnuInsert.Name = "mnuInsert";
-            this.mnuInsert.Size = new System.Drawing.Size(46, 20);
-            this.mnuInsert.Text = "&Inselt";
+            this.mnuInsert.Size = new System.Drawing.Size(48, 20);
+            this.mnuInsert.Text = "&Insert";
             // 
             // mnuDebug
             // 
@@ -220,7 +230,10 @@
             this.miStopDebugging,
             this.miStep,
             this.miRunToCursor,
-            this.miGoToCurrentInstruction});
+            this.miGoToCurrentInstruction,
+            this.miSep2,
+            this.miInput,
+            this.miClearInput});
             this.mnuDebug.Name = "mnuDebug";
             this.mnuDebug.Size = new System.Drawing.Size(50, 20);
             this.mnuDebug.Text = "&Debug";
@@ -229,15 +242,15 @@
             // 
             this.miRun.Name = "miRun";
             this.miRun.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.miRun.Size = new System.Drawing.Size(219, 22);
-            this.miRun.Text = "&Lun";
+            this.miRun.Size = new System.Drawing.Size(225, 22);
+            this.miRun.Text = "&Run";
             this.miRun.Click += new System.EventHandler(this.run);
             // 
             // miStopDebugging
             // 
             this.miStopDebugging.Name = "miStopDebugging";
             this.miStopDebugging.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F5)));
-            this.miStopDebugging.Size = new System.Drawing.Size(219, 22);
+            this.miStopDebugging.Size = new System.Drawing.Size(225, 22);
             this.miStopDebugging.Text = "&Stop debugging";
             this.miStopDebugging.Click += new System.EventHandler(this.stopDebugging);
             // 
@@ -245,7 +258,7 @@
             // 
             this.miStep.Name = "miStep";
             this.miStep.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.miStep.Size = new System.Drawing.Size(219, 22);
+            this.miStep.Size = new System.Drawing.Size(225, 22);
             this.miStep.Text = "S&tep";
             this.miStep.Click += new System.EventHandler(this.step);
             // 
@@ -253,17 +266,68 @@
             // 
             this.miRunToCursor.Name = "miRunToCursor";
             this.miRunToCursor.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F10)));
-            this.miRunToCursor.Size = new System.Drawing.Size(219, 22);
-            this.miRunToCursor.Text = "Lun to &culsol";
+            this.miRunToCursor.Size = new System.Drawing.Size(225, 22);
+            this.miRunToCursor.Text = "Run to &cursor";
             this.miRunToCursor.Click += new System.EventHandler(this.runToCursor);
             // 
             // miGoToCurrentInstruction
             // 
             this.miGoToCurrentInstruction.Name = "miGoToCurrentInstruction";
             this.miGoToCurrentInstruction.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.D0)));
-            this.miGoToCurrentInstruction.Size = new System.Drawing.Size(219, 22);
-            this.miGoToCurrentInstruction.Text = "&Go to cullent instluction";
+            this.miGoToCurrentInstruction.Size = new System.Drawing.Size(225, 22);
+            this.miGoToCurrentInstruction.Text = "&Go to current instruction";
             this.miGoToCurrentInstruction.Click += new System.EventHandler(this.goToCurrentInstruction);
+            // 
+            // miSep2
+            // 
+            this.miSep2.Name = "miSep2";
+            this.miSep2.Size = new System.Drawing.Size(222, 6);
+            // 
+            // miInput
+            // 
+            this.miInput.Name = "miInput";
+            this.miInput.Size = new System.Drawing.Size(225, 22);
+            this.miInput.Text = "&Input...";
+            this.miInput.Click += new System.EventHandler(this.input);
+            // 
+            // miClearInput
+            // 
+            this.miClearInput.Name = "miClearInput";
+            this.miClearInput.Size = new System.Drawing.Size(225, 22);
+            this.miClearInput.Text = "C&lear input";
+            this.miClearInput.Click += new System.EventHandler(this.clearInput);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miSaveWhenRun});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+            this.optionsToolStripMenuItem.Text = "&Options";
+            // 
+            // miSaveWhenRun
+            // 
+            this.miSaveWhenRun.Checked = true;
+            this.miSaveWhenRun.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miSaveWhenRun.Name = "miSaveWhenRun";
+            this.miSaveWhenRun.Size = new System.Drawing.Size(149, 22);
+            this.miSaveWhenRun.Text = "&Save when Run";
+            this.miSaveWhenRun.Click += new System.EventHandler(this.toggleSaveWhenRun);
+            // 
+            // mnuHelp
+            // 
+            this.mnuHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miAbout});
+            this.mnuHelp.Name = "mnuHelp";
+            this.mnuHelp.Size = new System.Drawing.Size(40, 20);
+            this.mnuHelp.Text = "&Help";
+            // 
+            // miAbout
+            // 
+            this.miAbout.Name = "miAbout";
+            this.miAbout.Size = new System.Drawing.Size(115, 22);
+            this.miAbout.Text = "&About...";
+            this.miAbout.Click += new System.EventHandler(this.about);
             // 
             // ctTimer
             // 
@@ -337,7 +401,7 @@
             this.Controls.Add(this.ctMenu);
             this.MainMenuStrip = this.ctMenu;
             this.Name = "Mainform";
-            this.Text = "Sclipting Intelpletel";
+            this.Text = "Esoteric IDE";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.exiting);
             this.ctLayoutBottom.ResumeLayout(false);
             this.ctLayoutBottom.PerformLayout();
@@ -383,6 +447,13 @@
         private System.Windows.Forms.TableLayoutPanel ctLayoutTop;
         private System.Windows.Forms.TextBox txtSource;
         private System.Windows.Forms.Label lblInfo;
+        private System.Windows.Forms.ToolStripMenuItem mnuHelp;
+        private System.Windows.Forms.ToolStripMenuItem miAbout;
+        private System.Windows.Forms.ToolStripMenuItem miInput;
+        private System.Windows.Forms.ToolStripSeparator miSep2;
+        private System.Windows.Forms.ToolStripMenuItem miClearInput;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem miSaveWhenRun;
     }
 }
 

@@ -63,6 +63,7 @@
     <Compile Include="Sclipting\Instructions.cs" />
     <Compile Include="Sclipting\Misc.cs" />
     <Compile Include="Sclipting\ParseTree.cs" />
+    <Compile Include="Sclipting\RegexMatch.cs" />
     <Compile Include="Sclipting\ScliptingLanguage.cs" />
     <Compile Include="Sclipting\Translation.cs" />
     <Compile Include="Settings.cs" />

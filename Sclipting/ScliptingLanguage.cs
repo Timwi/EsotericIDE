@@ -24,21 +24,8 @@ namespace EsotericIDE.Sclipting
             _tr = Lingo.LoadTranslationOrDefault<Translation>("EsotericIDE", ref language);
         }
 
-        private static string _blockHeadInstructions;
-        private static string _blockElseInstructions;
-        private static string _blockEndInstructions;
-        public static string BlockHeadInstructions { get { return _blockHeadInstructions ?? (_blockHeadInstructions = getBlockInstructions(InstructionType.BlockHead)); } }
-        public static string BlockElseInstructions { get { return _blockElseInstructions ?? (_blockElseInstructions = getBlockInstructions(InstructionType.BlockElse)); } }
-        public static string BlockEndInstructions { get { return _blockEndInstructions ?? (_blockEndInstructions = getBlockInstructions(InstructionType.BlockEnd)); } }
-
-        private static string getBlockInstructions(InstructionType type)
-        {
-            return typeof(ScliptingInstructions).GetFields(BindingFlags.Public | BindingFlags.Static)
-                .Select(f => f.GetCustomAttributes<InstructionAttribute>().First())
-                .Where(a => a.Type == type)
-                .Select(a => a.Character)
-                .JoinString();
-        }
+        private static Dictionary<char, ScliptingInstruction> _instructions;
+        private static Dictionary<char, InstructionType> _instructionTypes;
 
         public override ExecutionEnvironment StartDebugging(string source)
         {
@@ -76,7 +63,7 @@ namespace EsotericIDE.Sclipting
                         try
                         {
                             var array = DecodeByteArray(hangeul);
-                            return "{4} {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X:00")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ToInt(array), _tr.ByteArray);
+                            return "{4} {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ToInt(array), _tr.ByteArray);
                         }
                         catch (ParseException pe)
                         {
@@ -92,7 +79,7 @@ namespace EsotericIDE.Sclipting
             if (source[cursorPos] >= 0xbc00 && source[cursorPos] <= 0xd7a3)
                 return "{1} {0}".Fmt(0xbbff - source[cursorPos], _tr.NegativeNumber);
 
-            var attribute = typeof(ScliptingInstructions).GetFields(BindingFlags.Static | BindingFlags.Public)
+            var attribute = typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(f => f.GetCustomAttributes<InstructionAttribute>().FirstOrDefault())
                 .Where(attr => attr != null && attr.Character == source[cursorPos])
                 .FirstOrDefault();
@@ -100,30 +87,30 @@ namespace EsotericIDE.Sclipting
                 return "{3}: {0} ({1}) — {2}".Fmt(attribute.Character, attribute.Engrish, attribute.Description,
                     attribute.Type == InstructionType.BlockHead ? _tr.BlockHeadInstruction :
                     attribute.Type == InstructionType.BlockElse ? _tr.BlockElseInstruction :
-                    attribute.Type == InstructionType.BlockEnd ? _tr.BlockEndInstruction : _tr.SingleInstruction);
+                    attribute.Type == InstructionType.BlockEnd ? _tr.BlockEndInstruction : _tr.SingularInstruction);
 
             string description;
             string instructionType = _tr.StackInstruction.Translation;
 #warning TODO: Lingo and ordinal numbers?
             if (source[cursorPos] >= '①' && source[cursorPos] <= '⑳')
-                description = "Copy {0}th item flom bottom.".Fmt(source[cursorPos] - '①' + 1);
+                description = "Copy {0}th item from bottom.".Fmt(source[cursorPos] - '①' + 1);
             else if (source[cursorPos] >= '㉑' && source[cursorPos] <= '㉟')
-                description = "Copy {0}th item flom bottom.".Fmt(source[cursorPos] - '㉑' + 21);
+                description = "Copy {0}th item from bottom.".Fmt(source[cursorPos] - '㉑' + 21);
             else if (source[cursorPos] >= '㊱' && source[cursorPos] <= '㊿')
-                description = "Copy {0}th item flom bottom.".Fmt(source[cursorPos] - '㊱' + 36);
+                description = "Copy {0}th item from bottom.".Fmt(source[cursorPos] - '㊱' + 36);
             else if (source[cursorPos] >= '⓵' && source[cursorPos] <= '⓾')
-                description = "Move {0}th item flom top.".Fmt(source[cursorPos] - '⓵' + 1);
+                description = "Move {0}th item from top.".Fmt(source[cursorPos] - '⓵' + 1);
             else if (source[cursorPos] >= '❶' && source[cursorPos] <= '❿')
-                description = "Copy {0}th item flom top.".Fmt(source[cursorPos] - '❶' + 1);
+                description = "Copy {0}th item from top.".Fmt(source[cursorPos] - '❶' + 1);
             else if (source[cursorPos] >= '⓫' && source[cursorPos] <= '⓴')
-                description = "Copy {0}th item flom top.".Fmt(source[cursorPos] - '⓫' + 1);
+                description = "Copy {0}th item from top.".Fmt(source[cursorPos] - '⓫' + 1);
             else if (source[cursorPos] >= '⑴' && source[cursorPos] <= '⒇')
-                description = "Move {0}th item flom bottom.".Fmt(source[cursorPos] - '⑴' + 1);
+                description = "Move {0}th item from bottom.".Fmt(source[cursorPos] - '⑴' + 1);
             else if (source[cursorPos] >= '⒈' && source[cursorPos] <= '⒛')
-                description = "Swap top item with {0}th item flom bottom.".Fmt(source[cursorPos] - '⒈' + 1);
+                description = "Swap top item with {0}th item from bottom.".Fmt(source[cursorPos] - '⒈' + 1);
             else if (source[cursorPos] >= 'Ⓐ' && source[cursorPos] <= 'Ⓩ')
             {
-                description = "Push content of the {0}th legex captuling palenthesis.".Fmt(source[cursorPos] - 'Ⓐ' + 1);
+                description = "Push content of the {0}th regex capturing parenthesis.".Fmt(source[cursorPos] - 'Ⓐ' + 1);
                 instructionType = _tr.RegexInstruction.Translation;
             }
             else
@@ -133,7 +120,7 @@ namespace EsotericIDE.Sclipting
 
         public override void InitialiseInsertMenu(ToolStripMenuItem mnuInsert, Func<string> getSelectedText, Action<string> insertText)
         {
-            var miInsertSingleInstruction = new ToolStripMenuItem();
+            var miInsertSingularInstruction = new ToolStripMenuItem();
             var miInsertBlockInstruction = new ToolStripMenuItem();
             var miInsertStackInstruction = new ToolStripMenuItem();
             var miInsertStackInstructionCopyFromBottom = new ToolStripMenuItem();
@@ -144,8 +131,9 @@ namespace EsotericIDE.Sclipting
             var miInsertRegexInstruction = new ToolStripMenuItem();
             var miInsertInteger = new ToolStripMenuItem();
             var miInsertString = new ToolStripMenuItem();
+            var miInsertByteArray = new ToolStripMenuItem();
 
-            miInsertSingleInstruction.Text = _tr.InsertMenu.SingleInstruction;
+            miInsertSingularInstruction.Text = _tr.InsertMenu.SingularInstruction;
             miInsertBlockInstruction.Text = _tr.InsertMenu.BlockInstruction;
             miInsertStackInstruction.Text = _tr.InsertMenu.StackInstruction;
             miInsertStackInstructionCopyFromBottom.Text = _tr.InsertMenu.StackInstructionCopyFromBottom;
@@ -156,11 +144,13 @@ namespace EsotericIDE.Sclipting
             miInsertRegexInstruction.Text = _tr.InsertMenu.RegexInstruction;
             miInsertInteger.Text = _tr.InsertMenu.Integer;
             miInsertString.Text = _tr.InsertMenu.String;
+            miInsertByteArray.Text = _tr.InsertMenu.ByteArray;
 
             miInsertInteger.Click += (_, __) => { insertInteger(getSelectedText, insertText); };
             miInsertString.Click += (_, __) => { insertString(getSelectedText, insertText); };
+            miInsertByteArray.Click += (_, __) => { insertByteArray(getSelectedText, insertText); };
 
-            mnuInsert.DropDownItems.AddRange(new ToolStripItem[] { miInsertSingleInstruction, miInsertBlockInstruction, miInsertStackInstruction, miInsertRegexInstruction, miInsertInteger, miInsertString });
+            mnuInsert.DropDownItems.AddRange(new ToolStripItem[] { miInsertSingularInstruction, miInsertBlockInstruction, miInsertStackInstruction, miInsertRegexInstruction, miInsertInteger, miInsertString, miInsertByteArray });
             miInsertStackInstruction.DropDownItems.AddRange(new ToolStripItem[] { miInsertStackInstructionCopyFromBottom, miInsertStackInstructionMoveFromBottom, miInsertStackInstructionSwapFromBottom, miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop });
 
             for (var ch = '①'; ch <= '⑳'; ch++)
@@ -182,11 +172,11 @@ namespace EsotericIDE.Sclipting
             for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
                 miInsertRegexInstruction.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
 
-            foreach (var instr in typeof(ScliptingInstructions).GetFields(BindingFlags.Static | BindingFlags.Public))
+            foreach (var instr in typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public))
             {
                 var attr = instr.GetCustomAttributes<InstructionAttribute>().First();
                 var ch = attr.Character;
-                var superMenu = attr.Type == InstructionType.SingleInstruction ? miInsertSingleInstruction : miInsertBlockInstruction;
+                var superMenu = attr.Type == InstructionType.SingularInstruction ? miInsertSingularInstruction : miInsertBlockInstruction;
                 superMenu.DropDownItems.Add(
                     new ToolStripMenuItem(ch + " &" + attr.Engrish + " — " + attr.Description, null, (_, __) => { insertText(ch.ToString()); })
                 );
@@ -239,7 +229,18 @@ namespace EsotericIDE.Sclipting
             var line = InputBox.GetLine(_tr.InsertMenu.StringPrompt, @default, "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel);
             if (line != null)
                 try { insertText(EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
-                catch { }
+                catch { DlgMessage.Show(_tr.InsertMenu.StringError, "Esoteric IDE", DlgType.Error, Program.Tr.Ok); }
+        }
+
+        private void insertByteArray(Func<string> getSelectedText, Action<string> insertText)
+        {
+            string @default, selected = getSelectedText();
+            try { @default = DecodeByteArray(selected).ToHex(); }
+            catch { @default = ""; }
+            var line = InputBox.GetLine(_tr.InsertMenu.ByteArrayPrompt, @default, "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel);
+            if (line != null)
+                try { insertText(EncodeByteArray(line.FromHex())); }
+                catch { DlgMessage.Show(_tr.InsertMenu.ByteArrayError, "Esoteric IDE", DlgType.Error, Program.Tr.Ok); }
         }
 
         public ScliptingProgram Parse(string source)
@@ -249,7 +250,8 @@ namespace EsotericIDE.Sclipting
 
         private List<Instruction> parse(string source, int addIndex)
         {
-            ScliptingInstructions? instr;
+            ScliptingInstruction instruction;
+            InstructionType type;
 
             var ret = new List<Instruction>();
             int index = 0;
@@ -296,84 +298,116 @@ namespace EsotericIDE.Sclipting
                     ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.SwapFromBottom, Value = ch - '⒈' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= 'Ⓐ' && ch <= 'Ⓩ')
                     ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.RegexCapture, Value = ch - 'Ⓐ' + 1, Index = index++ + addIndex, Count = 1 });
-                else if (BlockHeadInstructions.Contains(ch))
+                else if (getInstructionInfo(ch, out instruction, out type))
                 {
-                    int endIndex;
-                    int? elseIndex;
-                    bool elsePops;
-                    FindMatchingEnd(source, index, addIndex, out endIndex, out elseIndex, out elsePops);
-                    var primaryBlock = parse(source.Substring(index + 1, (elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
-                    var elseBlock = elseIndex == null ? null : parse(source.Substring(elseIndex.Value + 1, endIndex - elseIndex.Value - 1), elseIndex.Value + 1 + addIndex);
-                    var blockInstr = createBlockInstruction(index, addIndex, ch, elseIndex, elsePops, _tr);
-                    blockInstr.PrimaryBlock = primaryBlock;
-                    blockInstr.ElseBlock = elseBlock;
-                    blockInstr.ElseBlockPops = elsePops;
-                    blockInstr.Index = index + addIndex;
-                    blockInstr.Count = endIndex - index + 1;
-                    blockInstr.ElseIndex = (elseIndex ?? 0) + addIndex;
-                    ret.Add(blockInstr);
-                    index = endIndex + 1;
+                    if (type == InstructionType.SingularInstruction)
+                        ret.Add(new SingularInstruction { ThisInstruction = instruction, Index = index++ + addIndex, Count = 1 });
+                    else if (type == InstructionType.BlockHead)
+                    {
+                        int endIndex;
+                        int? elseIndex;
+                        bool elsePops;
+                        FindMatchingEnd(source, index, addIndex, out endIndex, out elseIndex, out elsePops);
+                        var primaryBlock = parse(source.Substring(index + 1, (elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
+                        var elseBlock = elseIndex == null ? null : parse(source.Substring(elseIndex.Value + 1, endIndex - elseIndex.Value - 1), elseIndex.Value + 1 + addIndex);
+                        var blockInstr = createBlockInstruction(instruction, index, addIndex, elseIndex, elsePops, _tr);
+                        blockInstr.PrimaryBlock = primaryBlock;
+                        blockInstr.ElseBlock = elseBlock;
+                        blockInstr.ElseBlockPops = elsePops;
+                        blockInstr.Index = index + addIndex;
+                        blockInstr.Count = endIndex - index + 1;
+                        blockInstr.ElseIndex = (elseIndex ?? 0) + addIndex;
+                        ret.Add(blockInstr);
+                        index = endIndex + 1;
+                    }
+                    else
+                        throw new ParseException(_tr.ParseErrors.UnexpectedEndOfBlock, index + addIndex, 1);
                 }
-                else if ((instr = typeof(ScliptingInstructions).GetFields(BindingFlags.Static | BindingFlags.Public)
-                        .Select(f => new { Instruction = f, Attribute = f.GetCustomAttributes<InstructionAttribute>().FirstOrDefault() })
-                        .Where(f => f.Attribute != null && f.Attribute.Character == ch)
-                        .Select(f => (ScliptingInstructions?) f.Instruction.GetValue(null))
-                        .FirstOrDefault()) != null)
-                    ret.Add(new SingleInstruction { ThisInstruction = instr.Value, Index = index++ + addIndex, Count = 1 });
                 else
                     throw new ParseException(_tr.ParseErrors.UnrecognisedInstruction.Fmt(ch), index + addIndex, 1);
             }
             return ret;
         }
 
-        private static BlockInstruction createBlockInstruction(int index, int addIndex, char ch, int? elseIndex, bool elsePops, Translation tr)
+        private static void initInstructionsDictionary()
         {
-            switch (ch)
+            if (_instructions == null)
             {
-                case '是':
-                case '倘':
-                    return new If { PrimaryBlockPops = ch == '是' };
+                _instructions = new Dictionary<char, ScliptingInstruction>();
+                _instructionTypes = new Dictionary<char, InstructionType>();
+                foreach (var field in typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public))
+                {
+                    var attr = field.GetCustomAttributes<InstructionAttribute>().First();
+                    _instructions[attr.Character] = (ScliptingInstruction) field.GetValue(null);
+                    _instructionTypes[attr.Character] = attr.Type;
+                }
+            }
+        }
 
-                case '數':
+        private static bool getInstructionInfo(char character, out ScliptingInstruction instruction, out InstructionType type)
+        {
+            initInstructionsDictionary();
+            if (_instructions.TryGetValue(character, out instruction))
+            {
+                type = _instructionTypes[character];
+                return true;
+            }
+            else
+            {
+                type = default(InstructionType);
+                return false;
+            }
+        }
+
+        private static BlockInstruction createBlockInstruction(ScliptingInstruction instruction, int index, int addIndex, int? elseIndex, bool elsePops, Translation tr)
+        {
+            switch (instruction)
+            {
+                case ScliptingInstruction.Yes:
+                case ScliptingInstruction.If:
+                    return new If { PrimaryBlockPops = instruction == ScliptingInstruction.Yes };
+
+                case ScliptingInstruction.Count:
                     if (elseIndex != null && !elsePops)
                         throw new ParseException(tr.ParseErrors.ForLoopCannotUseNonPopElse, index + addIndex, elseIndex.Value - index + 1);
                     return new ForLoop();
 
-                case '各':
-                case '每':
-                    return new ForEachLoop { PrimaryBlockPops = ch == '各' };
+                case ScliptingInstruction.Each:
+                case ScliptingInstruction.Every:
+                    return new ForEachLoop { PrimaryBlockPops = instruction == ScliptingInstruction.Each };
 
-                case '套':
-                case '要':
-                case '迄':
-                case '到':
-                    return new WhileLoop { PrimaryBlockPops = ch == '套' || ch == '迄', WhileTrue = ch == '套' || ch == '要' };
+                case ScliptingInstruction.Loop:
+                case ScliptingInstruction.Necessity:
+                case ScliptingInstruction.Until:
+                case ScliptingInstruction.Arrive:
+                    return new WhileLoop
+                    {
+                        PrimaryBlockPops = instruction == ScliptingInstruction.Loop || instruction == ScliptingInstruction.Until,
+                        WhileTrue = instruction == ScliptingInstruction.Loop || instruction == ScliptingInstruction.Necessity
+                    };
 
-                case '換':
-                case '代':
-                case '替':
-                case '更':
-                    return new RegexSubstitute { PrimaryBlockPops = ch == '換' || ch == '替', FirstMatchOnly = ch == '換' || ch == '代' };
+                case ScliptingInstruction.ReplaceFirstPop:
+                case ScliptingInstruction.ReplaceFirstNoPop:
+                case ScliptingInstruction.ReplaceAllPop:
+                case ScliptingInstruction.ReplaceAllNoPop:
+                    return new RegexSubstitute
+                    {
+                        PrimaryBlockPops = instruction == ScliptingInstruction.ReplaceFirstPop || instruction == ScliptingInstruction.ReplaceAllPop,
+                        FirstMatchOnly = instruction == ScliptingInstruction.ReplaceFirstPop || instruction == ScliptingInstruction.ReplaceFirstNoPop
+                    };
 
                 default:
-                    throw new ParseException(tr.ParseErrors.MissingInstruction.Fmt(ch), index + addIndex, 1);
+                    throw new ParseException(tr.ParseErrors.MissingInstruction.Fmt(instruction), index + addIndex, 1);
             }
         }
 
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
             var tr = new Translation();
-            foreach (var ch in BlockHeadInstructions)
-                try { createBlockInstruction(0, 0, ch, null, false, tr); }
-                catch
-                {
-                    rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(
-                            typeof(ScliptingInstructions).GetFields(BindingFlags.Public | BindingFlags.Static)
-                                .Select(f => new { Field = f, Character = f.GetCustomAttributes<InstructionAttribute>().First().Character })
-                                .Where(f => f.Character == ch)
-                                .First().Field.GetValue(null)
-                        ), "ScliptingLanguage", "BlockInstruction createBlockInstruction", "default");
-                }
+            initInstructionsDictionary();
+            foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == InstructionType.BlockHead).Select(kvp => _instructions[kvp.Key]))
+                try { createBlockInstruction(instr, 0, 0, null, false, tr); }
+                catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instr), "ScliptingLanguage", "BlockInstruction createBlockInstruction", "default"); }
         }
 
         public static string ParseByteArrayToken(string source, int index)
@@ -401,25 +435,27 @@ namespace EsotericIDE.Sclipting
             elseIndex = null;
             elsePops = false;
             var depth = 0;
+            ScliptingInstruction instruction;
+            InstructionType type;
             for (int i = start; i < source.Length; i++)
             {
-                if (BlockHeadInstructions.Contains(source[i]))
-                    depth++;
-                else if (BlockElseInstructions.Contains(source[i]))
+                if (getInstructionInfo(source[i], out instruction, out type))
                 {
-                    if (depth == 1)
+                    if (type == InstructionType.BlockHead)
+                        depth++;
+                    else if (type == InstructionType.BlockElse && depth == 1)
                     {
                         elseIndex = i;
                         elsePops = source[i] == '不';
                     }
-                }
-                else if (BlockEndInstructions.Contains(source[i]))
-                {
-                    depth--;
-                    if (depth == 0)
+                    else if (type == InstructionType.BlockEnd)
                     {
-                        endIndex = i;
-                        return;
+                        depth--;
+                        if (depth == 0)
+                        {
+                            endIndex = i;
+                            return;
+                        }
                     }
                 }
             }
@@ -515,7 +551,7 @@ namespace EsotericIDE.Sclipting
             if ((s = item as string) != null)
                 return s.Cast<object>().ToList();
             if ((b = item as byte[]) != null)
-                return ToString(b).Cast<object>().ToList();
+                return b.Select(byt => (object) (BigInteger) byt).ToList();
 
             if (item == null)
                 return new List<object>();
@@ -526,18 +562,22 @@ namespace EsotericIDE.Sclipting
         public static string ToString(object item)
         {
             if (item is BigInteger)
-                return item.ToString();
+                return ((BigInteger) item).ToString(CultureInfo.InvariantCulture);
+            if (item is double)
+                return ((double) item).ToString(CultureInfo.InvariantCulture);
 
-            List<object> l;
-            byte[] b;
             string s;
+            byte[] b;
+            List<object> l;
 
-            if ((l = item as List<object>) != null)
-                return l.Select(i => ToString(i)).JoinString();
+            if ((s = item as string) != null)
+                return s;
             if ((b = item as byte[]) != null)
                 return b.FromUtf8();
+            if ((l = item as List<object>) != null)
+                return l.Select(i => ToString(i)).JoinString();
 
-            return ExactConvert.Try(item, out s) ? s : "";
+            return "";
         }
 
         public static bool IsTrue(object item)
@@ -552,18 +592,26 @@ namespace EsotericIDE.Sclipting
 
         public static object ToNumeric(object item)
         {
-            if (item is double)
+            List<object> l;
+            if ((l = item as List<object>) != null)
+                return recursiveListSum(l);
+
+            if (item is double || item is BigInteger)
                 return item;
 
-            double result;
-            if (item is string && ((string) item).Contains('.') && double.TryParse((string) item, NumberStyles.Float, CultureInfo.InvariantCulture, out result))
-                return result;
+            double dbl;
+            if (item is string && ((string) item).Contains('.') && double.TryParse((string) item, NumberStyles.Float, CultureInfo.InvariantCulture, out dbl))
+                return dbl;
 
             return ToInt(item);
         }
 
         public static BigInteger ToInt(object item)
         {
+            List<object> l;
+            if ((l = item as List<object>) != null)
+                item = recursiveListSum(l);
+
             if (item is BigInteger)
                 return (BigInteger) item;
             if (item is double)
@@ -573,22 +621,59 @@ namespace EsotericIDE.Sclipting
                     return BigInteger.Zero;
                 return (BigInteger) d;
             }
-            if (item is char)
-                return (BigInteger) char.GetNumericValue((char) item);
 
-            List<object> l;
             byte[] b;
             string s;
             BigInteger i;
 
-            if ((l = item as List<object>) != null)
-                return l.Count;
             if ((b = item as byte[]) != null)
                 return new BigInteger(new byte[] { 0 }.Concat(b).Reverse().ToArray());
             if ((s = item as string) != null)
                 return BigInteger.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out i) ? i : 0;
 
             return item == null ? 0 : 1;
+        }
+
+        public static object recursiveListSum(List<object> list)
+        {
+            BigInteger bigInt = 0;
+            double dbl = 0;
+            bool isDouble = false;
+            recursiveListSum(list, ref bigInt, ref dbl, ref isDouble);
+            return isDouble ? (object) dbl : bigInt;
+        }
+
+        public static void recursiveListSum(List<object> list, ref BigInteger bigInt, ref double dbl, ref bool isDouble)
+        {
+            List<object> l;
+
+            foreach (var item in list)
+            {
+                if ((l = item as List<object>) != null)
+                    recursiveListSum(l, ref bigInt, ref dbl, ref isDouble);
+                else
+                {
+                    var num = ToNumeric(item);
+                    if (item is double)
+                    {
+                        if (!isDouble)
+                        {
+                            dbl = (double) bigInt;
+                            isDouble = true;
+                        }
+                        dbl += (double) item;
+                    }
+                    else if (item is BigInteger)
+                    {
+                        if (isDouble)
+                            dbl += (double) (BigInteger) item;
+                        else
+                            bigInt += (BigInteger) item;
+                    }
+                    else
+                        throw new InternalErrorException("I expected this item to be either a float or an integer.");
+                }
+            }
         }
     }
 }

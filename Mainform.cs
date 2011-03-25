@@ -117,7 +117,7 @@ namespace EsotericIDE
             if (_anyChanges)
                 text += " •";
             if (_currentEnvironment != null)
-                text += Program.Tr.Mainform.Running.Translation;
+                text += " " + Program.Tr.Mainform.Running.Translation;
             Text = text;
 
             lblOutput.Text = _currentEnvironment != null ? Program.Tr.LabelExecutionState : Program.Tr.LabelOutput;

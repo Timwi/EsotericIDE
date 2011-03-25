@@ -1,86 +1,92 @@
 ﻿
 namespace EsotericIDE.Sclipting
 {
-    enum ScliptingInstructions
+    enum ScliptingInstruction
     {
         // General
-        [Instruction('標', "mark", "Pushes a mark.", InstructionType.SingleInstruction)]
+        [Instruction('標', "mark", "Pushes a mark.", InstructionType.SingularInstruction)]
         Mark,
-        [Instruction('丟', "discard", "Pops an item.", InstructionType.SingleInstruction)]
+        [Instruction('丟', "discard", "Pops an item.", InstructionType.SingularInstruction)]
         Discard,
 
         // String manipulation
-        [Instruction('長', "length", "Returns length of string.", InstructionType.SingleInstruction)]
+        [Instruction('長', "length", "Returns length of string.", InstructionType.SingularInstruction)]
         Length,
-        [Instruction('復', "repeat", "Repeats a string.", InstructionType.SingleInstruction)]
+        [Instruction('復', "repeat", "Repeats a string.", InstructionType.SingularInstruction)]
         Repeat,
-        [Instruction('併', "combine", "Concatenates everything above the last mark.", InstructionType.SingleInstruction)]
-        Combine,
-        [Instruction('掘', "excavate", "Retrieves the nth character in a string (pop string).", InstructionType.SingleInstruction)]
+        [Instruction('併', "combine", "Concatenates everything above the last mark into a string.", InstructionType.SingularInstruction)]
+        CombineString,
+        [Instruction('并', "combine", "Places everything above the last mark in a list.", InstructionType.SingularInstruction)]
+        CombineList,
+        [Instruction('掘', "excavate", "Retrieves the nth character in a string (pop string).", InstructionType.SingularInstruction)]
         Excavate,
-        [Instruction('挖', "dig out", "Retrieves the nth character in a string (keep string).", InstructionType.SingleInstruction)]
+        [Instruction('挖', "dig out", "Retrieves the nth character in a string (keep string).", InstructionType.SingularInstruction)]
         DigOut,
-        [Instruction('講', "explain", "Unicode codepoint for first character in a string.", InstructionType.SingleInstruction)]
+        [Instruction('講', "explain", "Unicode codepoint for first character in a string.", InstructionType.SingularInstruction)]
         Explain,
-        [Instruction('字', "character", "Character from Unicode codepoint.", InstructionType.SingleInstruction)]
+        [Instruction('字', "character", "Character from Unicode codepoint.", InstructionType.SingularInstruction)]
         Character,
-        [Instruction('反', "reverse", "Reverses a string.", InstructionType.SingleInstruction)]
+        [Instruction('反', "reverse", "Reverses a string.", InstructionType.SingularInstruction)]
         Reverse,
 
         // Regular expressions
-        [Instruction('現', "appear", "Current regular expression match.", InstructionType.SingleInstruction)]
+        [Instruction('現', "appear", "Current regular expression match.", InstructionType.SingularInstruction)]
         Appear,
+        [Instruction('坼', "split", "Split string using regular expression (pop).", InstructionType.SingularInstruction)]
+        SplitPop,
+        [Instruction('裂', "split", "Split string using regular expression (no pop).", InstructionType.SingularInstruction)]
+        SplitNoPop,
 
         // Arithmetic
-        [Instruction('加', "add", "Adds two numbers.", InstructionType.SingleInstruction)]
+        [Instruction('加', "add", "Adds two numbers.", InstructionType.SingularInstruction)]
         Add,
-        [Instruction('減', "subtract", "Subtracts two numbers.", InstructionType.SingleInstruction)]
+        [Instruction('減', "subtract", "Subtracts two numbers.", InstructionType.SingularInstruction)]
         Subtract,
-        [Instruction('乘', "multiply", "Multiplies two numbers.", InstructionType.SingleInstruction)]
+        [Instruction('乘', "multiply", "Multiplies two numbers.", InstructionType.SingularInstruction)]
         Multiply,
-        [Instruction('除', "divide", "Divides two numbers as floats.", InstructionType.SingleInstruction)]
+        [Instruction('除', "divide", "Divides two numbers as floats.", InstructionType.SingularInstruction)]
         DivideFloat,
-        [Instruction('分', "divide", "Divides two integers using integer division.", InstructionType.SingleInstruction)]
+        [Instruction('分', "divide", "Divides two integers using integer division.", InstructionType.SingularInstruction)]
         DivideInt,
-        [Instruction('剩', "leftovers", "Remainder (modulo).", InstructionType.SingleInstruction)]
+        [Instruction('剩', "leftovers", "Remainder (modulo).", InstructionType.SingularInstruction)]
         Leftovers,
-        [Instruction('方', "power", "Exponentiation.", InstructionType.SingleInstruction)]
+        [Instruction('方', "power", "Exponentiation.", InstructionType.SingularInstruction)]
         Power,
-        [Instruction('負', "negative", "Negative (unary minus).", InstructionType.SingleInstruction)]
+        [Instruction('負', "negative", "Negative (unary minus).", InstructionType.SingularInstruction)]
         Negative,
-        [Instruction('增', "increase", "Increment by one.", InstructionType.SingleInstruction)]
+        [Instruction('增', "increase", "Increment by one.", InstructionType.SingularInstruction)]
         Increase,
-        [Instruction('貶', "decrease", "Decrement by one.", InstructionType.SingleInstruction)]
+        [Instruction('貶', "decrease", "Decrement by one.", InstructionType.SingularInstruction)]
         Decrease,
-        [Instruction('左', "left", "Shift left.", InstructionType.SingleInstruction)]
+        [Instruction('左', "left", "Shift left.", InstructionType.SingularInstruction)]
         Left,
-        [Instruction('右', "right", "Shift right.", InstructionType.SingleInstruction)]
+        [Instruction('右', "right", "Shift right.", InstructionType.SingularInstruction)]
         Right,
-        [Instruction('雙', "both", "Bitwise and.", InstructionType.SingleInstruction)]
+        [Instruction('雙', "both", "Bitwise and.", InstructionType.SingularInstruction)]
         Both,
-        [Instruction('另', "other", "Bitwise or.", InstructionType.SingleInstruction)]
+        [Instruction('另', "other", "Bitwise or.", InstructionType.SingularInstruction)]
         Other,
-        [Instruction('倆', "clever", "Bitwise xor.", InstructionType.SingleInstruction)]
+        [Instruction('倆', "clever", "Bitwise xor.", InstructionType.SingularInstruction)]
         Clever,
 
         // Logic
-        [Instruction('小', "small", "Less than.", InstructionType.SingleInstruction)]
+        [Instruction('小', "small", "Less than.", InstructionType.SingularInstruction)]
         Small,
-        [Instruction('大', "great", "Greater than.", InstructionType.SingleInstruction)]
+        [Instruction('大', "great", "Greater than.", InstructionType.SingularInstruction)]
         Great,
-        [Instruction('與', "and", "Logical (boolean) and.", InstructionType.SingleInstruction)]
+        [Instruction('與', "and", "Logical (boolean) and.", InstructionType.SingularInstruction)]
         And,
-        [Instruction('或', "or", "Logical (boolean) or.", InstructionType.SingleInstruction)]
+        [Instruction('或', "or", "Logical (boolean) or.", InstructionType.SingularInstruction)]
         Or,
-        [Instruction('隻', "one of pair", "Logical (boolean) xor.", InstructionType.SingleInstruction)]
+        [Instruction('隻', "one of pair", "Logical (boolean) xor.", InstructionType.SingularInstruction)]
         OneOfPair,
-        [Instruction('同', "same", "Exactly the same.", InstructionType.SingleInstruction)]
+        [Instruction('同', "same", "Exactly the same.", InstructionType.SingularInstruction)]
         Same,
-        [Instruction('侔', "equal", "Equal as integers.", InstructionType.SingleInstruction)]
+        [Instruction('侔', "equal", "Equal as integers.", InstructionType.SingularInstruction)]
         Equal,
-        [Instruction('肖', "resemble", "Equal as strings.", InstructionType.SingleInstruction)]
+        [Instruction('肖', "resemble", "Equal as strings.", InstructionType.SingularInstruction)]
         Resemble,
-        [Instruction('嗎', "is it?", "Conditional operator.", InstructionType.SingleInstruction)]
+        [Instruction('嗎', "is it?", "Conditional operator.", InstructionType.SingularInstruction)]
         IsIt,
 
         // Block instructions
@@ -121,7 +127,7 @@ namespace EsotericIDE.Sclipting
 
     enum InstructionType
     {
-        SingleInstruction,
+        SingularInstruction,
         BlockHead,
         BlockElse,
         BlockEnd

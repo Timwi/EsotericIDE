@@ -13,7 +13,7 @@ namespace EsotericIDE.Sclipting
     sealed class ScliptingExecutionEnvironment : ExecutionEnvironment
     {
         public List<object> CurrentStack = new List<object>();
-        public Stack<Match> RegexObjects = new Stack<Match>();
+        public List<RegexMatch> RegexObjects = new List<RegexMatch>();
         private Translation _tr;
         private ScliptingLanguage _language;
 
@@ -65,33 +65,41 @@ namespace EsotericIDE.Sclipting
         public override string DescribeExecutionState()
         {
             var sb = new StringBuilder();
-            for (int i = CurrentStack.Count - 1; i >= 0; i--)
+            if (RegexObjects.Any())
             {
-                var item = CurrentStack[i];
-                if (item is byte[])
-                {
-                    var b = (byte[]) item;
-                    sb.AppendLine("{0}.  {3} “{1}” ({2})".Fmt(i + 1, b.FromUtf8().CLiteralEscape(), ScliptingLanguage.ToInt(b), _tr.ByteArray));
-                }
-                else if (item is BigInteger)
-                    sb.AppendLine("{0}.  {2} {1}".Fmt(i + 1, item, _tr.Integer));
-                else if (item is string)
-                    sb.AppendLine("{0}.  {2} “{1}”".Fmt(i + 1, ((string) item).CLiteralEscape(), _tr.String));
-                else if (item is double)
-                    sb.AppendLine("{0}.  {2} {1}".Fmt(i + 1, ExactConvert.ToString((double) item), _tr.Float));
-                else if (item is char)
-                {
-                    var c = (char) item;
-                    sb.AppendLine("{0}.  {3} ‘{1}’ ({2})".Fmt(i + 1, c.ToString().CLiteralEscape(), (int) c, _tr.Character));
-                }
-                else if (item is Mark)
-                    sb.AppendLine("{0}.  {1}".Fmt(i + 1, _tr.Mark));
-                else
-                    sb.AppendLine("{0}.  {1} ({2})".Fmt(i + 1, item, item.GetType().FullName));
+                sb.AppendLine(_tr.ActiveRegexBlocks);
+                for (int i = 0; i < RegexObjects.Count; i++)
+                    RegexObjects[i].AppendDescription(i, sb);
+                sb.AppendLine();
             }
+
+            for (int i = CurrentStack.Count - 1; i >= 0; i--)
+                sb.AppendLine(describe(CurrentStack[i], i + 1));
             if (sb.Length > 0)
                 sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
             return sb.ToString();
+        }
+
+        private string describe(object item, int index)
+        {
+            byte[] b;
+            List<object> list;
+
+            if ((b = item as byte[]) != null)
+                return "{0,2}.  {3} “{1}” ({2})".Fmt(index, b.FromUtf8().CLiteralEscape(), ScliptingLanguage.ToInt(b), _tr.ByteArray);
+            else if (item is BigInteger)
+                return "{0,2}.  {2} {1}".Fmt(index, item, _tr.Integer);
+            else if (item is string)
+                return "{0,2}.  {2} “{1}”".Fmt(index, ((string) item).CLiteralEscape(), _tr.String);
+            else if (item is double)
+                return "{0,2}.  {2} {1}".Fmt(index, ExactConvert.ToString((double) item), _tr.Float);
+            else if (item is Mark)
+                return "{0,2}.  {1}".Fmt(index, _tr.Mark);
+            else if ((list = item as List<object>) != null)
+                return "{0,2}.  list ({1} items)".Fmt(index, list.Count) + list.Select((itm, idx) => Environment.NewLine + describe(itm, idx)).JoinString().Indent(4, false);
+
+            // unknown type of object?
+            return "{0,2}.  {1} ({2})".Fmt(index, item, item.GetType().FullName);
         }
     }
 }

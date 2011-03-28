@@ -14,14 +14,14 @@ namespace EsotericIDE
         public AboutBox()
         {
             InitializeComponent();
-            Lingo.TranslateControl(this, Program.Tr.AboutBox);
+            Lingo.TranslateControl(this, EsotericIDEProgram.Tr.AboutBox);
 
             lblProductName.Text = AssemblyProduct;
             lblDescription.Text = AssemblyDescription;
-            lblVersion.Text = Program.Tr.AboutBox.Version.Fmt(Ut.VersionOfExe());
+            lblVersion.Text = EsotericIDEProgram.Tr.AboutBox.Version.Fmt(Ut.VersionOfExe());
             lblCopyright.Text = AssemblyCopyright;
             lblCompanyName.Text = AssemblyCompany;
-            btnOK.Text = Program.Tr.Ok;
+            btnOK.Text = EsotericIDEProgram.Tr.Ok;
         }
 
 #if DEBUG

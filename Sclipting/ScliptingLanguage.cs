@@ -20,7 +20,7 @@ namespace EsotericIDE.Sclipting
 
         public ScliptingLanguage()
         {
-            var language = Program.Settings.Language;
+            var language = EsotericIDEProgram.Settings.Language;
             _tr = Lingo.LoadTranslationOrDefault<Translation>("EsotericIDE", ref language);
         }
 
@@ -199,7 +199,7 @@ namespace EsotericIDE.Sclipting
                     @default = new BigInteger(new byte[] { 0 }.Concat(DecodeByteArray(selected)).Reverse().ToArray()).ToString();
             }
             catch { @default = "0"; }
-            var line = InputBox.GetLine(_tr.InsertMenu.IntegerPrompt, @default, "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel);
+            var line = InputBox.GetLine(_tr.InsertMenu.IntegerPrompt, @default, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
             if (line != null)
             {
                 BigInteger i;
@@ -211,7 +211,7 @@ namespace EsotericIDE.Sclipting
                         insertText(EncodeByteArray(i.ToByteArray().Reverse().ToArray()));
                 }
                 else
-                    DlgMessage.Show(_tr.InsertMenu.IntegerError, "Esoteric IDE", DlgType.Error, Program.Tr.Ok);
+                    DlgMessage.Show(_tr.InsertMenu.IntegerError, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok);
             }
         }
 
@@ -226,10 +226,10 @@ namespace EsotericIDE.Sclipting
                     @default = DecodeByteArray(selected).FromUtf8().CLiteralEscape();
             }
             catch { @default = "\\n"; }
-            var line = InputBox.GetLine(_tr.InsertMenu.StringPrompt, @default, "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel);
+            var line = InputBox.GetLine(_tr.InsertMenu.StringPrompt, @default, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
             if (line != null)
                 try { insertText(EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
-                catch { DlgMessage.Show(_tr.InsertMenu.StringError, "Esoteric IDE", DlgType.Error, Program.Tr.Ok); }
+                catch { DlgMessage.Show(_tr.InsertMenu.StringError, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok); }
         }
 
         private void insertByteArray(Func<string> getSelectedText, Action<string> insertText)
@@ -237,10 +237,10 @@ namespace EsotericIDE.Sclipting
             string @default, selected = getSelectedText();
             try { @default = DecodeByteArray(selected).ToHex(); }
             catch { @default = ""; }
-            var line = InputBox.GetLine(_tr.InsertMenu.ByteArrayPrompt, @default, "Esoteric IDE", Program.Tr.Ok, Program.Tr.Cancel);
+            var line = InputBox.GetLine(_tr.InsertMenu.ByteArrayPrompt, @default, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
             if (line != null)
                 try { insertText(EncodeByteArray(line.FromHex())); }
-                catch { DlgMessage.Show(_tr.InsertMenu.ByteArrayError, "Esoteric IDE", DlgType.Error, Program.Tr.Ok); }
+                catch { DlgMessage.Show(_tr.InsertMenu.ByteArrayError, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok); }
         }
 
         public ScliptingProgram Parse(string source)

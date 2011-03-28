@@ -21,7 +21,7 @@ using RT.Util.Lingo;
 
 namespace EsotericIDE
 {
-    static class Program
+    static class EsotericIDEProgram
     {
         public static Settings Settings;
         public static Translation Tr;

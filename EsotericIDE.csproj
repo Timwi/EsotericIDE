@@ -57,7 +57,7 @@
       <DependentUpon>Mainform.cs</DependentUpon>
     </Compile>
     <Compile Include="Misc.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="EsotericIDEProgram.cs" />
     <Compile Include="ProgrammingLanguage.cs" />
     <Compile Include="Sclipting\ExecutionEnvironment.cs" />
     <Compile Include="Sclipting\Instructions.cs" />

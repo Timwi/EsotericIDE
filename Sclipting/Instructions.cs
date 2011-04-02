@@ -9,25 +9,33 @@ namespace EsotericIDE.Sclipting
         [Instruction('丟', "discard", "Pops an item.", InstructionType.SingularInstruction)]
         Discard,
 
-        // String manipulation
-        [Instruction('長', "length", "Returns length of string.", InstructionType.SingularInstruction)]
+        // String or list manipulation
+        [Instruction('長', "length", "Returns length of list/string.", InstructionType.SingularInstruction)]
         Length,
-        [Instruction('復', "repeat", "Repeats a string.", InstructionType.SingularInstruction)]
+        [Instruction('復', "repeat", "Repeats a list, string, or byte array.", InstructionType.SingularInstruction)]
         Repeat,
         [Instruction('併', "combine", "Concatenates everything above the last mark into a string.", InstructionType.SingularInstruction)]
         CombineString,
         [Instruction('并', "combine", "Places everything above the last mark in a list.", InstructionType.SingularInstruction)]
         CombineList,
-        [Instruction('掘', "excavate", "Retrieves the nth character in a string (pop string).", InstructionType.SingularInstruction)]
+        [Instruction('掘', "excavate", "Retrieves the nth item/character in a list/string (pop list/string).", InstructionType.SingularInstruction)]
         Excavate,
-        [Instruction('挖', "dig out", "Retrieves the nth character in a string (keep string).", InstructionType.SingularInstruction)]
+        [Instruction('挖', "dig out", "Retrieves the nth item/character in a list/string (keep list/string).", InstructionType.SingularInstruction)]
         DigOut,
+        [Instruction('插', "insert", "Replaces the nth item/character in a list/string.", InstructionType.SingularInstruction)]
+        Insert,
+        [Instruction('反', "reverse", "Reverses a string.", InstructionType.SingularInstruction)]
+        Reverse,
+        [Instruction('捃', "sort", "Sort a list/string by string value.", InstructionType.SingularInstruction)]
+        Sort,
+        [Instruction('訂', "arrange", "Sort a list/string by integer value/codepoint.", InstructionType.SingularInstruction)]
+        Arrange,
+
+        // String manipulation only
         [Instruction('講', "explain", "Unicode codepoint for first character in a string.", InstructionType.SingularInstruction)]
         Explain,
         [Instruction('字', "character", "Character from Unicode codepoint.", InstructionType.SingularInstruction)]
         Character,
-        [Instruction('反', "reverse", "Reverses a string.", InstructionType.SingularInstruction)]
-        Reverse,
 
         // Regular expressions
         [Instruction('現', "appear", "Current regular expression match.", InstructionType.SingularInstruction)]
@@ -54,6 +62,8 @@ namespace EsotericIDE.Sclipting
         Power,
         [Instruction('負', "negative", "Negative (unary minus).", InstructionType.SingularInstruction)]
         Negative,
+        [Instruction('對', "correct", "Absolute value.", InstructionType.SingularInstruction)]
+        Correct,
         [Instruction('增', "increase", "Increment by one.", InstructionType.SingularInstruction)]
         Increase,
         [Instruction('貶', "decrease", "Decrement by one.", InstructionType.SingularInstruction)]

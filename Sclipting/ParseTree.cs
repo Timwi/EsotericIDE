@@ -75,7 +75,10 @@ namespace EsotericIDE.Sclipting
                 case ScliptingInstruction.CombineList: return combineOperation(false);
                 case ScliptingInstruction.Excavate: return stringListOperation(true, (s, i) => i < 0 || i >= s.Length ? (object) "" : s[(int) i].ToString(), (l, i) => i < 0 || i >= l.Count ? (object) "" : l[(int) i]);
                 case ScliptingInstruction.DigOut: return stringListOperation(false, (s, i) => i < 0 || i >= s.Length ? (object) "" : s[(int) i].ToString(), (l, i) => i < 0 || i >= l.Count ? (object) "" : l[(int) i]);
+                case ScliptingInstruction.Insert: return insert;
                 case ScliptingInstruction.Reverse: return stringListOperation(true, reverseString, list => { var newList = new List<object>(list); newList.Reverse(); return newList; });
+                case ScliptingInstruction.Sort: return stringListOperation(true, sortString(StringComparer.InvariantCultureIgnoreCase), list => { var newList = new List<object>(list); newList.Sort((a, b) => ScliptingLanguage.ToString(a).CompareTo(ScliptingLanguage.ToString(b))); return newList; });
+                case ScliptingInstruction.Arrange: return stringListOperation(true, sortString(StringComparer.Ordinal), list => { var newList = new List<object>(list); newList.Sort((a, b) => ScliptingLanguage.ToInt(a).CompareTo(ScliptingLanguage.ToInt(b))); return newList; });
 
 
                 // STRING MANIPULATION (no lists)
@@ -110,6 +113,7 @@ namespace EsotericIDE.Sclipting
                 case ScliptingInstruction.DivideInt: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 / item2); };
                 case ScliptingInstruction.Leftovers: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 % item2); };
                 case ScliptingInstruction.Negative: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) -(double) item : -ScliptingLanguage.ToInt(item)); };
+                case ScliptingInstruction.Correct: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) Math.Abs((double) item) : BigInteger.Abs(ScliptingLanguage.ToInt(item))); };
                 case ScliptingInstruction.Increase: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) + 1); };
                 case ScliptingInstruction.Decrease: return e => { e.CurrentStack.Add(ScliptingLanguage.ToInt(e.Pop()) - 1); };
                 case ScliptingInstruction.Left: return e => { var item2 = ScliptingLanguage.ToInt(e.Pop()); var item1 = ScliptingLanguage.ToInt(e.Pop()); if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) item1 *= 2; e.CurrentStack.Add(item1); } };
@@ -152,6 +156,16 @@ namespace EsotericIDE.Sclipting
                 default:
                     throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instruction));
             }
+        }
+
+        private static Func<string, string> sortString(StringComparer comparer)
+        {
+            return s =>
+            {
+                var list = s.Select(c => c.ToString()).ToList();
+                list.Sort(comparer);
+                return new string(list.Select(st => st[0]).ToArray());
+            };
         }
 
         private static Action<ScliptingExecutionEnvironment> regexSplit(bool pop)
@@ -242,6 +256,41 @@ namespace EsotericIDE.Sclipting
                 else
                     e.CurrentStack.Add(stringOperation(ScliptingLanguage.ToString(item), integer));
             };
+        }
+
+        private static void insert(ScliptingExecutionEnvironment e)
+        {
+            var item = e.Pop();
+            var bigInteger = ScliptingLanguage.ToInt(e.Pop());
+            if (bigInteger < 0 || bigInteger > int.MaxValue)
+                return;
+            var listOrString = e.Pop();
+
+            var integer = (int) bigInteger;
+            var list = listOrString as List<object>;
+            if (list != null)
+            {
+                var newList = new List<object>(list);
+                while (integer >= newList.Count)
+                    newList.Add("");
+                newList[integer] = item;
+                e.CurrentStack.Add(newList);
+            }
+            else
+            {
+                // assume string
+                var itemAsStr = ScliptingLanguage.ToString(item);
+                var itemAsChar = itemAsStr == "" ? ' ' : itemAsStr[0];
+                var input = ScliptingLanguage.ToString(listOrString);
+
+                if (input.Length < integer)
+                    input += new string(' ', integer - input.Length) + itemAsChar;
+                else if (input.Length == integer)
+                    input += itemAsChar;
+                else
+                    input = input.Substring(0, integer) + itemAsChar + input.Substring(integer + 1);
+                e.CurrentStack.Add(input);
+            }
         }
 
         private static Action<ScliptingExecutionEnvironment> combineOperation(bool stringify)

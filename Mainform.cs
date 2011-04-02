@@ -333,7 +333,8 @@ namespace EsotericIDE
 
         private void stopDebugging(object _, EventArgs __)
         {
-            finishExecution(false);
+            if (_currentEnvironment != null)
+                finishExecution(false);
         }
 
         private void exiting(object _, FormClosingEventArgs e)

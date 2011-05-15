@@ -14,6 +14,7 @@ namespace EsotericIDE.Sclipting
 {
     sealed class ScliptingLanguage : ProgrammingLanguage
     {
+        public override string LanguageID { get { return "Sclipting"; } }
         public override string DefaultFileExtension { get { return ".sclipt"; } }
 
         private Translation _tr;
@@ -27,7 +28,7 @@ namespace EsotericIDE.Sclipting
         private static Dictionary<char, ScliptingInstruction> _instructions;
         private static Dictionary<char, InstructionType> _instructionTypes;
 
-        public override ExecutionEnvironment StartDebugging(string source)
+        public override ExecutionEnvironment Compile(string source)
         {
             return new ScliptingExecutionEnvironment(source, _tr, this);
         }

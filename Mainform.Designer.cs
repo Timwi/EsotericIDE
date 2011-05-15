@@ -33,7 +33,11 @@
             this.txtOutput = new System.Windows.Forms.TextBox();
             this.lblOutput = new System.Windows.Forms.Label();
             this.lblSource = new System.Windows.Forms.Label();
-            this.ctMenu = new System.Windows.Forms.MenuStrip();
+            this.ctTimer = new System.Windows.Forms.Timer(this.components);
+            this.ctSplit = new RT.Util.Controls.SplitContainerEx();
+            this.ctLayoutTop = new System.Windows.Forms.TableLayoutPanel();
+            this.txtSource = new System.Windows.Forms.TextBox();
+            this.lblInfo = new System.Windows.Forms.Label();
             this.mnuFile = new System.Windows.Forms.ToolStripMenuItem();
             this.miNew = new System.Windows.Forms.ToolStripMenuItem();
             this.miOpen = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,18 +62,14 @@
             this.miSaveWhenRun = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
-            this.ctTimer = new System.Windows.Forms.Timer(this.components);
-            this.ctSplit = new RT.Util.Controls.SplitContainerEx();
-            this.ctLayoutTop = new System.Windows.Forms.TableLayoutPanel();
-            this.txtSource = new System.Windows.Forms.TextBox();
-            this.lblInfo = new System.Windows.Forms.Label();
+            this.ctMenu = new System.Windows.Forms.MenuStrip();
             this.ctLayoutBottom.SuspendLayout();
-            this.ctMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).BeginInit();
             this.ctSplit.Panel1.SuspendLayout();
             this.ctSplit.Panel2.SuspendLayout();
             this.ctSplit.SuspendLayout();
             this.ctLayoutTop.SuspendLayout();
+            this.ctMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // ctLayoutBottom
@@ -124,20 +124,68 @@
             this.lblSource.TabIndex = 0;
             this.lblSource.Text = "Source &code:\t";
             // 
-            // ctMenu
+            // ctTimer
             // 
-            this.ctMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuFile,
-            this.mnuView,
-            this.mnuInsert,
-            this.mnuDebug,
-            this.optionsToolStripMenuItem,
-            this.mnuHelp});
-            this.ctMenu.Location = new System.Drawing.Point(0, 0);
-            this.ctMenu.Name = "ctMenu";
-            this.ctMenu.Size = new System.Drawing.Size(966, 24);
-            this.ctMenu.TabIndex = 1;
-            this.ctMenu.Text = "Main menu";
+            this.ctTimer.Enabled = true;
+            this.ctTimer.Tick += new System.EventHandler(this.tick);
+            // 
+            // ctSplit
+            // 
+            this.ctSplit.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ctSplit.Location = new System.Drawing.Point(0, 24);
+            this.ctSplit.Name = "ctSplit";
+            this.ctSplit.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.ctSplit.PaintSplitter = true;
+            // 
+            // ctSplit.Panel1
+            // 
+            this.ctSplit.Panel1.Controls.Add(this.ctLayoutTop);
+            // 
+            // ctSplit.Panel2
+            // 
+            this.ctSplit.Panel2.Controls.Add(this.ctLayoutBottom);
+            this.ctSplit.Size = new System.Drawing.Size(966, 776);
+            this.ctSplit.SplitterDistance = 350;
+            this.ctSplit.TabIndex = 2;
+            this.ctSplit.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitterMoved);
+            // 
+            // ctLayoutTop
+            // 
+            this.ctLayoutTop.ColumnCount = 1;
+            this.ctLayoutTop.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.ctLayoutTop.Controls.Add(this.txtSource, 0, 1);
+            this.ctLayoutTop.Controls.Add(this.lblSource, 0, 0);
+            this.ctLayoutTop.Controls.Add(this.lblInfo, 0, 2);
+            this.ctLayoutTop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ctLayoutTop.Location = new System.Drawing.Point(0, 0);
+            this.ctLayoutTop.Name = "ctLayoutTop";
+            this.ctLayoutTop.RowCount = 3;
+            this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.ctLayoutTop.Size = new System.Drawing.Size(966, 350);
+            this.ctLayoutTop.TabIndex = 0;
+            // 
+            // txtSource
+            // 
+            this.txtSource.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtSource.HideSelection = false;
+            this.txtSource.Location = new System.Drawing.Point(5, 28);
+            this.txtSource.Margin = new System.Windows.Forms.Padding(5);
+            this.txtSource.Multiline = true;
+            this.txtSource.Name = "txtSource";
+            this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtSource.Size = new System.Drawing.Size(956, 294);
+            this.txtSource.TabIndex = 2;
+            // 
+            // lblInfo
+            // 
+            this.lblInfo.AutoSize = true;
+            this.lblInfo.Location = new System.Drawing.Point(5, 332);
+            this.lblInfo.Margin = new System.Windows.Forms.Padding(5);
+            this.lblInfo.Name = "lblInfo";
+            this.lblInfo.Size = new System.Drawing.Size(0, 13);
+            this.lblInfo.TabIndex = 3;
             // 
             // mnuFile
             // 
@@ -329,68 +377,20 @@
             this.miAbout.Text = "&About...";
             this.miAbout.Click += new System.EventHandler(this.about);
             // 
-            // ctTimer
+            // ctMenu
             // 
-            this.ctTimer.Enabled = true;
-            this.ctTimer.Tick += new System.EventHandler(this.tick);
-            // 
-            // ctSplit
-            // 
-            this.ctSplit.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctSplit.Location = new System.Drawing.Point(0, 24);
-            this.ctSplit.Name = "ctSplit";
-            this.ctSplit.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.ctSplit.PaintSplitter = true;
-            // 
-            // ctSplit.Panel1
-            // 
-            this.ctSplit.Panel1.Controls.Add(this.ctLayoutTop);
-            // 
-            // ctSplit.Panel2
-            // 
-            this.ctSplit.Panel2.Controls.Add(this.ctLayoutBottom);
-            this.ctSplit.Size = new System.Drawing.Size(966, 776);
-            this.ctSplit.SplitterDistance = 350;
-            this.ctSplit.TabIndex = 2;
-            this.ctSplit.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitterMoved);
-            // 
-            // ctLayoutTop
-            // 
-            this.ctLayoutTop.ColumnCount = 1;
-            this.ctLayoutTop.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ctLayoutTop.Controls.Add(this.txtSource, 0, 1);
-            this.ctLayoutTop.Controls.Add(this.lblSource, 0, 0);
-            this.ctLayoutTop.Controls.Add(this.lblInfo, 0, 2);
-            this.ctLayoutTop.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctLayoutTop.Location = new System.Drawing.Point(0, 0);
-            this.ctLayoutTop.Name = "ctLayoutTop";
-            this.ctLayoutTop.RowCount = 3;
-            this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.ctLayoutTop.Size = new System.Drawing.Size(966, 350);
-            this.ctLayoutTop.TabIndex = 0;
-            // 
-            // txtSource
-            // 
-            this.txtSource.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtSource.HideSelection = false;
-            this.txtSource.Location = new System.Drawing.Point(5, 28);
-            this.txtSource.Margin = new System.Windows.Forms.Padding(5);
-            this.txtSource.Multiline = true;
-            this.txtSource.Name = "txtSource";
-            this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSource.Size = new System.Drawing.Size(956, 294);
-            this.txtSource.TabIndex = 2;
-            // 
-            // lblInfo
-            // 
-            this.lblInfo.AutoSize = true;
-            this.lblInfo.Location = new System.Drawing.Point(5, 332);
-            this.lblInfo.Margin = new System.Windows.Forms.Padding(5);
-            this.lblInfo.Name = "lblInfo";
-            this.lblInfo.Size = new System.Drawing.Size(0, 13);
-            this.lblInfo.TabIndex = 3;
+            this.ctMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuFile,
+            this.mnuView,
+            this.mnuInsert,
+            this.mnuDebug,
+            this.optionsToolStripMenuItem,
+            this.mnuHelp});
+            this.ctMenu.Location = new System.Drawing.Point(0, 0);
+            this.ctMenu.Name = "ctMenu";
+            this.ctMenu.Size = new System.Drawing.Size(966, 24);
+            this.ctMenu.TabIndex = 1;
+            this.ctMenu.Text = "Main menu";
             // 
             // Mainform
             // 
@@ -405,14 +405,14 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.exiting);
             this.ctLayoutBottom.ResumeLayout(false);
             this.ctLayoutBottom.PerformLayout();
-            this.ctMenu.ResumeLayout(false);
-            this.ctMenu.PerformLayout();
             this.ctSplit.Panel1.ResumeLayout(false);
             this.ctSplit.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).EndInit();
             this.ctSplit.ResumeLayout(false);
             this.ctLayoutTop.ResumeLayout(false);
             this.ctLayoutTop.PerformLayout();
+            this.ctMenu.ResumeLayout(false);
+            this.ctMenu.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -423,7 +423,12 @@
         private System.Windows.Forms.TableLayoutPanel ctLayoutBottom;
         private System.Windows.Forms.Label lblSource;
         private System.Windows.Forms.Label lblOutput;
-        private System.Windows.Forms.MenuStrip ctMenu;
+        private System.Windows.Forms.Timer ctTimer;
+        private System.Windows.Forms.TextBox txtOutput;
+        private RT.Util.Controls.SplitContainerEx ctSplit;
+        private System.Windows.Forms.TableLayoutPanel ctLayoutTop;
+        private System.Windows.Forms.TextBox txtSource;
+        private System.Windows.Forms.Label lblInfo;
         private System.Windows.Forms.ToolStripMenuItem mnuFile;
         private System.Windows.Forms.ToolStripMenuItem miNew;
         private System.Windows.Forms.ToolStripMenuItem miOpen;
@@ -431,29 +436,24 @@
         private System.Windows.Forms.ToolStripMenuItem miSaveAs;
         private System.Windows.Forms.ToolStripSeparator miSep1;
         private System.Windows.Forms.ToolStripMenuItem miExit;
-        private System.Windows.Forms.ToolStripMenuItem mnuDebug;
-        private System.Windows.Forms.ToolStripMenuItem miRun;
         private System.Windows.Forms.ToolStripMenuItem mnuView;
         private System.Windows.Forms.ToolStripMenuItem miSourceFont;
         private System.Windows.Forms.ToolStripMenuItem miOutputFont;
+        private System.Windows.Forms.ToolStripMenuItem mnuInsert;
+        private System.Windows.Forms.ToolStripMenuItem mnuDebug;
+        private System.Windows.Forms.ToolStripMenuItem miRun;
+        private System.Windows.Forms.ToolStripMenuItem miStopDebugging;
         private System.Windows.Forms.ToolStripMenuItem miStep;
         private System.Windows.Forms.ToolStripMenuItem miRunToCursor;
-        private System.Windows.Forms.ToolStripMenuItem miStopDebugging;
-        private System.Windows.Forms.Timer ctTimer;
         private System.Windows.Forms.ToolStripMenuItem miGoToCurrentInstruction;
-        private System.Windows.Forms.ToolStripMenuItem mnuInsert;
-        private System.Windows.Forms.TextBox txtOutput;
-        private RT.Util.Controls.SplitContainerEx ctSplit;
-        private System.Windows.Forms.TableLayoutPanel ctLayoutTop;
-        private System.Windows.Forms.TextBox txtSource;
-        private System.Windows.Forms.Label lblInfo;
-        private System.Windows.Forms.ToolStripMenuItem mnuHelp;
-        private System.Windows.Forms.ToolStripMenuItem miAbout;
-        private System.Windows.Forms.ToolStripMenuItem miInput;
         private System.Windows.Forms.ToolStripSeparator miSep2;
+        private System.Windows.Forms.ToolStripMenuItem miInput;
         private System.Windows.Forms.ToolStripMenuItem miClearInput;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem miSaveWhenRun;
+        private System.Windows.Forms.ToolStripMenuItem mnuHelp;
+        private System.Windows.Forms.ToolStripMenuItem miAbout;
+        private System.Windows.Forms.MenuStrip ctMenu;
     }
 }
 

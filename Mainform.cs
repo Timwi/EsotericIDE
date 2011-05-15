@@ -259,7 +259,7 @@ namespace EsotericIDE
             }
         }
 
-        private bool compile()
+        private bool compile(ExecutionState initialState)
         {
             if (_currentEnvironment != null)
                 return true;
@@ -270,7 +270,8 @@ namespace EsotericIDE
                 var input = _input ?? InputBox.GetLine(EsotericIDEProgram.Tr.Input, "", "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
                 if (input == null)
                     return false;
-                _currentEnvironment = _currentLanguage.StartDebugging(txtSource.Text);
+                _currentEnvironment = _currentLanguage.Compile(txtSource.Text);
+                _currentEnvironment.State = initialState;
                 _currentEnvironment.Input = input;
                 return true;
             }
@@ -285,9 +286,10 @@ namespace EsotericIDE
 
         private void run(object _, EventArgs __)
         {
-            if (!compile())
+            if (!compile(ExecutionState.Running))
                 return;
-            while (_currentEnvironment.InstructionPointer.MoveNext()) { }
+            _currentEnvironment.State = ExecutionState.Running;
+            _currentEnvironment.Continue();
             finishExecution(true);
         }
 
@@ -299,9 +301,10 @@ namespace EsotericIDE
 
         private void step(object _, EventArgs __)
         {
-            if (!compile())
+            if (!compile(ExecutionState.Debugging))
                 return;
-            if (_currentEnvironment.InstructionPointer.MoveNext())
+            _currentEnvironment.State = ExecutionState.Debugging;
+            if (_currentEnvironment.Continue())
                 pauseExecution();
             else
                 finishExecution(true);
@@ -311,18 +314,19 @@ namespace EsotericIDE
         {
             txtOutput.Text = _currentEnvironment.DescribeExecutionState();
             txtSource.Focus();
-            txtSource.SelectionStart = _currentEnvironment.InstructionPointer.Current.Index;
-            txtSource.SelectionLength = _currentEnvironment.InstructionPointer.Current.Count;
+            txtSource.SelectionStart = _currentEnvironment.CurrentPosition.Index;
+            txtSource.SelectionLength = _currentEnvironment.CurrentPosition.Count;
         }
 
         private void runToCursor(object _, EventArgs __)
         {
-            if (!compile())
+            if (!compile(ExecutionState.Debugging))
                 return;
             var to = txtSource.SelectionStart;
-            while (_currentEnvironment.InstructionPointer.MoveNext())
+            while (_currentEnvironment.Continue())
             {
-                if (_currentEnvironment.InstructionPointer.Current.Index <= to && _currentEnvironment.InstructionPointer.Current.Index + _currentEnvironment.InstructionPointer.Current.Count > to)
+                if ((_currentEnvironment.CurrentPosition.Count == 0 && _currentEnvironment.CurrentPosition.Index == to) ||
+                    (_currentEnvironment.CurrentPosition.Index <= to && _currentEnvironment.CurrentPosition.Index + _currentEnvironment.CurrentPosition.Count > to))
                 {
                     pauseExecution();
                     return;
@@ -333,8 +337,11 @@ namespace EsotericIDE
 
         private void stopDebugging(object _, EventArgs __)
         {
-            if (_currentEnvironment != null)
-                finishExecution(false);
+            if (_currentEnvironment == null)
+                return;
+            _currentEnvironment.State = ExecutionState.Stop;
+            _currentEnvironment.Continue();
+            finishExecution(false);
         }
 
         private void exiting(object _, FormClosingEventArgs e)
@@ -368,9 +375,8 @@ namespace EsotericIDE
         {
             if (_currentEnvironment == null)
                 return;
-            var currentPos = _currentEnvironment.InstructionPointer.Current;
-            txtSource.SelectionStart = currentPos.Index;
-            txtSource.SelectionLength = currentPos.Count;
+            txtSource.SelectionStart = _currentEnvironment.CurrentPosition.Index;
+            txtSource.SelectionLength = _currentEnvironment.CurrentPosition.Count;
         }
 
         private void splitterMoved(object sender, SplitterEventArgs e)

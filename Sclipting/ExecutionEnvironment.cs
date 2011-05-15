@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using RT.Util;
 using RT.Util.ExtensionMethods;
+using System.Threading;
 
 namespace EsotericIDE.Sclipting
 {
@@ -16,12 +17,14 @@ namespace EsotericIDE.Sclipting
         public List<RegexMatch> RegexObjects = new List<RegexMatch>();
         private Translation _tr;
         private ScliptingLanguage _language;
+        private ScliptingProgram _program;
+        private Thread _runnerThread;
 
         public ScliptingExecutionEnvironment(string program, Translation tr, ScliptingLanguage language)
         {
             _tr = tr;
             _language = language;
-            InstructionPointer = language.Parse(program).Execute(this).GetEnumerator();
+            _program = language.Parse(program);
         }
 
         public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
@@ -101,5 +104,35 @@ namespace EsotericIDE.Sclipting
             // unknown type of object?
             return "{0,2}.  {1} ({2})".Fmt(index, item, item.GetType().FullName);
         }
+
+        public override void Run()
+        {
+            using (var _instructionPointer = _program.Execute(this).GetEnumerator())
+            {
+                while (_instructionPointer.MoveNext())
+                {
+                    switch (State)
+                    {
+                        case ExecutionState.Running:
+                            continue;
+
+                        case ExecutionState.Debugging:
+                            fireDebuggerBreak(_instructionPointer.Current);
+                            return;
+
+                        case ExecutionState.Stop:
+                        case ExecutionState.Finished:
+                        default:
+                            return;
+                    }
+                }
+                State = ExecutionState.Finished;
+            }
+        }
+
+        public override void Run()
+        {
+        }
+
     }
 }

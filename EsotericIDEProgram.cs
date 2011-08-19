@@ -41,7 +41,7 @@ namespace EsotericIDE
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Mainform(Settings));
 
-            SettingsUtil.SaveSettings(Settings, SettingsUtil.OnFailure.ShowRetryWithCancel);
+            Settings.Save(onFailure: SettingsOnFailure.ShowRetryWithCancel);
             return 0;
         }
     }

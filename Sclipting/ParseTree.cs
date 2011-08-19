@@ -316,6 +316,7 @@ namespace EsotericIDE.Sclipting
             getMethod(ThisInstruction)(environment);
         }
 
+#if DEBUG
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
             var taken = new HashSet<char>();
@@ -333,6 +334,7 @@ namespace EsotericIDE.Sclipting
                     rep.Error(@"Same character is used multiple times for the same instruction.".Fmt(instr), "enum ScliptingInstructions", ch.ToString());
             }
         }
+#endif
     }
 
     sealed class StackOrRegexInstruction : Instruction

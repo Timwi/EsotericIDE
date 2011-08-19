@@ -129,10 +129,5 @@ namespace EsotericIDE.Sclipting
                 State = ExecutionState.Finished;
             }
         }
-
-        public override void Run()
-        {
-        }
-
     }
 }

@@ -5,7 +5,7 @@ using RT.Util.Lingo;
 namespace EsotericIDE
 {
     [Settings("EsotericIDE", SettingsKind.UserSpecific)]
-    sealed class Settings
+    sealed class Settings : SettingsBase
     {
         public ManagedForm.Settings FormSettings = new ManagedForm.Settings();
         public Language Language;

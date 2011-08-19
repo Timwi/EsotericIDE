@@ -31,7 +31,7 @@ namespace EsotericIDE
 
             Lingo.WarnOfUnusedStrings(typeof(Translation), Assembly.GetExecutingAssembly());
 #else
-            Lingo.TranslateControl(this, Program.Tr.Mainform);
+            Lingo.TranslateControl(this, EsotericIDEProgram.Tr.Mainform);
 #endif
 
             ctMenu.Renderer = new NativeToolStripRenderer();

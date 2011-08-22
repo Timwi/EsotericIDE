@@ -17,5 +17,11 @@ namespace EsotericIDE
         public int SplitterDistance;
         public string DebugInput;
         public bool SaveWhenRun = true;
-    }
+
+#if DEBUG
+        private static void PostBuildCheck(IPostBuildReporter rep)
+        {
+            SettingsUtil.PostBuildStep(rep, typeof(Settings));
+        }
+#endif
 }

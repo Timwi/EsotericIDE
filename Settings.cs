@@ -24,4 +24,5 @@ namespace EsotericIDE
             SettingsUtil.PostBuildStep(rep, typeof(Settings));
         }
 #endif
+    }
 }

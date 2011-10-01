@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using RT.Util.Controls;
@@ -109,6 +110,8 @@ namespace EsotericIDE
             }
         }
 
+        private Position _currentPosition;
+
         private void updateUi()
         {
             // Construct the window titlebar
@@ -120,7 +123,6 @@ namespace EsotericIDE
                 text += " " + EsotericIDEProgram.Tr.Mainform.Running.Translation;
             Text = text;
 
-            lblOutput.Text = _currentEnvironment != null ? EsotericIDEProgram.Tr.LabelExecutionState : EsotericIDEProgram.Tr.LabelOutput;
             txtSource.ReadOnly = _currentEnvironment != null;
             miGoToCurrentInstruction.Visible = _currentEnvironment != null;
             miStopDebugging.Visible = _currentEnvironment != null;
@@ -137,7 +139,8 @@ namespace EsotericIDE
                 result = DlgMessage.Show(EsotericIDEProgram.Tr.CancelDebugging, "Esoteric IDE", DlgType.Question, EsotericIDEProgram.Tr.Yes, EsotericIDEProgram.Tr.No);
                 if (result == 1)
                     return false;
-                finishExecution(false);
+                _currentEnvironment.State = ExecutionState.Stop;
+                _currentEnvironment.Continue(true);
             }
 
             if (!_anyChanges)
@@ -188,6 +191,7 @@ namespace EsotericIDE
             _anyChanges = false;
 
             txtSource.Text = "";
+            txtExecutionState.Text = "";
             txtOutput.Text = "";
             _timerPreviousSource = "";
             _timerPreviousCursorPosition = -1;
@@ -198,7 +202,7 @@ namespace EsotericIDE
         {
             // Hack — no idea why this is necessary, but without it, the next time you focus the source textbox,
             // all the text in it gets selected, but only the first time...
-            txtOutput.Focus();
+            ctTabs.Focus();
             txtSource.Focus();
             txtSource.SelectionStart = 0;
             txtSource.SelectionLength = 0;
@@ -218,6 +222,7 @@ namespace EsotericIDE
                 EsotericIDEProgram.Settings.LastDirectory = open.InitialDirectory;
 
                 txtSource.Text = File.ReadAllText(_currentFilePath = open.FileName);
+                txtExecutionState.Text = "";
                 txtOutput.Text = "";
                 _timerPreviousSource = txtSource.Text;
                 _timerPreviousCursorPosition = -1;
@@ -240,7 +245,9 @@ namespace EsotericIDE
         {
             if (sender == miSourceFont)
                 font(ref EsotericIDEProgram.Settings.SourceFontName, ref EsotericIDEProgram.Settings.SourceFontSize, f => txtSource.Font = f);
-            else
+            else if (sender == miExecutionStateFont)
+                font(ref EsotericIDEProgram.Settings.ExecutionStateFontName, ref EsotericIDEProgram.Settings.ExecutionStateFontSize, f => txtExecutionState.Font = f);
+            else if (sender == miOutputFont)
                 font(ref EsotericIDEProgram.Settings.OutputFontName, ref EsotericIDEProgram.Settings.OutputFontSize, f => txtOutput.Font = f);
         }
 
@@ -259,20 +266,32 @@ namespace EsotericIDE
             }
         }
 
-        private bool compile(ExecutionState initialState)
+        private bool compile(ExecutionState state)
         {
+            _currentPosition = null;
+
             if (_currentEnvironment != null)
+            {
+                _currentEnvironment.State = state;
                 return true;
+            }
+
             if (_saveWhenRun)
                 save();
+
             try
             {
                 var input = _input ?? InputBox.GetLine(EsotericIDEProgram.Tr.Input, "", "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
                 if (input == null)
                     return false;
                 _currentEnvironment = _currentLanguage.Compile(txtSource.Text);
-                _currentEnvironment.State = initialState;
+                _currentEnvironment.State = state;
                 _currentEnvironment.Input = input;
+                _currentEnvironment.DebuggerBreak += p => { this.Invoke(new Action(() => debuggerBreak(p))); };
+                _currentEnvironment.ExecutionFinished += c => { this.Invoke(new Action(() => executionFinished(c))); };
+                foreach (int bp in lstBreakpoints.Items)
+                    _currentEnvironment.AddBreakpoint(bp);
+                _currentEnvironment.BreakpointsChanged += () => { this.Invoke(new Action(() => breakpointsChanged())); };
                 return true;
             }
             catch (ParseException e)
@@ -288,34 +307,50 @@ namespace EsotericIDE
         {
             if (!compile(ExecutionState.Running))
                 return;
-            _currentEnvironment.State = ExecutionState.Running;
             _currentEnvironment.Continue();
-            finishExecution(true);
         }
 
-        private void finishExecution(bool output)
+        private void executionFinished(bool canceled)
         {
-            txtOutput.Text = output ? _currentEnvironment.Output.ToString().UnifyLineEndings() : EsotericIDEProgram.Tr.ExecutionStopped.Translation;
+            txtOutput.Text = _currentEnvironment.Output.UnifyLineEndings();
+            if (canceled)
+                txtOutput.Text += Environment.NewLine + Environment.NewLine + EsotericIDEProgram.Tr.ExecutionStopped.Translation;
+            ctTabs.SelectedTab = tabOutput;
             _currentEnvironment = null;
+            _currentPosition = null;
+        }
+
+        private void breakpointsChanged()
+        {
+            lstBreakpoints.BeginUpdate();
+            try
+            {
+                lstBreakpoints.Items.Clear();
+                if (_currentEnvironment != null)
+                    foreach (var bp in _currentEnvironment.Breakpoints)
+                        lstBreakpoints.Items.Add(bp);
+            }
+            finally
+            {
+                lstBreakpoints.EndUpdate();
+            }
         }
 
         private void step(object _, EventArgs __)
         {
             if (!compile(ExecutionState.Debugging))
                 return;
-            _currentEnvironment.State = ExecutionState.Debugging;
-            if (_currentEnvironment.Continue())
-                pauseExecution();
-            else
-                finishExecution(true);
+            _currentEnvironment.Continue();
         }
 
-        private void pauseExecution()
+        private void debuggerBreak(Position position)
         {
-            txtOutput.Text = _currentEnvironment.DescribeExecutionState();
+            _currentPosition = position;
+            txtExecutionState.Text = _currentEnvironment.DescribeExecutionState();
+            ctTabs.SelectedTab = tabExecutionState;
             txtSource.Focus();
-            txtSource.SelectionStart = _currentEnvironment.CurrentPosition.Index;
-            txtSource.SelectionLength = _currentEnvironment.CurrentPosition.Count;
+            txtSource.SelectionStart = _currentPosition.Index;
+            txtSource.SelectionLength = _currentPosition.Count;
         }
 
         private void runToCursor(object _, EventArgs __)
@@ -323,16 +358,10 @@ namespace EsotericIDE
             if (!compile(ExecutionState.Debugging))
                 return;
             var to = txtSource.SelectionStart;
-            while (_currentEnvironment.Continue())
-            {
-                if ((_currentEnvironment.CurrentPosition.Count == 0 && _currentEnvironment.CurrentPosition.Index == to) ||
-                    (_currentEnvironment.CurrentPosition.Index <= to && _currentEnvironment.CurrentPosition.Index + _currentEnvironment.CurrentPosition.Count > to))
-                {
-                    pauseExecution();
-                    return;
-                }
-            }
-            finishExecution(true);
+            if (!_currentEnvironment.Breakpoints.Contains(to))
+                _currentEnvironment.AddBreakpoint(to);
+            _currentEnvironment.State = ExecutionState.Running;
+            _currentEnvironment.Continue();
         }
 
         private void stopDebugging(object _, EventArgs __)
@@ -341,7 +370,6 @@ namespace EsotericIDE
                 return;
             _currentEnvironment.State = ExecutionState.Stop;
             _currentEnvironment.Continue();
-            finishExecution(false);
         }
 
         private void exiting(object _, FormClosingEventArgs e)
@@ -371,39 +399,103 @@ namespace EsotericIDE
                 lblInfo.Text = _currentLanguage.GetInfo(source, cursorPos);
         }
 
-        private void goToCurrentInstruction(object sender, EventArgs e)
+        private void goToCurrentInstruction(object _, EventArgs __)
         {
-            if (_currentEnvironment == null)
+            if (_currentEnvironment == null || _currentPosition == null)
                 return;
-            txtSource.SelectionStart = _currentEnvironment.CurrentPosition.Index;
-            txtSource.SelectionLength = _currentEnvironment.CurrentPosition.Count;
+            txtSource.SelectionStart = _currentPosition.Index;
+            txtSource.SelectionLength = _currentPosition.Count;
         }
 
-        private void splitterMoved(object sender, SplitterEventArgs e)
+        private void splitterMoved(object _, EventArgs __)
         {
             if (_splitterDistanceBugWorkaround)
                 EsotericIDEProgram.Settings.SplitterDistance = ctSplit.SplitterDistance;
         }
 
-        private void about(object sender, EventArgs e)
+        private void about(object _, EventArgs __)
         {
             using (var a = new AboutBox())
                 a.ShowDialog();
         }
 
-        private void input(object sender, EventArgs e)
+        private void input(object _, EventArgs __)
         {
             _input = InputBox.GetLine(EsotericIDEProgram.Tr.Input, _input, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel) ?? _input;
         }
 
-        private void clearInput(object sender, EventArgs e)
+        private void clearInput(object _, EventArgs __)
         {
             _input = null;
         }
 
-        private void toggleSaveWhenRun(object sender, EventArgs e)
+        private void toggleSaveWhenRun(object _, EventArgs __)
         {
             _saveWhenRun = !_saveWhenRun;
+        }
+
+        private void viewExecutionState(object _, EventArgs __)
+        {
+            ctTabs.SelectedTab = tabExecutionState;
+            txtExecutionState.Focus();
+        }
+
+        private void viewOutput(object _, EventArgs __)
+        {
+            ctTabs.SelectedTab = tabOutput;
+            txtOutput.Focus();
+        }
+
+        private void viewBreakpoints(object _, EventArgs __)
+        {
+            ctTabs.SelectedTab = tabBreakpoints;
+            lstBreakpoints.Focus();
+        }
+
+        private void breakpointsKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete && !e.Shift && !e.Alt && !e.Control)
+            {
+                lstBreakpoints.BeginUpdate();
+                try
+                {
+                    var toDelete = lstBreakpoints.SelectedItems.Cast<int>().ToArray();
+                    foreach (var del in toDelete)
+                        if (_currentEnvironment == null)
+                            lstBreakpoints.Items.Remove(del);
+                        else
+                            _currentEnvironment.RemoveBreakpoint(del);
+                }
+                finally
+                {
+                    lstBreakpoints.EndUpdate();
+                }
+            }
+        }
+
+        private void toggleBreakpoint(object _, EventArgs __)
+        {
+            if (_currentEnvironment == null)
+            {
+                if (lstBreakpoints.Items.Contains(txtSource.SelectionStart))
+                    lstBreakpoints.Items.Remove(txtSource.SelectionStart);
+                else
+                    lstBreakpoints.Items.Add(txtSource.SelectionStart);
+            }
+            else
+            {
+                if (!_currentEnvironment.RemoveBreakpoint(txtSource.SelectionStart))
+                    _currentEnvironment.AddBreakpoint(txtSource.SelectionStart);
+            }
+        }
+
+        private void breakpointsSelectedIndexChanged(object _, EventArgs __)
+        {
+            if (lstBreakpoints.SelectedItems.Count == 1)
+            {
+                txtSource.SelectionStart = (int) lstBreakpoints.SelectedItems[0];
+                txtSource.SelectionLength = 1;
+            }
         }
     }
 }

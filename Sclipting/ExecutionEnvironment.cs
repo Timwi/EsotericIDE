@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading;
 using RT.Util;
 using RT.Util.ExtensionMethods;
-using System.Threading;
 
 namespace EsotericIDE.Sclipting
 {
@@ -18,13 +16,15 @@ namespace EsotericIDE.Sclipting
         private Translation _tr;
         private ScliptingLanguage _language;
         private ScliptingProgram _program;
-        private Thread _runnerThread;
+        private ManualResetEvent _resetEvent = new ManualResetEvent(false);
+        private Thread _runner;
 
         public ScliptingExecutionEnvironment(string program, Translation tr, ScliptingLanguage language)
         {
             _tr = tr;
             _language = language;
             _program = language.Parse(program);
+            _runner = null;
         }
 
         public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
@@ -62,7 +62,7 @@ namespace EsotericIDE.Sclipting
             while (index > 0 && !(CurrentStack[index - 1] is Mark))
                 index--;
             for (; index < CurrentStack.Count; index++)
-                Output.Append(ScliptingLanguage.ToString(CurrentStack[index]));
+                _output.Append(ScliptingLanguage.ToString(CurrentStack[index]));
         }
 
         public override string DescribeExecutionState()
@@ -105,29 +105,70 @@ namespace EsotericIDE.Sclipting
             return "{0,2}.  {1} ({2})".Fmt(index, item, item.GetType().FullName);
         }
 
-        public override void Run()
+        private void run()
         {
-            using (var _instructionPointer = _program.Execute(this).GetEnumerator())
+            if (State == ExecutionState.Finished)
             {
-                while (_instructionPointer.MoveNext())
+                _resetEvent.Reset();
+                return;
+            }
+
+            using (var instructionPointer = _program.Execute(this).GetEnumerator())
+            {
+                bool canceled = false;
+                while (instructionPointer.MoveNext())
                 {
-                    switch (State)
+                    bool breakHere = false;
+                    lock (_breakpoints)
+                        breakHere = _breakpoints.Any(bp => bp >= instructionPointer.Current.Index && bp < instructionPointer.Current.Index + Math.Max(instructionPointer.Current.Count, 1));
+                    if (breakHere || State == ExecutionState.Debugging)
                     {
-                        case ExecutionState.Running:
-                            continue;
+                        fireDebuggerBreak(instructionPointer.Current);
+                        _resetEvent.Reset();
+                        _resetEvent.WaitOne();
+                        continue;
+                    }
 
-                        case ExecutionState.Debugging:
-                            fireDebuggerBreak(_instructionPointer.Current);
-                            return;
-
-                        case ExecutionState.Stop:
-                        case ExecutionState.Finished:
-                        default:
-                            return;
+                    if (State == ExecutionState.Running)
+                        continue;
+                    else
+                    {
+                        if (State == ExecutionState.Stop)
+                            canceled = true;
+                        goto finished;
                     }
                 }
+
+                finished:
+                fireExecutionFinished(canceled);
                 State = ExecutionState.Finished;
+                _resetEvent.Reset();
+                _runner = null;
             }
+        }
+
+        public override void Continue(bool blockUntilFinished = false)
+        {
+            if (State == ExecutionState.Finished)
+            {
+                _resetEvent.Reset();
+                return;
+            }
+
+            if (_runner == null)
+            {
+                _runner = new Thread(run);
+                _runner.Start();
+            }
+
+            _resetEvent.Set();
+        }
+
+        public override void Dispose()
+        {
+            State = ExecutionState.Stop;
+            if (_resetEvent != null)
+                ((IDisposable) _resetEvent).Dispose();
         }
     }
 }

@@ -49,10 +49,6 @@ namespace EsotericIDE
         [LingoNotes("When compilation of a program returns an error, the error message is prefixed with this.")]
         public TrString CompilationFailed = "Compilation failed:";
 
-        [LingoNotes("Label used for the bottom textbox while the program is not running.")]
-        public TrString LabelOutput = "O&utput:";
-        [LingoNotes("Label used for the bottom textbox while the program is running.")]
-        public TrString LabelExecutionState = "C&urrent execution state:";
         [LingoNotes("Indicates that the user aborted the program while debugging and that it didn’t run to completion.")]
         public TrString ExecutionStopped = "Execution stopped.";
 

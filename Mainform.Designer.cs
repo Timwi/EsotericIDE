@@ -29,15 +29,19 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.ctLayoutBottom = new System.Windows.Forms.TableLayoutPanel();
             this.txtOutput = new System.Windows.Forms.TextBox();
-            this.lblOutput = new System.Windows.Forms.Label();
             this.lblSource = new System.Windows.Forms.Label();
             this.ctTimer = new System.Windows.Forms.Timer(this.components);
             this.ctSplit = new RT.Util.Controls.SplitContainerEx();
             this.ctLayoutTop = new System.Windows.Forms.TableLayoutPanel();
             this.txtSource = new System.Windows.Forms.TextBox();
             this.lblInfo = new System.Windows.Forms.Label();
+            this.ctTabs = new System.Windows.Forms.TabControl();
+            this.tabExecutionState = new System.Windows.Forms.TabPage();
+            this.txtExecutionState = new System.Windows.Forms.TextBox();
+            this.tabOutput = new System.Windows.Forms.TabPage();
+            this.tabBreakpoints = new System.Windows.Forms.TabPage();
+            this.lstBreakpoints = new RT.Util.Controls.ListBoxEx();
             this.mnuFile = new System.Windows.Forms.ToolStripMenuItem();
             this.miNew = new System.Windows.Forms.ToolStripMenuItem();
             this.miOpen = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +51,14 @@
             this.miExit = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuView = new System.Windows.Forms.ToolStripMenuItem();
             this.miSourceFont = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSep3 = new System.Windows.Forms.ToolStripSeparator();
+            this.miExecutionState = new System.Windows.Forms.ToolStripMenuItem();
+            this.miExecutionStateFont = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSep4 = new System.Windows.Forms.ToolStripSeparator();
+            this.miOutput = new System.Windows.Forms.ToolStripMenuItem();
             this.miOutputFont = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSep5 = new System.Windows.Forms.ToolStripSeparator();
+            this.breakpointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuInsert = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDebug = new System.Windows.Forms.ToolStripMenuItem();
             this.miRun = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,6 +66,7 @@
             this.miStep = new System.Windows.Forms.ToolStripMenuItem();
             this.miRunToCursor = new System.Windows.Forms.ToolStripMenuItem();
             this.miGoToCurrentInstruction = new System.Windows.Forms.ToolStripMenuItem();
+            this.miToggleBreakpoint = new System.Windows.Forms.ToolStripMenuItem();
             this.miSep2 = new System.Windows.Forms.ToolStripSeparator();
             this.miInput = new System.Windows.Forms.ToolStripMenuItem();
             this.miClearInput = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,56 +75,29 @@
             this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ctMenu = new System.Windows.Forms.MenuStrip();
-            this.ctLayoutBottom.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).BeginInit();
             this.ctSplit.Panel1.SuspendLayout();
             this.ctSplit.Panel2.SuspendLayout();
             this.ctSplit.SuspendLayout();
             this.ctLayoutTop.SuspendLayout();
+            this.ctTabs.SuspendLayout();
+            this.tabExecutionState.SuspendLayout();
+            this.tabOutput.SuspendLayout();
+            this.tabBreakpoints.SuspendLayout();
             this.ctMenu.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // ctLayoutBottom
-            // 
-            this.ctLayoutBottom.ColumnCount = 1;
-            this.ctLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ctLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.ctLayoutBottom.Controls.Add(this.txtOutput, 0, 1);
-            this.ctLayoutBottom.Controls.Add(this.lblOutput, 0, 0);
-            this.ctLayoutBottom.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctLayoutBottom.Location = new System.Drawing.Point(0, 0);
-            this.ctLayoutBottom.Name = "ctLayoutBottom";
-            this.ctLayoutBottom.RowCount = 2;
-            this.ctLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.ctLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ctLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.ctLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.ctLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.ctLayoutBottom.Size = new System.Drawing.Size(966, 422);
-            this.ctLayoutBottom.TabIndex = 0;
             // 
             // txtOutput
             // 
             this.txtOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtOutput.Location = new System.Drawing.Point(5, 28);
+            this.txtOutput.Location = new System.Drawing.Point(3, 3);
             this.txtOutput.Margin = new System.Windows.Forms.Padding(5);
             this.txtOutput.Multiline = true;
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
             this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtOutput.Size = new System.Drawing.Size(956, 389);
+            this.txtOutput.Size = new System.Drawing.Size(952, 390);
             this.txtOutput.TabIndex = 8;
-            // 
-            // lblOutput
-            // 
-            this.lblOutput.AutoSize = true;
-            this.lblOutput.Location = new System.Drawing.Point(5, 5);
-            this.lblOutput.Margin = new System.Windows.Forms.Padding(5);
-            this.lblOutput.Name = "lblOutput";
-            this.lblOutput.Size = new System.Drawing.Size(294, 13);
-            this.lblOutput.TabIndex = 2;
-            this.lblOutput.Tag = "notranslate";
-            this.lblOutput.Text = "O&utput: (this label text is updated by updateUi(), not by Lingo)";
             // 
             // lblSource
             // 
@@ -122,7 +107,7 @@
             this.lblSource.Name = "lblSource";
             this.lblSource.Size = new System.Drawing.Size(71, 13);
             this.lblSource.TabIndex = 0;
-            this.lblSource.Text = "Source &code:\t";
+            this.lblSource.Text = "Source &code:";
             // 
             // ctTimer
             // 
@@ -143,7 +128,7 @@
             // 
             // ctSplit.Panel2
             // 
-            this.ctSplit.Panel2.Controls.Add(this.ctLayoutBottom);
+            this.ctSplit.Panel2.Controls.Add(this.ctTabs);
             this.ctSplit.Size = new System.Drawing.Size(966, 776);
             this.ctSplit.SplitterDistance = 350;
             this.ctSplit.TabIndex = 2;
@@ -186,6 +171,74 @@
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(0, 13);
             this.lblInfo.TabIndex = 3;
+            // 
+            // ctTabs
+            // 
+            this.ctTabs.Controls.Add(this.tabExecutionState);
+            this.ctTabs.Controls.Add(this.tabOutput);
+            this.ctTabs.Controls.Add(this.tabBreakpoints);
+            this.ctTabs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ctTabs.Location = new System.Drawing.Point(0, 0);
+            this.ctTabs.Name = "ctTabs";
+            this.ctTabs.SelectedIndex = 0;
+            this.ctTabs.Size = new System.Drawing.Size(966, 422);
+            this.ctTabs.TabIndex = 1;
+            // 
+            // tabExecutionState
+            // 
+            this.tabExecutionState.Controls.Add(this.txtExecutionState);
+            this.tabExecutionState.Location = new System.Drawing.Point(4, 22);
+            this.tabExecutionState.Name = "tabExecutionState";
+            this.tabExecutionState.Padding = new System.Windows.Forms.Padding(3);
+            this.tabExecutionState.Size = new System.Drawing.Size(958, 396);
+            this.tabExecutionState.TabIndex = 1;
+            this.tabExecutionState.Text = "Execution State";
+            this.tabExecutionState.UseVisualStyleBackColor = true;
+            // 
+            // txtExecutionState
+            // 
+            this.txtExecutionState.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtExecutionState.Location = new System.Drawing.Point(3, 3);
+            this.txtExecutionState.Margin = new System.Windows.Forms.Padding(5);
+            this.txtExecutionState.Multiline = true;
+            this.txtExecutionState.Name = "txtExecutionState";
+            this.txtExecutionState.ReadOnly = true;
+            this.txtExecutionState.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtExecutionState.Size = new System.Drawing.Size(952, 390);
+            this.txtExecutionState.TabIndex = 9;
+            // 
+            // tabOutput
+            // 
+            this.tabOutput.Controls.Add(this.txtOutput);
+            this.tabOutput.Location = new System.Drawing.Point(4, 22);
+            this.tabOutput.Name = "tabOutput";
+            this.tabOutput.Padding = new System.Windows.Forms.Padding(3);
+            this.tabOutput.Size = new System.Drawing.Size(958, 396);
+            this.tabOutput.TabIndex = 0;
+            this.tabOutput.Text = "Output";
+            this.tabOutput.UseVisualStyleBackColor = true;
+            // 
+            // tabBreakpoints
+            // 
+            this.tabBreakpoints.Controls.Add(this.lstBreakpoints);
+            this.tabBreakpoints.Location = new System.Drawing.Point(4, 22);
+            this.tabBreakpoints.Name = "tabBreakpoints";
+            this.tabBreakpoints.Size = new System.Drawing.Size(958, 396);
+            this.tabBreakpoints.TabIndex = 2;
+            this.tabBreakpoints.Text = "Breakpoints";
+            this.tabBreakpoints.UseVisualStyleBackColor = true;
+            // 
+            // lstBreakpoints
+            // 
+            this.lstBreakpoints.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lstBreakpoints.FormattingEnabled = true;
+            this.lstBreakpoints.Location = new System.Drawing.Point(0, 0);
+            this.lstBreakpoints.Name = "lstBreakpoints";
+            this.lstBreakpoints.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.lstBreakpoints.Size = new System.Drawing.Size(958, 396);
+            this.lstBreakpoints.TabIndex = 0;
+            this.lstBreakpoints.SelectedIndexChanged += new System.EventHandler(this.breakpointsSelectedIndexChanged);
+            this.lstBreakpoints.KeyDown += new System.Windows.Forms.KeyEventHandler(this.breakpointsKeyDown);
             // 
             // mnuFile
             // 
@@ -246,7 +299,14 @@
             // 
             this.mnuView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miSourceFont,
-            this.miOutputFont});
+            this.miSep3,
+            this.miExecutionState,
+            this.miExecutionStateFont,
+            this.miSep4,
+            this.miOutput,
+            this.miOutputFont,
+            this.miSep5,
+            this.breakpointsToolStripMenuItem});
             this.mnuView.Name = "mnuView";
             this.mnuView.Size = new System.Drawing.Size(41, 20);
             this.mnuView.Text = "&View";
@@ -254,16 +314,64 @@
             // miSourceFont
             // 
             this.miSourceFont.Name = "miSourceFont";
-            this.miSourceFont.Size = new System.Drawing.Size(145, 22);
+            this.miSourceFont.Size = new System.Drawing.Size(209, 22);
             this.miSourceFont.Text = "&Source Font...";
             this.miSourceFont.Click += new System.EventHandler(this.font);
+            // 
+            // miSep3
+            // 
+            this.miSep3.Name = "miSep3";
+            this.miSep3.Size = new System.Drawing.Size(206, 6);
+            // 
+            // miExecutionState
+            // 
+            this.miExecutionState.Name = "miExecutionState";
+            this.miExecutionState.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+                        | System.Windows.Forms.Keys.E)));
+            this.miExecutionState.Size = new System.Drawing.Size(209, 22);
+            this.miExecutionState.Text = "&Execution State";
+            this.miExecutionState.Click += new System.EventHandler(this.viewExecutionState);
+            // 
+            // miExecutionStateFont
+            // 
+            this.miExecutionStateFont.Name = "miExecutionStateFont";
+            this.miExecutionStateFont.Size = new System.Drawing.Size(209, 22);
+            this.miExecutionStateFont.Text = "E&xecution State Font...";
+            // 
+            // miSep4
+            // 
+            this.miSep4.Name = "miSep4";
+            this.miSep4.Size = new System.Drawing.Size(206, 6);
+            // 
+            // miOutput
+            // 
+            this.miOutput.Name = "miOutput";
+            this.miOutput.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+                        | System.Windows.Forms.Keys.O)));
+            this.miOutput.Size = new System.Drawing.Size(209, 22);
+            this.miOutput.Text = "&Output";
+            this.miOutput.Click += new System.EventHandler(this.viewOutput);
             // 
             // miOutputFont
             // 
             this.miOutputFont.Name = "miOutputFont";
-            this.miOutputFont.Size = new System.Drawing.Size(145, 22);
-            this.miOutputFont.Text = "&Output Font...";
+            this.miOutputFont.Size = new System.Drawing.Size(209, 22);
+            this.miOutputFont.Text = "O&utput Font...";
             this.miOutputFont.Click += new System.EventHandler(this.font);
+            // 
+            // miSep5
+            // 
+            this.miSep5.Name = "miSep5";
+            this.miSep5.Size = new System.Drawing.Size(206, 6);
+            // 
+            // breakpointsToolStripMenuItem
+            // 
+            this.breakpointsToolStripMenuItem.Name = "breakpointsToolStripMenuItem";
+            this.breakpointsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+                        | System.Windows.Forms.Keys.B)));
+            this.breakpointsToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.breakpointsToolStripMenuItem.Text = "&Breakpoints";
+            this.breakpointsToolStripMenuItem.Click += new System.EventHandler(this.viewBreakpoints);
             // 
             // mnuInsert
             // 
@@ -279,6 +387,7 @@
             this.miStep,
             this.miRunToCursor,
             this.miGoToCurrentInstruction,
+            this.miToggleBreakpoint,
             this.miSep2,
             this.miInput,
             this.miClearInput});
@@ -325,6 +434,14 @@
             this.miGoToCurrentInstruction.Size = new System.Drawing.Size(225, 22);
             this.miGoToCurrentInstruction.Text = "&Go to current instruction";
             this.miGoToCurrentInstruction.Click += new System.EventHandler(this.goToCurrentInstruction);
+            // 
+            // miToggleBreakpoint
+            // 
+            this.miToggleBreakpoint.Name = "miToggleBreakpoint";
+            this.miToggleBreakpoint.ShortcutKeys = System.Windows.Forms.Keys.F9;
+            this.miToggleBreakpoint.Size = new System.Drawing.Size(225, 22);
+            this.miToggleBreakpoint.Text = "Toggle &breakpoint";
+            this.miToggleBreakpoint.Click += new System.EventHandler(this.toggleBreakpoint);
             // 
             // miSep2
             // 
@@ -403,14 +520,18 @@
             this.Name = "Mainform";
             this.Text = "Esoteric IDE";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.exiting);
-            this.ctLayoutBottom.ResumeLayout(false);
-            this.ctLayoutBottom.PerformLayout();
             this.ctSplit.Panel1.ResumeLayout(false);
             this.ctSplit.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).EndInit();
             this.ctSplit.ResumeLayout(false);
             this.ctLayoutTop.ResumeLayout(false);
             this.ctLayoutTop.PerformLayout();
+            this.ctTabs.ResumeLayout(false);
+            this.tabExecutionState.ResumeLayout(false);
+            this.tabExecutionState.PerformLayout();
+            this.tabOutput.ResumeLayout(false);
+            this.tabOutput.PerformLayout();
+            this.tabBreakpoints.ResumeLayout(false);
             this.ctMenu.ResumeLayout(false);
             this.ctMenu.PerformLayout();
             this.ResumeLayout(false);
@@ -420,9 +541,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TableLayoutPanel ctLayoutBottom;
         private System.Windows.Forms.Label lblSource;
-        private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.Timer ctTimer;
         private System.Windows.Forms.TextBox txtOutput;
         private RT.Util.Controls.SplitContainerEx ctSplit;
@@ -454,6 +573,20 @@
         private System.Windows.Forms.ToolStripMenuItem mnuHelp;
         private System.Windows.Forms.ToolStripMenuItem miAbout;
         private System.Windows.Forms.MenuStrip ctMenu;
+        private System.Windows.Forms.TabControl ctTabs;
+        private System.Windows.Forms.TabPage tabExecutionState;
+        private System.Windows.Forms.TextBox txtExecutionState;
+        private System.Windows.Forms.TabPage tabOutput;
+        private System.Windows.Forms.TabPage tabBreakpoints;
+        private System.Windows.Forms.ToolStripMenuItem miExecutionStateFont;
+        private RT.Util.Controls.ListBoxEx lstBreakpoints;
+        private System.Windows.Forms.ToolStripSeparator miSep3;
+        private System.Windows.Forms.ToolStripMenuItem miExecutionState;
+        private System.Windows.Forms.ToolStripSeparator miSep4;
+        private System.Windows.Forms.ToolStripMenuItem miOutput;
+        private System.Windows.Forms.ToolStripSeparator miSep5;
+        private System.Windows.Forms.ToolStripMenuItem breakpointsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem miToggleBreakpoint;
     }
 }
 

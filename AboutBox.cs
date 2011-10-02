@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using RT.Util;
-using RT.Util.Lingo;
+using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE
 {
@@ -14,14 +14,13 @@ namespace EsotericIDE
         public AboutBox()
         {
             InitializeComponent();
-            Lingo.TranslateControl(this, EsotericIDEProgram.Tr.AboutBox);
 
             lblProductName.Text = AssemblyProduct;
             lblDescription.Text = AssemblyDescription;
-            lblVersion.Text = EsotericIDEProgram.Tr.AboutBox.Version.Fmt(Ut.VersionOfExe());
+            lblVersion.Text = "Version {0}".Fmt(Ut.VersionOfExe());
             lblCopyright.Text = AssemblyCopyright;
             lblCompanyName.Text = AssemblyCompany;
-            btnOK.Text = EsotericIDEProgram.Tr.Ok;
+            btnOK.Text = "&OK";
         }
 
 #if DEBUG

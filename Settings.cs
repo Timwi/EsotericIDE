@@ -9,6 +9,7 @@ namespace EsotericIDE
     {
         public ManagedForm.Settings FormSettings = new ManagedForm.Settings();
         public Language Language;
+        public string LastLanguageName;
         public string SourceFontName;
         public float SourceFontSize;
         public string OutputFontName;

@@ -10,27 +10,19 @@ using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
 using RT.Util.Lingo;
 
-namespace EsotericIDE.Sclipting
+namespace EsotericIDE.Languages
 {
-    sealed class ScliptingLanguage : ProgrammingLanguage
+    sealed partial class Sclipting : ProgrammingLanguage
     {
-        public override string LanguageID { get { return "Sclipting"; } }
+        public override string LanguageName { get { return "Sclipting"; } }
         public override string DefaultFileExtension { get { return ".sclipt"; } }
-
-        private Translation _tr;
-
-        public ScliptingLanguage()
-        {
-            var language = EsotericIDEProgram.Settings.Language;
-            _tr = Lingo.LoadTranslationOrDefault<Translation>("EsotericIDE", ref language);
-        }
 
         private static Dictionary<char, ScliptingInstruction> _instructions;
         private static Dictionary<char, InstructionType> _instructionTypes;
 
         public override ExecutionEnvironment Compile(string source)
         {
-            return new ScliptingExecutionEnvironment(source, _tr, this);
+            return new ScliptingExecutionEnvironment(new ScliptingProgram { Instructions = parse(source, 0), Index = 0, Count = source.Length });
         }
 
         public override string GetInfo(string source, int cursorPos)
@@ -64,7 +56,7 @@ namespace EsotericIDE.Sclipting
                         try
                         {
                             var array = DecodeByteArray(hangeul);
-                            return "{4} {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ToInt(array), _tr.ByteArray);
+                            return "Byte array: {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ToInt(array));
                         }
                         catch (ParseException pe)
                         {
@@ -78,7 +70,7 @@ namespace EsotericIDE.Sclipting
 
             negativeNumber:
             if (source[cursorPos] >= 0xbc00 && source[cursorPos] <= 0xd7a3)
-                return "{1} {0}".Fmt(0xbbff - source[cursorPos], _tr.NegativeNumber);
+                return "Negative number: {0}".Fmt(0xbbff - source[cursorPos]);
 
             var attribute = typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(f => f.GetCustomAttributes<InstructionAttribute>().FirstOrDefault())
@@ -86,12 +78,12 @@ namespace EsotericIDE.Sclipting
                 .FirstOrDefault();
             if (attribute != null)
                 return "{3}: {0} ({1}) — {2}".Fmt(attribute.Character, attribute.Engrish, attribute.Description,
-                    attribute.Type == InstructionType.BlockHead ? _tr.BlockHeadInstruction :
-                    attribute.Type == InstructionType.BlockElse ? _tr.BlockElseInstruction :
-                    attribute.Type == InstructionType.BlockEnd ? _tr.BlockEndInstruction : _tr.SingularInstruction);
+                    attribute.Type == InstructionType.BlockHead ? "Block head instruction" :
+                    attribute.Type == InstructionType.BlockElse ? "Block else instruction" :
+                    attribute.Type == InstructionType.BlockEnd ? "Block end instruction" : "Instruction");
 
             string description;
-            string instructionType = _tr.StackInstruction.Translation;
+            string instructionType = "Stack instruction:";
 #warning TODO: Lingo and ordinal numbers?
             if (source[cursorPos] >= '①' && source[cursorPos] <= '⑳')
                 description = "Copy {0}th item from bottom.".Fmt(source[cursorPos] - '①' + 1);
@@ -112,40 +104,28 @@ namespace EsotericIDE.Sclipting
             else if (source[cursorPos] >= 'Ⓐ' && source[cursorPos] <= 'Ⓩ')
             {
                 description = "Push content of the {0}th regex capturing parenthesis.".Fmt(source[cursorPos] - 'Ⓐ' + 1);
-                instructionType = _tr.RegexInstruction.Translation;
+                instructionType = "Regex instruction:";
             }
             else
                 return "";
             return "{2} {0} — {1}".Fmt(source[cursorPos], description, instructionType);
         }
 
-        public override void InitialiseInsertMenu(ToolStripMenuItem mnuInsert, Func<string> getSelectedText, Action<string> insertText)
+        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText)
         {
-            var miInsertSingularInstruction = new ToolStripMenuItem();
-            var miInsertBlockInstruction = new ToolStripMenuItem();
-            var miInsertStackInstruction = new ToolStripMenuItem();
-            var miInsertStackInstructionCopyFromBottom = new ToolStripMenuItem();
-            var miInsertStackInstructionMoveFromBottom = new ToolStripMenuItem();
-            var miInsertStackInstructionSwapFromBottom = new ToolStripMenuItem();
-            var miInsertStackInstructionCopyFromTop = new ToolStripMenuItem();
-            var miInsertStackInstructionMoveFromTop = new ToolStripMenuItem();
-            var miInsertRegexInstruction = new ToolStripMenuItem();
-            var miInsertInteger = new ToolStripMenuItem();
-            var miInsertString = new ToolStripMenuItem();
-            var miInsertByteArray = new ToolStripMenuItem();
-
-            miInsertSingularInstruction.Text = _tr.InsertMenu.SingularInstruction;
-            miInsertBlockInstruction.Text = _tr.InsertMenu.BlockInstruction;
-            miInsertStackInstruction.Text = _tr.InsertMenu.StackInstruction;
-            miInsertStackInstructionCopyFromBottom.Text = _tr.InsertMenu.StackInstructionCopyFromBottom;
-            miInsertStackInstructionMoveFromBottom.Text = _tr.InsertMenu.StackInstructionMoveFromBottom;
-            miInsertStackInstructionSwapFromBottom.Text = _tr.InsertMenu.StackInstructionSwapFromBottom;
-            miInsertStackInstructionCopyFromTop.Text = _tr.InsertMenu.StackInstructionCopyFromTop;
-            miInsertStackInstructionMoveFromTop.Text = _tr.InsertMenu.StackInstructionMoveFromTop;
-            miInsertRegexInstruction.Text = _tr.InsertMenu.RegexInstruction;
-            miInsertInteger.Text = _tr.InsertMenu.Integer;
-            miInsertString.Text = _tr.InsertMenu.String;
-            miInsertByteArray.Text = _tr.InsertMenu.ByteArray;
+            var mnuInsert = new ToolStripMenuItem("&Insert");
+            var miInsertSingularInstruction = new ToolStripMenuItem("Si&ngular instruction");
+            var miInsertBlockInstruction = new ToolStripMenuItem("&Block instruction");
+            var miInsertStackInstruction = new ToolStripMenuItem("S&tack instruction");
+            var miInsertStackInstructionCopyFromBottom = new ToolStripMenuItem("&Copy from bottom");
+            var miInsertStackInstructionMoveFromBottom = new ToolStripMenuItem("&Move from bottom");
+            var miInsertStackInstructionSwapFromBottom = new ToolStripMenuItem("&Swap from bottom");
+            var miInsertStackInstructionCopyFromTop = new ToolStripMenuItem("C&opy from top");
+            var miInsertStackInstructionMoveFromTop = new ToolStripMenuItem("Mo&ve from top");
+            var miInsertRegexInstruction = new ToolStripMenuItem("&Regex instruction");
+            var miInsertInteger = new ToolStripMenuItem("&Integer...");
+            var miInsertString = new ToolStripMenuItem("&String...");
+            var miInsertByteArray = new ToolStripMenuItem("Byte &array...");
 
             miInsertInteger.Click += (_, __) => { insertInteger(getSelectedText, insertText); };
             miInsertString.Click += (_, __) => { insertString(getSelectedText, insertText); };
@@ -182,6 +162,8 @@ namespace EsotericIDE.Sclipting
                     new ToolStripMenuItem(ch + " &" + attr.Engrish + " — " + attr.Description, null, (_, __) => { insertText(ch.ToString()); })
                 );
             }
+
+            return Ut.NewArray<ToolStripMenuItem>(mnuInsert);
         }
 
         private static ToolStripItem stackOrRegexMenuItem(char ch, int num, Action<string> insertText)
@@ -200,7 +182,7 @@ namespace EsotericIDE.Sclipting
                     @default = new BigInteger(new byte[] { 0 }.Concat(DecodeByteArray(selected)).Reverse().ToArray()).ToString();
             }
             catch { @default = "0"; }
-            var line = InputBox.GetLine(_tr.InsertMenu.IntegerPrompt, @default, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
+            var line = InputBox.GetLine("Type an integer to insert (must be greater than −7077):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
             {
                 BigInteger i;
@@ -212,7 +194,7 @@ namespace EsotericIDE.Sclipting
                         insertText(EncodeByteArray(i.ToByteArray().Reverse().ToArray()));
                 }
                 else
-                    DlgMessage.Show(_tr.InsertMenu.IntegerError, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok);
+                    DlgMessage.Show("The integer you typed is not a valid literal integer for Sclipting. Literal integers must be greater than −7077.", "Esoteric IDE", DlgType.Error, "&OK");
             }
         }
 
@@ -227,10 +209,10 @@ namespace EsotericIDE.Sclipting
                     @default = DecodeByteArray(selected).FromUtf8().CLiteralEscape();
             }
             catch { @default = "\\n"; }
-            var line = InputBox.GetLine(_tr.InsertMenu.StringPrompt, @default, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
+            var line = InputBox.GetLine("Type a string to insert (in C-escaped format; backslashes must be escaped):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
                 try { insertText(EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
-                catch { DlgMessage.Show(_tr.InsertMenu.StringError, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok); }
+                catch { DlgMessage.Show("The string you typed is not a valid C-escaped string. Please ensure that your backslashes are escaped.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
 
         private void insertByteArray(Func<string> getSelectedText, Action<string> insertText)
@@ -238,15 +220,10 @@ namespace EsotericIDE.Sclipting
             string @default, selected = getSelectedText();
             try { @default = DecodeByteArray(selected).ToHex(); }
             catch { @default = ""; }
-            var line = InputBox.GetLine(_tr.InsertMenu.ByteArrayPrompt, @default, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
+            var line = InputBox.GetLine("Type a byte array to insert (in hexdump format; two hexadecimal digits per byte):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
                 try { insertText(EncodeByteArray(line.FromHex())); }
-                catch { DlgMessage.Show(_tr.InsertMenu.ByteArrayError, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok); }
-        }
-
-        public ScliptingProgram Parse(string source)
-        {
-            return new ScliptingProgram { Instructions = parse(source, 0), Index = 0, Count = source.Length };
+                catch { DlgMessage.Show("The text you entered is not valid hexadecimal. Please ensure that you enter an even number of characters 0-9/a-f.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
 
         private List<Instruction> parse(string source, int addIndex)
@@ -276,7 +253,7 @@ namespace EsotericIDE.Sclipting
                     }
                     catch (ParseException pe)
                     {
-                        throw new ParseException(pe.Message, pe.Index + origIndex + addIndex, pe.Count);
+                        throw new ParseException(pe.Message, pe.Index + origIndex + addIndex, pe.Length);
                     }
                 }
                 else if (ch >= 0xbc00 && ch <= 0xd7a3)
@@ -311,7 +288,7 @@ namespace EsotericIDE.Sclipting
                         FindMatchingEnd(source, index, addIndex, out endIndex, out elseIndex, out elsePops);
                         var primaryBlock = parse(source.Substring(index + 1, (elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
                         var elseBlock = elseIndex == null ? null : parse(source.Substring(elseIndex.Value + 1, endIndex - elseIndex.Value - 1), elseIndex.Value + 1 + addIndex);
-                        var blockInstr = createBlockInstruction(instruction, index, addIndex, elseIndex, elsePops, _tr);
+                        var blockInstr = createBlockInstruction(instruction, index, addIndex, elseIndex, elsePops);
                         blockInstr.PrimaryBlock = primaryBlock;
                         blockInstr.ElseBlock = elseBlock;
                         blockInstr.ElseBlockPops = elsePops;
@@ -322,10 +299,10 @@ namespace EsotericIDE.Sclipting
                         index = endIndex + 1;
                     }
                     else
-                        throw new ParseException(_tr.ParseErrors.UnexpectedEndOfBlock, index + addIndex, 1);
+                        throw new ParseException("Else or end instruction encountered without a matching block head instruction.", index + addIndex, 1);
                 }
                 else
-                    throw new ParseException(_tr.ParseErrors.UnrecognisedInstruction.Fmt(ch), index + addIndex, 1);
+                    throw new ParseException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
             }
             return ret;
         }
@@ -360,7 +337,7 @@ namespace EsotericIDE.Sclipting
             }
         }
 
-        private static BlockInstruction createBlockInstruction(ScliptingInstruction instruction, int index, int addIndex, int? elseIndex, bool elsePops, Translation tr)
+        private static BlockInstruction createBlockInstruction(ScliptingInstruction instruction, int index, int addIndex, int? elseIndex, bool elsePops)
         {
             switch (instruction)
             {
@@ -370,7 +347,7 @@ namespace EsotericIDE.Sclipting
 
                 case ScliptingInstruction.Count:
                     if (elseIndex != null && !elsePops)
-                        throw new ParseException(tr.ParseErrors.ForLoopCannotUseNonPopElse, index + addIndex, elseIndex.Value - index + 1);
+                        throw new ParseException("The block else instruction “逆” cannot be used with the block head instruction “數”.", index + addIndex, elseIndex.Value - index + 1);
                     return new ForLoop();
 
                 case ScliptingInstruction.Each:
@@ -398,16 +375,15 @@ namespace EsotericIDE.Sclipting
                     };
 
                 default:
-                    throw new ParseException(tr.ParseErrors.MissingInstruction.Fmt(instruction), index + addIndex, 1);
+                    throw new ParseException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
             }
         }
 
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
-            var tr = new Translation();
             initInstructionsDictionary();
             foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == InstructionType.BlockHead).Select(kvp => _instructions[kvp.Key]))
-                try { createBlockInstruction(instr, 0, 0, null, false, tr); }
+                try { createBlockInstruction(instr, 0, 0, null, false); }
                 catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instr), "ScliptingLanguage", "BlockInstruction createBlockInstruction", "default"); }
         }
 
@@ -460,26 +436,26 @@ namespace EsotericIDE.Sclipting
                     }
                 }
             }
-            throw new ParseException(_tr.ParseErrors.MissingEnd.Fmt(source[start]), start + addIndex, 1);
+            throw new ParseException("Block instruction “{0}” is missing a matching end instruction.".Fmt(source[start]), start + addIndex, 1);
         }
 
-        public byte[] DecodeByteArray(string soulce)
+        public byte[] DecodeByteArray(string source)
         {
-            if (soulce.Length == 0)
+            if (source.Length == 0)
                 return new byte[0];
             var i = 0;
             var output = new List<byte>();
             while (true)
             {
-                switch (soulce.Length - i)
+                switch (source.Length - i)
                 {
                     default:
                         {
-                            if (soulce[i] < 0xac00 || soulce[i] >= 0xbc00)
-                                throw new ParseException(_tr.ParseErrors.UnexpectedCharacter.Fmt(soulce[i]), i, 1);
-                            if (soulce[i + 1] < 0xac00 || soulce[i + 1] > 0xbc0f)
-                                throw new ParseException(_tr.ParseErrors.UnexpectedCharacter.Fmt(soulce[i]), i, 1);
-                            int a = soulce[i] - 0xac00, b = soulce[i + 1] - 0xac00;
+                            if (source[i] < 0xac00 || source[i] >= 0xbc00)
+                                throw new ParseException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
+                            if (source[i + 1] < 0xac00 || source[i + 1] > 0xbc0f)
+                                throw new ParseException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
+                            int a = source[i] - 0xac00, b = source[i + 1] - 0xac00;
                             bool two = b >= 0x1000;
                             output.Add((byte) (a >> 4));
                             output.Add((byte) ((a & 0xf) << 4 | (two ? b - 0x1000 : b >> 8)));
@@ -490,9 +466,9 @@ namespace EsotericIDE.Sclipting
                         }
                     case 1:
                         {
-                            if (soulce[i] < 0xac00 || soulce[i] >= 0xbc00)
-                                throw new ParseException(_tr.ParseErrors.UnexpectedCharacter.Fmt(soulce[i]), i, 1);
-                            output.Add((byte) ((soulce[i] - 0xac00) >> 4));
+                            if (source[i] < 0xac00 || source[i] >= 0xbc00)
+                                throw new ParseException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
+                            output.Add((byte) ((source[i] - 0xac00) >> 4));
                             i++;
                             break;
                         }

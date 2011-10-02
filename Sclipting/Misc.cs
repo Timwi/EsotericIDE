@@ -1,22 +1,25 @@
 ﻿using System;
 
-namespace EsotericIDE.Sclipting
+namespace EsotericIDE.Languages
 {
-    sealed class Mark { }
-
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = false)]
-    sealed class InstructionAttribute : Attribute
+    partial class Sclipting
     {
-        public char Character { get; private set; }
-        public string Engrish { get; private set; }
-        public string Description { get; private set; }
-        public InstructionType Type { get; private set; }
-        public InstructionAttribute(char character, string engrish, string description, InstructionType type)
+        sealed class Mark { }
+
+        [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = false)]
+        sealed class InstructionAttribute : Attribute
         {
-            Character = character;
-            Engrish = engrish;
-            Description = description;
-            Type = type;
+            public char Character { get; private set; }
+            public string Engrish { get; private set; }
+            public string Description { get; private set; }
+            public InstructionType Type { get; private set; }
+            public InstructionAttribute(char character, string engrish, string description, InstructionType type)
+            {
+                Character = character;
+                Engrish = engrish;
+                Description = description;
+                Type = type;
+            }
         }
     }
 }

@@ -20,26 +20,18 @@ namespace EsotericIDE
             : base(settings.FormSettings)
         {
             InitializeComponent();
+            init();
+        }
 
-#if DEBUG
-            // Auto-generate the translation classes for automated form translation
-            using (var generator = new Lingo.TranslationFileGenerator(@"..\..\users\timwi\EsotericIDE\Translation.g.cs"))
-            {
-                using (var form = new AboutBox(false))
-                    generator.TranslateControl(form, EsotericIDEProgram.Tr.AboutBox);
-                generator.TranslateControl(this, EsotericIDEProgram.Tr.Mainform);
-            }
-
-            Lingo.WarnOfUnusedStrings(typeof(Translation), Assembly.GetExecutingAssembly());
-#else
-            Lingo.TranslateControl(this, EsotericIDEProgram.Tr.Mainform);
-#endif
-
+        private void init()
+        {
             ctMenu.Renderer = new NativeToolStripRenderer();
-            if (settings.SourceFontName != null)
-                txtSource.Font = new Font(settings.SourceFontName, settings.SourceFontSize);
-            if (settings.OutputFontName != null)
-                txtOutput.Font = new Font(settings.OutputFontName, settings.OutputFontSize);
+            if (EsotericIDEProgram.Settings.SourceFontName != null)
+                txtSource.Font = new Font(EsotericIDEProgram.Settings.SourceFontName, EsotericIDEProgram.Settings.SourceFontSize);
+            if (EsotericIDEProgram.Settings.OutputFontName != null)
+                txtOutput.Font = new Font(EsotericIDEProgram.Settings.OutputFontName, EsotericIDEProgram.Settings.OutputFontSize);
+
+            txtExecutionState.Text = "(not running)";
 
             updateUi();
             _splitterDistanceBugWorkaround = false;
@@ -52,10 +44,27 @@ namespace EsotericIDE
                     ctSplit.SplitterDistance = EsotericIDEProgram.Settings.SplitterDistance;
             };
 
-            _currentLanguage.InitialiseInsertMenu(mnuInsert, () => txtSource.SelectedText, s => { txtSource.SelectedText = s; });
+            var languages = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => typeof(ProgrammingLanguage).IsAssignableFrom(t) && !t.IsAbstract)
+                .Select(t => (ProgrammingLanguage) Activator.CreateInstance(t))
+                .ToArray();
+            cmbLanguage.Items.AddRange(languages);
+            ToolStripMenuItem[] currentLanguageSpecificMenus = null;
+            cmbLanguage.SelectedIndexChanged += (_, __) =>
+            {
+                EsotericIDEProgram.Settings.LastLanguageName = ((ProgrammingLanguage) cmbLanguage.SelectedItem).LanguageName;
+                if (currentLanguageSpecificMenus != null)
+                    foreach (var menuItem in currentLanguageSpecificMenus)
+                        ctMenu.Items.Remove(menuItem);
+                currentLanguageSpecificMenus = _currentLanguage.CreateMenus(() => txtSource.SelectedText, s => { txtSource.SelectedText = s; });
+                ctMenu.Items.AddRange(currentLanguageSpecificMenus);
+            };
+            var ll = languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
+            if (ll != -1)
+                cmbLanguage.SelectedIndex = ll;
         }
 
-        private ProgrammingLanguage _currentLanguage = new Sclipting.ScliptingLanguage();
+        private ProgrammingLanguage _currentLanguage = new Languages.Sclipting();
 
         private string _input
         {
@@ -115,12 +124,12 @@ namespace EsotericIDE
         private void updateUi()
         {
             // Construct the window titlebar
-            var text = _currentFilePath == null ? EsotericIDEProgram.Tr.Mainform.UnnamedFile.Translation : _currentFilePath;
+            var text = _currentFilePath == null ? "(unnamed)" : _currentFilePath;
             text += " — Esoteric IDE";
             if (_anyChanges)
                 text += " •";
             if (_currentEnvironment != null)
-                text += " " + EsotericIDEProgram.Tr.Mainform.Running.Translation;
+                text += " (running)";
             Text = text;
 
             txtSource.ReadOnly = _currentEnvironment != null;
@@ -136,7 +145,7 @@ namespace EsotericIDE
 
             if (_currentEnvironment != null)
             {
-                result = DlgMessage.Show(EsotericIDEProgram.Tr.CancelDebugging, "Esoteric IDE", DlgType.Question, EsotericIDEProgram.Tr.Yes, EsotericIDEProgram.Tr.No);
+                result = DlgMessage.Show("Cancel debugging?", "Esoteric IDE", DlgType.Question, "&Yes", "&No");
                 if (result == 1)
                     return false;
                 _currentEnvironment.State = ExecutionState.Stop;
@@ -146,7 +155,7 @@ namespace EsotericIDE
             if (!_anyChanges)
                 return true;
 
-            result = DlgMessage.Show(EsotericIDEProgram.Tr.SaveChanges, "Esoteric IDE", DlgType.Question, EsotericIDEProgram.Tr.SaveChangesSave, EsotericIDEProgram.Tr.SaveChangesDiscard, EsotericIDEProgram.Tr.SaveChangesCancel);
+            result = DlgMessage.Show("Would you like to save your changes to this file?", "Esoteric IDE", DlgType.Question, "&Save", "&Discard", "&Cancel");
             if (result == 2)
                 return false;
             if (result == 1)
@@ -165,7 +174,7 @@ namespace EsotericIDE
 
         private DialogResult saveAs()
         {
-            using (var save = new SaveFileDialog { Title = EsotericIDEProgram.Tr.SaveFile, DefaultExt = _currentLanguage.DefaultFileExtension })
+            using (var save = new SaveFileDialog { Title = "Save file", DefaultExt = _currentLanguage.DefaultFileExtension })
             {
                 var result = save.ShowDialog();
                 if (result == DialogResult.OK)
@@ -212,7 +221,7 @@ namespace EsotericIDE
         {
             if (!canDestroy())
                 return;
-            using (var open = new OpenFileDialog { Title = EsotericIDEProgram.Tr.OpenFile, DefaultExt = _currentLanguage.DefaultFileExtension })
+            using (var open = new OpenFileDialog { Title = "Open file", DefaultExt = _currentLanguage.DefaultFileExtension })
             {
                 if (EsotericIDEProgram.Settings.LastDirectory != null)
                     try { open.InitialDirectory = EsotericIDEProgram.Settings.LastDirectory; }
@@ -281,14 +290,14 @@ namespace EsotericIDE
 
             try
             {
-                var input = _input ?? InputBox.GetLine(EsotericIDEProgram.Tr.Input, "", "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel);
+                var input = _input ?? InputBox.GetLine("Please type the input to the program:", "", "Esoteric IDE", "&OK", "&Cancel");
                 if (input == null)
                     return false;
                 _currentEnvironment = _currentLanguage.Compile(txtSource.Text);
                 _currentEnvironment.State = state;
                 _currentEnvironment.Input = input;
                 _currentEnvironment.DebuggerBreak += p => { this.Invoke(new Action(() => debuggerBreak(p))); };
-                _currentEnvironment.ExecutionFinished += c => { this.Invoke(new Action(() => executionFinished(c))); };
+                _currentEnvironment.ExecutionFinished += (c, e) => { this.Invoke(new Action(() => executionFinished(c, e))); };
                 foreach (int bp in lstBreakpoints.Items)
                     _currentEnvironment.AddBreakpoint(bp);
                 _currentEnvironment.BreakpointsChanged += () => { this.Invoke(new Action(() => breakpointsChanged())); };
@@ -297,8 +306,8 @@ namespace EsotericIDE
             catch (ParseException e)
             {
                 txtSource.SelectionStart = e.Index;
-                txtSource.SelectionLength = e.Count;
-                DlgMessage.Show(EsotericIDEProgram.Tr.CompilationFailed + Environment.NewLine + e.Message, "Esoteric IDE", DlgType.Error, EsotericIDEProgram.Tr.Ok);
+                txtSource.SelectionLength = e.Length;
+                DlgMessage.Show("Compilation failed:" + Environment.NewLine + e.Message, "Esoteric IDE", DlgType.Error, "&OK");
                 return false;
             }
         }
@@ -310,14 +319,25 @@ namespace EsotericIDE
             _currentEnvironment.Continue();
         }
 
-        private void executionFinished(bool canceled)
+        private void executionFinished(bool canceled, RuntimeException exception)
         {
+            txtExecutionState.Text = "(not running)";
             txtOutput.Text = _currentEnvironment.Output.UnifyLineEndings();
-            if (canceled)
-                txtOutput.Text += Environment.NewLine + Environment.NewLine + EsotericIDEProgram.Tr.ExecutionStopped.Translation;
+            if (canceled && exception == null)
+                txtOutput.Text += Environment.NewLine + Environment.NewLine + "Execution stopped.";
             ctTabs.SelectedTab = tabOutput;
             _currentEnvironment = null;
             _currentPosition = null;
+
+            if (exception != null)
+            {
+                var msg = "A run-time exception occurred:{0}{0}{1}".Fmt(Environment.NewLine, exception.Message);
+                txtOutput.Text += Environment.NewLine + Environment.NewLine + msg;
+                txtSource.Focus();
+                txtSource.SelectionStart = exception.Position.Index;
+                txtSource.SelectionLength = exception.Position.Length;
+                DlgMessage.Show(msg, "Run-time exception", DlgType.Error, "&OK");
+            }
         }
 
         private void breakpointsChanged()
@@ -350,7 +370,7 @@ namespace EsotericIDE
             ctTabs.SelectedTab = tabExecutionState;
             txtSource.Focus();
             txtSource.SelectionStart = _currentPosition.Index;
-            txtSource.SelectionLength = _currentPosition.Count;
+            txtSource.SelectionLength = _currentPosition.Length;
         }
 
         private void runToCursor(object _, EventArgs __)
@@ -404,7 +424,7 @@ namespace EsotericIDE
             if (_currentEnvironment == null || _currentPosition == null)
                 return;
             txtSource.SelectionStart = _currentPosition.Index;
-            txtSource.SelectionLength = _currentPosition.Count;
+            txtSource.SelectionLength = _currentPosition.Length;
         }
 
         private void splitterMoved(object _, EventArgs __)
@@ -421,7 +441,7 @@ namespace EsotericIDE
 
         private void input(object _, EventArgs __)
         {
-            _input = InputBox.GetLine(EsotericIDEProgram.Tr.Input, _input, "Esoteric IDE", EsotericIDEProgram.Tr.Ok, EsotericIDEProgram.Tr.Cancel) ?? _input;
+            _input = InputBox.GetLine("Please type the input to the program:", _input, "Esoteric IDE", "&OK", "&Cancel") ?? _input;
         }
 
         private void clearInput(object _, EventArgs __)
@@ -495,6 +515,25 @@ namespace EsotericIDE
             {
                 txtSource.SelectionStart = (int) lstBreakpoints.SelectedItems[0];
                 txtSource.SelectionLength = 1;
+            }
+        }
+
+        private void exit(object _, EventArgs __)
+        {
+            Close();
+        }
+
+        private void selectProgrammingLanguage(object _, EventArgs __)
+        {
+            cmbLanguage.Focus();
+        }
+
+        private void sourceKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.A && e.Control && !e.Alt && !e.Shift)
+            {
+                txtSource.SelectionStart = 0;
+                txtSource.SelectionLength = txtSource.TextLength;
             }
         }
     }

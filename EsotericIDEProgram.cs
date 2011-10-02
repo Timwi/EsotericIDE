@@ -24,7 +24,6 @@ namespace EsotericIDE
     static class EsotericIDEProgram
     {
         public static Settings Settings;
-        public static Translation Tr;
 
         [STAThread]
         static int Main(string[] args)
@@ -35,7 +34,6 @@ namespace EsotericIDE
                 return Ut.RunPostBuildChecks(args[1], Assembly.GetExecutingAssembly());
 
             SettingsUtil.LoadSettings(out Settings);
-            Tr = Lingo.LoadTranslationOrDefault<Translation>("EsotericIDE", ref Settings.Language);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

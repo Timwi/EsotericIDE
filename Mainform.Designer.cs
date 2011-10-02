@@ -58,8 +58,7 @@
             this.miOutput = new System.Windows.Forms.ToolStripMenuItem();
             this.miOutputFont = new System.Windows.Forms.ToolStripMenuItem();
             this.miSep5 = new System.Windows.Forms.ToolStripSeparator();
-            this.breakpointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuInsert = new System.Windows.Forms.ToolStripMenuItem();
+            this.miBreakpoints = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuDebug = new System.Windows.Forms.ToolStripMenuItem();
             this.miRun = new System.Windows.Forms.ToolStripMenuItem();
             this.miStopDebugging = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,11 +69,13 @@
             this.miSep2 = new System.Windows.Forms.ToolStripSeparator();
             this.miInput = new System.Windows.Forms.ToolStripMenuItem();
             this.miClearInput = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuOptions = new System.Windows.Forms.ToolStripMenuItem();
             this.miSaveWhenRun = new System.Windows.Forms.ToolStripMenuItem();
+            this.miSelectProgrammingLanguage = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ctMenu = new System.Windows.Forms.MenuStrip();
+            this.cmbLanguage = new System.Windows.Forms.ToolStripComboBox();
             ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).BeginInit();
             this.ctSplit.Panel1.SuspendLayout();
             this.ctSplit.Panel2.SuspendLayout();
@@ -117,7 +118,7 @@
             // ctSplit
             // 
             this.ctSplit.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctSplit.Location = new System.Drawing.Point(0, 24);
+            this.ctSplit.Location = new System.Drawing.Point(0, 25);
             this.ctSplit.Name = "ctSplit";
             this.ctSplit.Orientation = System.Windows.Forms.Orientation.Horizontal;
             this.ctSplit.PaintSplitter = true;
@@ -129,8 +130,8 @@
             // ctSplit.Panel2
             // 
             this.ctSplit.Panel2.Controls.Add(this.ctTabs);
-            this.ctSplit.Size = new System.Drawing.Size(966, 776);
-            this.ctSplit.SplitterDistance = 350;
+            this.ctSplit.Size = new System.Drawing.Size(966, 775);
+            this.ctSplit.SplitterDistance = 349;
             this.ctSplit.TabIndex = 2;
             this.ctSplit.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitterMoved);
             // 
@@ -148,7 +149,7 @@
             this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.ctLayoutTop.Size = new System.Drawing.Size(966, 350);
+            this.ctLayoutTop.Size = new System.Drawing.Size(966, 349);
             this.ctLayoutTop.TabIndex = 0;
             // 
             // txtSource
@@ -160,13 +161,14 @@
             this.txtSource.Multiline = true;
             this.txtSource.Name = "txtSource";
             this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSource.Size = new System.Drawing.Size(956, 294);
+            this.txtSource.Size = new System.Drawing.Size(956, 293);
             this.txtSource.TabIndex = 2;
+            this.txtSource.KeyDown += new System.Windows.Forms.KeyEventHandler(this.sourceKeyDown);
             // 
             // lblInfo
             // 
             this.lblInfo.AutoSize = true;
-            this.lblInfo.Location = new System.Drawing.Point(5, 332);
+            this.lblInfo.Location = new System.Drawing.Point(5, 331);
             this.lblInfo.Margin = new System.Windows.Forms.Padding(5);
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(0, 13);
@@ -250,7 +252,7 @@
             this.miSep1,
             this.miExit});
             this.mnuFile.Name = "mnuFile";
-            this.mnuFile.Size = new System.Drawing.Size(35, 20);
+            this.mnuFile.Size = new System.Drawing.Size(35, 21);
             this.mnuFile.Text = "&File";
             // 
             // miNew
@@ -294,6 +296,7 @@
             this.miExit.Name = "miExit";
             this.miExit.Size = new System.Drawing.Size(152, 22);
             this.miExit.Text = "E&xit";
+            this.miExit.Click += new System.EventHandler(this.exit);
             // 
             // mnuView
             // 
@@ -306,9 +309,9 @@
             this.miOutput,
             this.miOutputFont,
             this.miSep5,
-            this.breakpointsToolStripMenuItem});
+            this.miBreakpoints});
             this.mnuView.Name = "mnuView";
-            this.mnuView.Size = new System.Drawing.Size(41, 20);
+            this.mnuView.Size = new System.Drawing.Size(41, 21);
             this.mnuView.Text = "&View";
             // 
             // miSourceFont
@@ -364,20 +367,14 @@
             this.miSep5.Name = "miSep5";
             this.miSep5.Size = new System.Drawing.Size(206, 6);
             // 
-            // breakpointsToolStripMenuItem
+            // miBreakpoints
             // 
-            this.breakpointsToolStripMenuItem.Name = "breakpointsToolStripMenuItem";
-            this.breakpointsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+            this.miBreakpoints.Name = "miBreakpoints";
+            this.miBreakpoints.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
                         | System.Windows.Forms.Keys.B)));
-            this.breakpointsToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
-            this.breakpointsToolStripMenuItem.Text = "&Breakpoints";
-            this.breakpointsToolStripMenuItem.Click += new System.EventHandler(this.viewBreakpoints);
-            // 
-            // mnuInsert
-            // 
-            this.mnuInsert.Name = "mnuInsert";
-            this.mnuInsert.Size = new System.Drawing.Size(48, 20);
-            this.mnuInsert.Text = "&Insert";
+            this.miBreakpoints.Size = new System.Drawing.Size(209, 22);
+            this.miBreakpoints.Text = "&Breakpoints";
+            this.miBreakpoints.Click += new System.EventHandler(this.viewBreakpoints);
             // 
             // mnuDebug
             // 
@@ -392,7 +389,7 @@
             this.miInput,
             this.miClearInput});
             this.mnuDebug.Name = "mnuDebug";
-            this.mnuDebug.Size = new System.Drawing.Size(50, 20);
+            this.mnuDebug.Size = new System.Drawing.Size(50, 21);
             this.mnuDebug.Text = "&Debug";
             // 
             // miRun
@@ -462,29 +459,39 @@
             this.miClearInput.Text = "C&lear input";
             this.miClearInput.Click += new System.EventHandler(this.clearInput);
             // 
-            // optionsToolStripMenuItem
+            // mnuOptions
             // 
-            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miSaveWhenRun});
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
-            this.optionsToolStripMenuItem.Text = "&Options";
+            this.mnuOptions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.miSaveWhenRun,
+            this.miSelectProgrammingLanguage});
+            this.mnuOptions.Name = "mnuOptions";
+            this.mnuOptions.Size = new System.Drawing.Size(56, 21);
+            this.mnuOptions.Text = "&Options";
             // 
             // miSaveWhenRun
             // 
             this.miSaveWhenRun.Checked = true;
             this.miSaveWhenRun.CheckState = System.Windows.Forms.CheckState.Checked;
             this.miSaveWhenRun.Name = "miSaveWhenRun";
-            this.miSaveWhenRun.Size = new System.Drawing.Size(149, 22);
+            this.miSaveWhenRun.Size = new System.Drawing.Size(288, 22);
             this.miSaveWhenRun.Text = "&Save when Run";
             this.miSaveWhenRun.Click += new System.EventHandler(this.toggleSaveWhenRun);
+            // 
+            // miSelectProgrammingLanguage
+            // 
+            this.miSelectProgrammingLanguage.Name = "miSelectProgrammingLanguage";
+            this.miSelectProgrammingLanguage.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+                        | System.Windows.Forms.Keys.L)));
+            this.miSelectProgrammingLanguage.Size = new System.Drawing.Size(288, 22);
+            this.miSelectProgrammingLanguage.Text = "Select Programming &Language...";
+            this.miSelectProgrammingLanguage.Click += new System.EventHandler(this.selectProgrammingLanguage);
             // 
             // mnuHelp
             // 
             this.mnuHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miAbout});
             this.mnuHelp.Name = "mnuHelp";
-            this.mnuHelp.Size = new System.Drawing.Size(40, 20);
+            this.mnuHelp.Size = new System.Drawing.Size(40, 21);
             this.mnuHelp.Text = "&Help";
             // 
             // miAbout
@@ -499,15 +506,21 @@
             this.ctMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuFile,
             this.mnuView,
-            this.mnuInsert,
             this.mnuDebug,
-            this.optionsToolStripMenuItem,
-            this.mnuHelp});
+            this.mnuOptions,
+            this.mnuHelp,
+            this.cmbLanguage});
             this.ctMenu.Location = new System.Drawing.Point(0, 0);
             this.ctMenu.Name = "ctMenu";
-            this.ctMenu.Size = new System.Drawing.Size(966, 24);
+            this.ctMenu.Size = new System.Drawing.Size(966, 25);
             this.ctMenu.TabIndex = 1;
             this.ctMenu.Text = "Main menu";
+            // 
+            // cmbLanguage
+            // 
+            this.cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbLanguage.Name = "cmbLanguage";
+            this.cmbLanguage.Size = new System.Drawing.Size(121, 21);
             // 
             // Mainform
             // 
@@ -558,7 +571,6 @@
         private System.Windows.Forms.ToolStripMenuItem mnuView;
         private System.Windows.Forms.ToolStripMenuItem miSourceFont;
         private System.Windows.Forms.ToolStripMenuItem miOutputFont;
-        private System.Windows.Forms.ToolStripMenuItem mnuInsert;
         private System.Windows.Forms.ToolStripMenuItem mnuDebug;
         private System.Windows.Forms.ToolStripMenuItem miRun;
         private System.Windows.Forms.ToolStripMenuItem miStopDebugging;
@@ -568,7 +580,7 @@
         private System.Windows.Forms.ToolStripSeparator miSep2;
         private System.Windows.Forms.ToolStripMenuItem miInput;
         private System.Windows.Forms.ToolStripMenuItem miClearInput;
-        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mnuOptions;
         private System.Windows.Forms.ToolStripMenuItem miSaveWhenRun;
         private System.Windows.Forms.ToolStripMenuItem mnuHelp;
         private System.Windows.Forms.ToolStripMenuItem miAbout;
@@ -585,8 +597,10 @@
         private System.Windows.Forms.ToolStripSeparator miSep4;
         private System.Windows.Forms.ToolStripMenuItem miOutput;
         private System.Windows.Forms.ToolStripSeparator miSep5;
-        private System.Windows.Forms.ToolStripMenuItem breakpointsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem miBreakpoints;
         private System.Windows.Forms.ToolStripMenuItem miToggleBreakpoint;
+        private System.Windows.Forms.ToolStripComboBox cmbLanguage;
+        private System.Windows.Forms.ToolStripMenuItem miSelectProgrammingLanguage;
     }
 }
 

@@ -59,16 +59,14 @@
     <Compile Include="Misc.cs" />
     <Compile Include="EsotericIDEProgram.cs" />
     <Compile Include="ProgrammingLanguage.cs" />
+    <Compile Include="RuntimeException.cs" />
     <Compile Include="Sclipting\ExecutionEnvironment.cs" />
     <Compile Include="Sclipting\Instructions.cs" />
     <Compile Include="Sclipting\Misc.cs" />
     <Compile Include="Sclipting\ParseTree.cs" />
     <Compile Include="Sclipting\RegexMatch.cs" />
     <Compile Include="Sclipting\ScliptingLanguage.cs" />
-    <Compile Include="Sclipting\Translation.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="Translation.cs" />
-    <Compile Include="Translation.g.cs" />
     <EmbeddedResource Include="AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>

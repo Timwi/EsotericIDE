@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System;
+using System.Threading;
 
 namespace EsotericIDE
 {
@@ -24,10 +25,8 @@ namespace EsotericIDE
 
         public event Action BreakpointsChanged;
 
-        public string Input;
-
         protected StringBuilder _output = new StringBuilder();
-        public string Output { get { lock (_locker) { return _output.ToString(); } } }
+        public string Output { get { lock (_locker) return _output.ToString(); } }
 
         protected List<int> _breakpoints = new List<int>();
         public int[] Breakpoints { get { lock (_locker) return _breakpoints.ToArray(); } }
@@ -52,8 +51,38 @@ namespace EsotericIDE
 
         public volatile ExecutionState State = ExecutionState.Debugging;
 
+        protected ManualResetEvent _resetEvent = new ManualResetEvent(false);
+        protected Thread _runner;
+
+        public void Continue(bool blockUntilFinished = false)
+        {
+            if (State == ExecutionState.Finished)
+            {
+                _resetEvent.Reset();
+                return;
+            }
+
+            if (_runner == null)
+            {
+                _runner = new Thread(() =>
+                {
+                    run();
+                    _runner = null;
+                });
+                _runner.Start();
+            }
+
+            _resetEvent.Set();
+        }
+
+        public virtual void Dispose()
+        {
+            State = ExecutionState.Stop;
+            if (_resetEvent != null)
+                ((IDisposable) _resetEvent).Dispose();
+        }
+
         public abstract string DescribeExecutionState();
-        public abstract void Continue(bool blockUntilFinished = false);
-        public abstract void Dispose();
+        protected abstract void run();
     }
 }

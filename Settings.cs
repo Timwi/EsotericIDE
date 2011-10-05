@@ -1,6 +1,6 @@
-﻿using RT.Util;
+﻿using System.Collections.Generic;
+using RT.Util;
 using RT.Util.Forms;
-using RT.Util.Lingo;
 
 namespace EsotericIDE
 {
@@ -8,7 +8,6 @@ namespace EsotericIDE
     sealed class Settings : SettingsBase
     {
         public ManagedForm.Settings FormSettings = new ManagedForm.Settings();
-        public Language Language;
         public string LastLanguageName;
         public string SourceFontName;
         public float SourceFontSize;
@@ -21,6 +20,8 @@ namespace EsotericIDE
         public string DebugInput;
         public bool SaveWhenRun = true;
 
+        public Dictionary<string, LanguageSettings> LanguageSettings;
+
 #if DEBUG
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
@@ -28,4 +29,6 @@ namespace EsotericIDE
         }
 #endif
     }
+
+    public abstract class LanguageSettings { }
 }

@@ -20,9 +20,9 @@ namespace EsotericIDE.Languages
         private static Dictionary<char, ScliptingInstruction> _instructions;
         private static Dictionary<char, InstructionType> _instructionTypes;
 
-        public override ExecutionEnvironment Compile(string source)
+        public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new ScliptingExecutionEnvironment(new ScliptingProgram { Instructions = parse(source, 0), Index = 0, Count = source.Length });
+            return new ScliptingExecutionEnvironment(new ScliptingProgram { Instructions = parse(source, 0), Index = 0, Count = source.Length }, input);
         }
 
         public override string GetInfo(string source, int cursorPos)

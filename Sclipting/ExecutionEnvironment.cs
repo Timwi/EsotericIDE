@@ -16,13 +16,13 @@ namespace EsotericIDE.Languages
             public List<object> CurrentStack = new List<object>();
             public List<RegexMatch> RegexObjects = new List<RegexMatch>();
             private ScliptingProgram _program;
-            private ManualResetEvent _resetEvent = new ManualResetEvent(false);
-            private Thread _runner;
+            public string Input { get; private set; }
 
-            public ScliptingExecutionEnvironment(ScliptingProgram program)
+            public ScliptingExecutionEnvironment(ScliptingProgram program, string input)
             {
                 _program = program;
                 _runner = null;
+                Input = input;
             }
 
             public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
@@ -105,7 +105,7 @@ namespace EsotericIDE.Languages
                 return "{0,2}.  {1} ({2})".Fmt(index, item, item.GetType().FullName);
             }
 
-            private void run()
+            protected override void run()
             {
                 if (State == ExecutionState.Finished)
                 {
@@ -121,7 +121,7 @@ namespace EsotericIDE.Languages
                     {
                         while (instructionPointer.MoveNext())
                         {
-                            lock (_breakpoints)
+                            lock (_locker)
                                 if (_breakpoints.Any(bp => bp >= instructionPointer.Current.Index && bp < instructionPointer.Current.Index + Math.Max(instructionPointer.Current.Length, 1)))
                                     State = ExecutionState.Debugging;
 
@@ -153,32 +153,7 @@ namespace EsotericIDE.Languages
                     fireExecutionFinished(canceled, exception);
                     State = ExecutionState.Finished;
                     _resetEvent.Reset();
-                    _runner = null;
                 }
-            }
-
-            public override void Continue(bool blockUntilFinished = false)
-            {
-                if (State == ExecutionState.Finished)
-                {
-                    _resetEvent.Reset();
-                    return;
-                }
-
-                if (_runner == null)
-                {
-                    _runner = new Thread(run);
-                    _runner.Start();
-                }
-
-                _resetEvent.Set();
-            }
-
-            public override void Dispose()
-            {
-                State = ExecutionState.Stop;
-                if (_resetEvent != null)
-                    ((IDisposable) _resetEvent).Dispose();
             }
         }
     }

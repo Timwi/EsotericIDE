@@ -49,6 +49,10 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Brainfuck\Brainfuck.cs" />
+    <Compile Include="Brainfuck\ExecutionEnvironment.cs" />
+    <Compile Include="Brainfuck\Program.cs" />
+    <Compile Include="Brainfuck\Settings.cs" />
     <Compile Include="ExecutionEnvironment.cs" />
     <Compile Include="Mainform.cs">
       <SubType>Form</SubType>
@@ -80,6 +84,7 @@
       <Name>Util</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"$(TargetPath)" --post-build-check "$(SolutionDir)."</PostBuildEvent>

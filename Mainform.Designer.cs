@@ -173,6 +173,7 @@
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(0, 13);
             this.lblInfo.TabIndex = 3;
+            this.lblInfo.UseMnemonic = false;
             // 
             // ctTabs
             // 
@@ -340,6 +341,7 @@
             this.miExecutionStateFont.Name = "miExecutionStateFont";
             this.miExecutionStateFont.Size = new System.Drawing.Size(209, 22);
             this.miExecutionStateFont.Text = "E&xecution State Font...";
+            this.miExecutionStateFont.Click += new System.EventHandler(this.font);
             // 
             // miSep4
             // 

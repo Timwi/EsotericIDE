@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,6 @@ using RT.Util.Controls;
 using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
 using RT.Util.Forms;
-using RT.Util.Lingo;
 
 namespace EsotericIDE
 {
@@ -44,15 +44,25 @@ namespace EsotericIDE
                     ctSplit.SplitterDistance = EsotericIDEProgram.Settings.SplitterDistance;
             };
 
+            if (EsotericIDEProgram.Settings.LanguageSettings == null)
+                EsotericIDEProgram.Settings.LanguageSettings = new Dictionary<string, LanguageSettings>();
             var languages = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => typeof(ProgrammingLanguage).IsAssignableFrom(t) && !t.IsAbstract)
                 .Select(t => (ProgrammingLanguage) Activator.CreateInstance(t))
+                .OrderBy(t => t.LanguageName)
                 .ToArray();
+            LanguageSettings settings;
+            foreach (var lang in languages)
+                if (EsotericIDEProgram.Settings.LanguageSettings.TryGetValue(lang.LanguageName, out settings) && settings != null)
+                    lang.SetSettings(settings);
             cmbLanguage.Items.AddRange(languages);
+
             ToolStripMenuItem[] currentLanguageSpecificMenus = null;
             cmbLanguage.SelectedIndexChanged += (_, __) =>
             {
-                EsotericIDEProgram.Settings.LastLanguageName = ((ProgrammingLanguage) cmbLanguage.SelectedItem).LanguageName;
+                _currentLanguage = (ProgrammingLanguage) cmbLanguage.SelectedItem;
+                EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = _currentLanguage.GetSettings();
+                EsotericIDEProgram.Settings.LastLanguageName = _currentLanguage.LanguageName;
                 if (currentLanguageSpecificMenus != null)
                     foreach (var menuItem in currentLanguageSpecificMenus)
                         ctMenu.Items.Remove(menuItem);
@@ -60,11 +70,10 @@ namespace EsotericIDE
                 ctMenu.Items.AddRange(currentLanguageSpecificMenus);
             };
             var ll = languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
-            if (ll != -1)
-                cmbLanguage.SelectedIndex = ll;
+            cmbLanguage.SelectedIndex = ll == -1 ? 0 : ll;
         }
 
-        private ProgrammingLanguage _currentLanguage = new Languages.Sclipting();
+        private ProgrammingLanguage _currentLanguage;
 
         private string _input
         {
@@ -228,7 +237,7 @@ namespace EsotericIDE
                     catch { }
                 if (open.ShowDialog() == DialogResult.Cancel)
                     return;
-                EsotericIDEProgram.Settings.LastDirectory = open.InitialDirectory;
+                EsotericIDEProgram.Settings.LastDirectory = Path.GetDirectoryName(open.FileName);
 
                 txtSource.Text = File.ReadAllText(_currentFilePath = open.FileName);
                 txtExecutionState.Text = "";
@@ -293,9 +302,8 @@ namespace EsotericIDE
                 var input = _input ?? InputBox.GetLine("Please type the input to the program:", "", "Esoteric IDE", "&OK", "&Cancel");
                 if (input == null)
                     return false;
-                _currentEnvironment = _currentLanguage.Compile(txtSource.Text);
+                _currentEnvironment = _currentLanguage.Compile(txtSource.Text, input);
                 _currentEnvironment.State = state;
-                _currentEnvironment.Input = input;
                 _currentEnvironment.DebuggerBreak += p => { this.Invoke(new Action(() => debuggerBreak(p))); };
                 _currentEnvironment.ExecutionFinished += (c, e) => { this.Invoke(new Action(() => executionFinished(c, e))); };
                 foreach (int bp in lstBreakpoints.Items)
@@ -367,6 +375,7 @@ namespace EsotericIDE
         {
             _currentPosition = position;
             txtExecutionState.Text = _currentEnvironment.DescribeExecutionState();
+            txtOutput.Text = _currentEnvironment.Output;
             ctTabs.SelectedTab = tabExecutionState;
             txtSource.Focus();
             txtSource.SelectionStart = _currentPosition.Index;
@@ -394,6 +403,7 @@ namespace EsotericIDE
 
         private void exiting(object _, FormClosingEventArgs e)
         {
+            EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = _currentLanguage.GetSettings();
             if (!canDestroy())
                 e.Cancel = true;
         }

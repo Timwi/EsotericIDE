@@ -74,8 +74,8 @@ namespace EsotericIDE.Languages
                         case '-': be.Dec(); break;
                         case '<': be.MoveLeft(); break;
                         case '>': be.MoveRight(); break;
-                        case '.': be.Output(); break;
-                        case ',': be.Input(); break;
+                        case '.': be.BfOutput(); break;
+                        case ',': be.BfInput(); break;
                         default:
                             break;
                     }

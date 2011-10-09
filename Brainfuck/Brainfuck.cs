@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Windows.Forms;
 using RT.Util;
 using RT.Util.ExtensionMethods;
-using System.Collections.Generic;
-using System.Numerics;
 
 namespace EsotericIDE.Languages
 {

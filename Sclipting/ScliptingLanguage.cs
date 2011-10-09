@@ -84,7 +84,7 @@ namespace EsotericIDE.Languages
 
             string description;
             string instructionType = "Stack instruction:";
-#warning TODO: Lingo and ordinal numbers?
+
             if (source[cursorPos] >= '①' && source[cursorPos] <= '⑳')
                 description = "Copy {0}th item from bottom.".Fmt(source[cursorPos] - '①' + 1);
             else if (source[cursorPos] >= '㉑' && source[cursorPos] <= '㉟')
@@ -379,6 +379,7 @@ namespace EsotericIDE.Languages
             }
         }
 
+#if DEBUG
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
             initInstructionsDictionary();
@@ -386,6 +387,7 @@ namespace EsotericIDE.Languages
                 try { createBlockInstruction(instr, 0, 0, null, false); }
                 catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instr), "ScliptingLanguage", "BlockInstruction createBlockInstruction", "default"); }
         }
+#endif
 
         public static string ParseByteArrayToken(string source, int index)
         {

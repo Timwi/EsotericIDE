@@ -15,12 +15,12 @@ namespace EsotericIDE.Languages
 
             public abstract void MoveLeft();
             public abstract void MoveRight();
-            public abstract void Output();
+            public abstract void BfOutput();
             public abstract void Inc();
             public abstract void Dec();
             public abstract bool IsNonZero { get; }
             protected abstract void input(BigInteger input);
-            public void Input() { input(_input.Count == 0 ? 0 : _input.Dequeue()); }
+            public void BfInput() { input(_input.Count == 0 ? 0 : _input.Dequeue()); }
         }
 
         private abstract class brainfuckExecutionEnvironment<TCell> : brainfuckExecutionEnvironment
@@ -69,7 +69,7 @@ namespace EsotericIDE.Languages
                 }
             }
 
-            public sealed override void Output()
+            public sealed override void BfOutput()
             {
                 switch (_outputType)
                 {

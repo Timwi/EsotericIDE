@@ -1,7 +1,7 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using System.Text;
 using RT.Util.ExtensionMethods;
-using System;
 
 namespace EsotericIDE.Languages
 {

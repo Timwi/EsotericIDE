@@ -1,9 +1,8 @@
 ﻿using System;
-using RT.Util.ExtensionMethods;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using RT.Util;
+using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages
 {
@@ -70,12 +69,14 @@ namespace EsotericIDE.Languages
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }
+
                         case instruction.Stdin:
                             {
                                 activeThread.CurrentValue = bits.FromString(Input);
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }
+
                         case instruction.Concat:
                             {
                                 activeThread.Role = activeThread.CurrentInstruction.PointedToBy.IndexOf(activeThread.PrevInstruction);
@@ -91,18 +92,21 @@ namespace EsotericIDE.Languages
                                     activeThread.Suspended = true;
                                 break;
                             }
+
                         case instruction.NoOp:
                         case instruction.Label:
                             {
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }
+
                         case instruction.Inverse:
                             {
                                 activeThread.CurrentValue = activeThread.CurrentValue.Invert();
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }
+
                         case instruction.Splitter:
                             {
                                 var newThread = new thread();
@@ -113,6 +117,7 @@ namespace EsotericIDE.Languages
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }
+
                         case instruction.Producer:
                             {
                                 activeThread.Role = activeThread.CurrentInstruction.PointedToBy.IndexOf(activeThread.PrevInstruction);
@@ -143,6 +148,7 @@ namespace EsotericIDE.Languages
                                 }
                                 break;
                             }
+
                         case instruction.IsZero:
                             {
                                 if (activeThread.CurrentValue.IsEmpty)
@@ -152,15 +158,17 @@ namespace EsotericIDE.Languages
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[iz ? 1 : 0];
                             }
                             break;
+
                         case instruction.IsEmpty:
                             {
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[activeThread.CurrentValue.IsEmpty ? 0 : 1];
                                 activeThread.CurrentValue = bits.Empty;
                             }
                             break;
+
                         default:
-                            System.Diagnostics.Debugger.Break();
-                            break;
+                            exception = new RuntimeException(new Position(activeThread.CurrentInstruction.Index, 1), "Unrecognised instruction encountered. (This indicates a bug in the parser, which should have caught this at compile-time.)");
+                            goto finished;
                     }
                 }
 

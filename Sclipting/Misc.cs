@@ -4,16 +4,16 @@ namespace EsotericIDE.Languages
 {
     partial class Sclipting
     {
-        sealed class Mark { }
+        private sealed class mark { }
 
         [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = false)]
-        sealed class InstructionAttribute : Attribute
+        private sealed class instructionAttribute : Attribute
         {
             public char Character { get; private set; }
             public string Engrish { get; private set; }
             public string Description { get; private set; }
-            public InstructionType Type { get; private set; }
-            public InstructionAttribute(char character, string engrish, string description, InstructionType type)
+            public nodeType Type { get; private set; }
+            public instructionAttribute(char character, string engrish, string description, nodeType type)
             {
                 Character = character;
                 Engrish = engrish;

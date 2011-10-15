@@ -28,6 +28,8 @@ namespace EsotericIDE
             ctMenu.Renderer = new NativeToolStripRenderer();
             if (EsotericIDEProgram.Settings.SourceFontName != null)
                 txtSource.Font = new Font(EsotericIDEProgram.Settings.SourceFontName, EsotericIDEProgram.Settings.SourceFontSize);
+            if (EsotericIDEProgram.Settings.ExecutionStateFontName != null)
+                txtExecutionState.Font = new Font(EsotericIDEProgram.Settings.ExecutionStateFontName, EsotericIDEProgram.Settings.ExecutionStateFontSize);
             if (EsotericIDEProgram.Settings.OutputFontName != null)
                 txtOutput.Font = new Font(EsotericIDEProgram.Settings.OutputFontName, EsotericIDEProgram.Settings.OutputFontSize);
 
@@ -157,8 +159,13 @@ namespace EsotericIDE
                 result = DlgMessage.Show("Cancel debugging?", "Esoteric IDE", DlgType.Question, "&Yes", "&No");
                 if (result == 1)
                     return false;
+
+                // Tell the executing program to stop
                 _currentEnvironment.State = ExecutionState.Stop;
                 _currentEnvironment.Continue(true);
+
+                // The stopped program will have triggered an executionFinished event, which needs to be processed before the form is disposed
+                Application.DoEvents();
             }
 
             if (!_anyChanges)
@@ -337,6 +344,7 @@ namespace EsotericIDE
             _currentEnvironment = null;
             _currentPosition = null;
 
+            txtSource.Focus();
             if (exception != null)
             {
                 var msg = "A run-time exception occurred:{0}{0}{1}".Fmt(Environment.NewLine, exception.Message);

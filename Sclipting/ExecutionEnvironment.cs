@@ -11,14 +11,14 @@ namespace EsotericIDE.Languages
 {
     partial class Sclipting
     {
-        sealed class ScliptingExecutionEnvironment : ExecutionEnvironment
+        private sealed class executionEnvironment : ExecutionEnvironment
         {
             public List<object> CurrentStack = new List<object>();
-            public List<RegexMatch> RegexObjects = new List<RegexMatch>();
-            private ScliptingProgram _program;
+            public List<regexMatch> RegexObjects = new List<regexMatch>();
+            private program _program;
             public string Input { get; private set; }
 
-            public ScliptingExecutionEnvironment(ScliptingProgram program, string input)
+            public executionEnvironment(program program, string input)
             {
                 _program = program;
                 _runner = null;
@@ -59,7 +59,7 @@ namespace EsotericIDE.Languages
             public void GenerateOutput()
             {
                 var index = CurrentStack.Count;
-                while (index > 0 && !(CurrentStack[index - 1] is Mark))
+                while (index > 0 && !(CurrentStack[index - 1] is mark))
                     index--;
                 for (; index < CurrentStack.Count; index++)
                     _output.Append(Sclipting.ToString(CurrentStack[index]));
@@ -83,26 +83,34 @@ namespace EsotericIDE.Languages
                 return sb.ToString();
             }
 
-            private string describe(object item, int index)
+            private string describe(object item)
             {
                 byte[] b;
                 List<object> list;
+                function fnc;
 
                 if ((b = item as byte[]) != null)
-                    return "{0,2}.  Byte array: “{1}” ({2})".Fmt(index, b.FromUtf8().CLiteralEscape(), Sclipting.ToInt(b));
+                    return "Byte array: “{0}” ({1})".Fmt(b.FromUtf8().CLiteralEscape(), Sclipting.ToInt(b));
                 else if (item is BigInteger)
-                    return "{0,2}.  Integer: {1}".Fmt(index, item);
+                    return "Integer: {0}".Fmt(item);
                 else if (item is string)
-                    return "{0,2}.  String: “{1}”".Fmt(index, ((string) item).CLiteralEscape());
+                    return "String: “{0}”".Fmt(((string) item).CLiteralEscape());
                 else if (item is double)
-                    return "{0,2}.  Float: {1}".Fmt(index, ExactConvert.ToString((double) item));
-                else if (item is Mark)
-                    return "{0,2}.  Mark".Fmt(index);
+                    return "Float: {0}".Fmt(ExactConvert.ToString((double) item));
+                else if (item is mark)
+                    return "Mark";
                 else if ((list = item as List<object>) != null)
-                    return "{0,2}.  list ({1} items)".Fmt(index, list.Count) + list.Select((itm, idx) => Environment.NewLine + describe(itm, idx)).JoinString().Indent(4, false);
+                    return "List ({0} items)".Fmt(list.Count) + list.Select((itm, idx) => Environment.NewLine + describe(itm, idx)).JoinString().Indent(4, false);
+                else if ((fnc = item as function) != null)
+                    return "Function" + (fnc.CapturedItem != null ? "; capture: " + describe(fnc.CapturedItem) : "; no capture");
 
                 // unknown type of object?
-                return "{0,2}.  {1} ({2})".Fmt(index, item, item.GetType().FullName);
+                return "{0} ({1})".Fmt(item, item.GetType().FullName);
+            }
+
+            private string describe(object item, int index)
+            {
+                return "{0,2}.  {1}".Fmt(index, describe(item));
             }
 
             protected override void run()
@@ -155,6 +163,12 @@ namespace EsotericIDE.Languages
                     _resetEvent.Reset();
                 }
             }
+        }
+
+        private sealed class function
+        {
+            public functionNode FunctionCode;
+            public object CapturedItem;
         }
     }
 }

@@ -3,149 +3,162 @@ namespace EsotericIDE.Languages
 {
     partial class Sclipting
     {
-        enum ScliptingInstruction
+        private enum instruction
         {
             // General
-            [Instruction('標', "mark", "Pushes a mark.", InstructionType.SingularInstruction)]
+            [instruction('標', "mark", "Pushes a mark.", nodeType.SingularNode)]
             Mark,
-            [Instruction('丟', "discard", "Pops an item.", InstructionType.SingularInstruction)]
+            [instruction('丟', "discard", "Pops an item.", nodeType.SingularNode)]
             Discard,
 
             // String or list manipulation
-            [Instruction('長', "length", "Returns length of list/string.", InstructionType.SingularInstruction)]
+            [instruction('長', "length", "Returns length of list/string.", nodeType.SingularNode)]
             Length,
-            [Instruction('復', "repeat", "Repeats a list, string, or byte array.", InstructionType.SingularInstruction)]
+            [instruction('復', "repeat", "Repeats a list, string, or byte array.", nodeType.SingularNode)]
             Repeat,
-            [Instruction('併', "combine", "Concatenates everything above the last mark into a string.", InstructionType.SingularInstruction)]
+            [instruction('併', "combine", "Concatenates everything above the last mark into a string.", nodeType.SingularNode)]
             CombineString,
-            [Instruction('并', "combine", "Places everything above the last mark in a list.", InstructionType.SingularInstruction)]
+            [instruction('并', "combine", "Places everything above the last mark in a list.", nodeType.SingularNode)]
             CombineList,
-            [Instruction('掘', "excavate", "Retrieves the nth item/character in a list/string (pop list/string).", InstructionType.SingularInstruction)]
+            [instruction('掘', "excavate", "Retrieves the nth item/character in a list/string (pop list/string).", nodeType.SingularNode)]
             Excavate,
-            [Instruction('挖', "dig out", "Retrieves the nth item/character in a list/string (keep list/string).", InstructionType.SingularInstruction)]
+            [instruction('挖', "dig out", "Retrieves the nth item/character in a list/string (keep list/string).", nodeType.SingularNode)]
             DigOut,
-            [Instruction('插', "insert", "Replaces the nth item/character in a list/string.", InstructionType.SingularInstruction)]
+            [instruction('插', "insert", "Replaces the nth item/character in a list/string.", nodeType.SingularNode)]
             Insert,
-            [Instruction('反', "reverse", "Reverses a string.", InstructionType.SingularInstruction)]
+            [instruction('反', "reverse", "Reverses a string.", nodeType.SingularNode)]
             Reverse,
-            [Instruction('捃', "sort", "Sort a list/string by string value.", InstructionType.SingularInstruction)]
+            [instruction('捃', "sort", "Sort a list/string by string value.", nodeType.SingularNode)]
             Sort,
-            [Instruction('訂', "arrange", "Sort a list/string by integer value/codepoint.", InstructionType.SingularInstruction)]
+            [instruction('訂', "arrange", "Sort a list/string by integer value/codepoint.", nodeType.SingularNode)]
             Arrange,
 
             // String manipulation only
-            [Instruction('講', "explain", "Unicode codepoint for first character in a string.", InstructionType.SingularInstruction)]
+            [instruction('講', "explain", "Unicode codepoint for first character in a string.", nodeType.SingularNode)]
             Explain,
-            [Instruction('字', "character", "Character from Unicode codepoint.", InstructionType.SingularInstruction)]
+            [instruction('字', "character", "Character from Unicode codepoint.", nodeType.SingularNode)]
             Character,
 
             // Regular expressions
-            [Instruction('現', "appear", "Current regular expression match.", InstructionType.SingularInstruction)]
+            [instruction('現', "appear", "Current regular expression match.", nodeType.SingularNode)]
             Appear,
-            [Instruction('坼', "split", "Split string using regular expression (pop).", InstructionType.SingularInstruction)]
+            [instruction('坼', "split", "Split string using regular expression (pop).", nodeType.SingularNode)]
             SplitPop,
-            [Instruction('裂', "split", "Split string using regular expression (no pop).", InstructionType.SingularInstruction)]
+            [instruction('裂', "split", "Split string using regular expression (no pop).", nodeType.SingularNode)]
             SplitNoPop,
 
             // Arithmetic
-            [Instruction('加', "add", "Adds two numbers.", InstructionType.SingularInstruction)]
+            [instruction('加', "add", "Adds two numbers.", nodeType.SingularNode)]
             Add,
-            [Instruction('減', "subtract", "Subtracts two numbers.", InstructionType.SingularInstruction)]
+            [instruction('減', "subtract", "Subtracts two numbers.", nodeType.SingularNode)]
             Subtract,
-            [Instruction('乘', "multiply", "Multiplies two numbers.", InstructionType.SingularInstruction)]
+            [instruction('乘', "multiply", "Multiplies two numbers.", nodeType.SingularNode)]
             Multiply,
-            [Instruction('除', "divide", "Divides two numbers as floats.", InstructionType.SingularInstruction)]
+            [instruction('除', "divide", "Divides two numbers as floats.", nodeType.SingularNode)]
             DivideFloat,
-            [Instruction('分', "divide", "Divides two integers using integer division.", InstructionType.SingularInstruction)]
+            [instruction('分', "divide", "Divides two integers using integer division.", nodeType.SingularNode)]
             DivideInt,
-            [Instruction('剩', "leftovers", "Remainder (modulo).", InstructionType.SingularInstruction)]
+            [instruction('剩', "leftovers", "Remainder (modulo).", nodeType.SingularNode)]
             Leftovers,
-            [Instruction('方', "power", "Exponentiation.", InstructionType.SingularInstruction)]
+            [instruction('方', "power", "Exponentiation.", nodeType.SingularNode)]
             Power,
-            [Instruction('負', "negative", "Negative (unary minus).", InstructionType.SingularInstruction)]
+            [instruction('負', "negative", "Negative (unary minus).", nodeType.SingularNode)]
             Negative,
-            [Instruction('對', "correct", "Absolute value.", InstructionType.SingularInstruction)]
+            [instruction('對', "correct", "Absolute value.", nodeType.SingularNode)]
             Correct,
-            [Instruction('增', "increase", "Increment by one.", InstructionType.SingularInstruction)]
+            [instruction('增', "increase", "Increment by one.", nodeType.SingularNode)]
             Increase,
-            [Instruction('貶', "decrease", "Decrement by one.", InstructionType.SingularInstruction)]
+            [instruction('貶', "decrease", "Decrement by one.", nodeType.SingularNode)]
             Decrease,
-            [Instruction('左', "left", "Shift left.", InstructionType.SingularInstruction)]
+            [instruction('左', "left", "Shift left.", nodeType.SingularNode)]
             Left,
-            [Instruction('右', "right", "Shift right.", InstructionType.SingularInstruction)]
+            [instruction('右', "right", "Shift right.", nodeType.SingularNode)]
             Right,
-            [Instruction('雙', "both", "Bitwise and.", InstructionType.SingularInstruction)]
+            [instruction('雙', "both", "Bitwise and.", nodeType.SingularNode)]
             Both,
-            [Instruction('另', "other", "Bitwise or.", InstructionType.SingularInstruction)]
+            [instruction('另', "other", "Bitwise or.", nodeType.SingularNode)]
             Other,
-            [Instruction('倆', "clever", "Bitwise xor.", InstructionType.SingularInstruction)]
+            [instruction('倆', "clever", "Bitwise xor.", nodeType.SingularNode)]
             Clever,
 
             // Logic
-            [Instruction('小', "small", "Less than.", InstructionType.SingularInstruction)]
+            [instruction('小', "small", "Less than.", nodeType.SingularNode)]
             Small,
-            [Instruction('大', "great", "Greater than.", InstructionType.SingularInstruction)]
+            [instruction('大', "great", "Greater than.", nodeType.SingularNode)]
             Great,
-            [Instruction('與', "and", "Logical (boolean) and.", InstructionType.SingularInstruction)]
+            [instruction('與', "and", "Logical (boolean) and.", nodeType.SingularNode)]
             And,
-            [Instruction('或', "or", "Logical (boolean) or.", InstructionType.SingularInstruction)]
+            [instruction('或', "or", "Logical (boolean) or.", nodeType.SingularNode)]
             Or,
-            [Instruction('隻', "one of pair", "Logical (boolean) xor.", InstructionType.SingularInstruction)]
+            [instruction('隻', "one of pair", "Logical (boolean) xor.", nodeType.SingularNode)]
             OneOfPair,
-            [Instruction('同', "same", "Exactly the same.", InstructionType.SingularInstruction)]
+            [instruction('同', "same", "Exactly the same.", nodeType.SingularNode)]
             Same,
-            [Instruction('侔', "equal", "Equal as integers.", InstructionType.SingularInstruction)]
+            [instruction('侔', "equal", "Equal as integers.", nodeType.SingularNode)]
             Equal,
-            [Instruction('肖', "resemble", "Equal as strings.", InstructionType.SingularInstruction)]
+            [instruction('肖', "resemble", "Equal as strings.", nodeType.SingularNode)]
             Resemble,
-            [Instruction('嗎', "is it?", "Conditional operator.", InstructionType.SingularInstruction)]
+            [instruction('嗎', "is it?", "Conditional operator.", nodeType.SingularNode)]
             IsIt,
 
-            // Block instructions
-            [Instruction('是', "yes", "If (pop)", InstructionType.BlockHead)]
-            Yes,
-            [Instruction('倘', "if", "If (no pop)", InstructionType.BlockHead)]
-            If,
-            [Instruction('數', "count", "For loop", InstructionType.BlockHead)]
-            Count,
-            [Instruction('各', "each", "Foreach loop (pop)", InstructionType.BlockHead)]
-            Each,
-            [Instruction('每', "every", "Foreach loop (no pop)", InstructionType.BlockHead)]
-            Every,
-            [Instruction('套', "loop", "While loop (pop)", InstructionType.BlockHead)]
-            Loop,
-            [Instruction('要', "necessity", "While loop (no pop)", InstructionType.BlockHead)]
-            Necessity,
-            [Instruction('迄', "until", "Until loop (pop)", InstructionType.BlockHead)]
-            Until,
-            [Instruction('到', "arrive", "Until loop (no pop)", InstructionType.BlockHead)]
-            Arrive,
-            [Instruction('換', "substitute", "Regular expression replace first (pop)", InstructionType.BlockHead)]
-            ReplaceFirstPop,
-            [Instruction('代', "replace", "Regular expression replace first (no pop)", InstructionType.BlockHead)]
-            ReplaceFirstNoPop,
-            [Instruction('替', "replace", "Regular expression replace all (pop)", InstructionType.BlockHead)]
-            ReplaceAllPop,
-            [Instruction('更', "replace", "Regular expression replace all (no pop)", InstructionType.BlockHead)]
-            ReplaceAllNoPop,
+            // Function execution
+            [instruction('開', "initiate", "Pops and executes a function (lambda).", nodeType.FunctionExecutionNode)]
+            Initiate,
+            [instruction('辦', "handle", "Pops a function (lambda), executes it, and then pushes it back on when it returns.", nodeType.FunctionExecutionNode)]
+            Handle,
+            [instruction('演', "perform", "Executes a function (lambda) without popping it.", nodeType.FunctionExecutionNode)]
+            Perform,
 
-            [Instruction('不', "no", "Else (pop)", InstructionType.BlockElse)]
+            // Block instructions
+            [instruction('是', "yes", "If (pop)", nodeType.BlockHead)]
+            Yes,
+            [instruction('倘', "if", "If (no pop)", nodeType.BlockHead)]
+            If,
+            [instruction('數', "count", "For loop", nodeType.BlockHead)]
+            Count,
+            [instruction('各', "each", "Foreach loop (pop)", nodeType.BlockHead)]
+            Each,
+            [instruction('每', "every", "Foreach loop (no pop)", nodeType.BlockHead)]
+            Every,
+            [instruction('套', "loop", "While loop (pop)", nodeType.BlockHead)]
+            Loop,
+            [instruction('要', "necessity", "While loop (no pop)", nodeType.BlockHead)]
+            Necessity,
+            [instruction('迄', "until", "Until loop (pop)", nodeType.BlockHead)]
+            Until,
+            [instruction('到', "arrive", "Until loop (no pop)", nodeType.BlockHead)]
+            Arrive,
+            [instruction('換', "substitute", "Regular expression replace first (pop)", nodeType.BlockHead)]
+            ReplaceFirstPop,
+            [instruction('代', "replace", "Regular expression replace first (no pop)", nodeType.BlockHead)]
+            ReplaceFirstNoPop,
+            [instruction('替', "replace", "Regular expression replace all (pop)", nodeType.BlockHead)]
+            ReplaceAllPop,
+            [instruction('更', "replace", "Regular expression replace all (no pop)", nodeType.BlockHead)]
+            ReplaceAllNoPop,
+            [instruction('塊', "block", "Introduces an anonymous function (lambda expression).", nodeType.BlockHead)]
+            Block,
+            [instruction('掳', "capture", "Introduces an anonymous function (lambda expression) that captures one item.", nodeType.BlockHead)]
+            Capture,
+
+            [instruction('不', "no", "Else (pop)", nodeType.BlockElse)]
             No,
-            [Instruction('逆', "opposite", "Else (no pop)", InstructionType.BlockElse)]
+            [instruction('逆', "opposite", "Else (no pop)", nodeType.BlockElse)]
             Opposite,
-            [Instruction('終', "end", "End", InstructionType.BlockEnd)]
+            [instruction('終', "end", "End", nodeType.BlockEnd)]
             End,
         }
 
-        enum InstructionType
+        private enum nodeType
         {
-            SingularInstruction,
+            SingularNode,
+            FunctionExecutionNode,
             BlockHead,
             BlockElse,
             BlockEnd
         }
 
-        enum StackOrRegexInstructionType
+        private enum stackOrRegexNodeType
         {
             CopyFromTop,
             CopyFromBottom,

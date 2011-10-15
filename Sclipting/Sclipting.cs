@@ -17,12 +17,12 @@ namespace EsotericIDE.Languages
         public override string LanguageName { get { return "Sclipting"; } }
         public override string DefaultFileExtension { get { return ".sclipt"; } }
 
-        private static Dictionary<char, ScliptingInstruction> _instructions;
-        private static Dictionary<char, InstructionType> _instructionTypes;
+        private static Dictionary<char, instruction> _instructions;
+        private static Dictionary<char, nodeType> _instructionTypes;
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new ScliptingExecutionEnvironment(new ScliptingProgram { Instructions = parse(source, 0), Index = 0, Count = source.Length }, input);
+            return new executionEnvironment(new program { Instructions = parse(source, 0), Index = 0, Count = source.Length }, input);
         }
 
         public override string GetInfo(string source, int cursorPos)
@@ -41,7 +41,7 @@ namespace EsotericIDE.Languages
                 while (true)
                 {
                     if (source[index] >= 0xbc00 && index == cursorPos)
-                        goto negativeNumber;
+                        goto negNum;
                     else if (source[index] >= 0xbc00)
                     {
                         index++;
@@ -68,19 +68,19 @@ namespace EsotericIDE.Languages
                 }
             }
 
-            negativeNumber:
+            negNum:
             if (source[cursorPos] >= 0xbc00 && source[cursorPos] <= 0xd7a3)
                 return "Negative number: {0}".Fmt(0xbbff - source[cursorPos]);
 
-            var attribute = typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public)
-                .Select(f => f.GetCustomAttributes<InstructionAttribute>().FirstOrDefault())
+            var attribute = typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Select(f => f.GetCustomAttributes<instructionAttribute>().FirstOrDefault())
                 .Where(attr => attr != null && attr.Character == source[cursorPos])
                 .FirstOrDefault();
             if (attribute != null)
                 return "{3}: {0} ({1}) — {2}".Fmt(attribute.Character, attribute.Engrish, attribute.Description,
-                    attribute.Type == InstructionType.BlockHead ? "Block head instruction" :
-                    attribute.Type == InstructionType.BlockElse ? "Block else instruction" :
-                    attribute.Type == InstructionType.BlockEnd ? "Block end instruction" : "Instruction");
+                    attribute.Type == nodeType.BlockHead ? "Block head instruction" :
+                    attribute.Type == nodeType.BlockElse ? "Block else instruction" :
+                    attribute.Type == nodeType.BlockEnd ? "Block end instruction" : "Instruction");
 
             string description;
             string instructionType = "Stack instruction:";
@@ -153,11 +153,11 @@ namespace EsotericIDE.Languages
             for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
                 miInsertRegexInstruction.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
 
-            foreach (var instr in typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public))
+            foreach (var instr in typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public))
             {
-                var attr = instr.GetCustomAttributes<InstructionAttribute>().First();
+                var attr = instr.GetCustomAttributes<instructionAttribute>().First();
                 var ch = attr.Character;
-                var superMenu = attr.Type == InstructionType.SingularInstruction ? miInsertSingularInstruction : miInsertBlockInstruction;
+                var superMenu = (attr.Type == nodeType.SingularNode || attr.Type == nodeType.FunctionExecutionNode) ? miInsertSingularInstruction : miInsertBlockInstruction;
                 superMenu.DropDownItems.Add(
                     new ToolStripMenuItem(ch + " &" + attr.Engrish + " — " + attr.Description, null, (_, __) => { insertText(ch.ToString()); })
                 );
@@ -226,12 +226,12 @@ namespace EsotericIDE.Languages
                 catch { DlgMessage.Show("The text you entered is not valid hexadecimal. Please ensure that you enter an even number of characters 0-9/a-f.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
 
-        private List<Instruction> parse(string source, int addIndex)
+        private List<node> parse(string source, int addIndex)
         {
-            ScliptingInstruction instruction;
-            InstructionType type;
+            instruction instruction;
+            nodeType type;
 
-            var ret = new List<Instruction>();
+            var ret = new List<node>();
             int index = 0;
             while (index < source.Length)
             {
@@ -249,7 +249,7 @@ namespace EsotericIDE.Languages
                     index += hangeul.Length;
                     try
                     {
-                        ret.Add(new ByteArray { Array = DecodeByteArray(hangeul), Index = origIndex + addIndex, Count = index - origIndex });
+                        ret.Add(new byteArray { Array = DecodeByteArray(hangeul), Index = origIndex + addIndex, Count = index - origIndex });
                     }
                     catch (ParseException pe)
                     {
@@ -257,49 +257,62 @@ namespace EsotericIDE.Languages
                     }
                 }
                 else if (ch >= 0xbc00 && ch <= 0xd7a3)
-                    ret.Add(new NegativeNumber { Number = 0xbbff - ch, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new negativeNumber { Number = 0xbbff - ch, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '①' && ch <= '⑳')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.CopyFromBottom, Value = ch - '①' + 1, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.CopyFromBottom, Value = ch - '①' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '㉑' && ch <= '㉟')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.CopyFromBottom, Value = ch - '㉑' + 21, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.CopyFromBottom, Value = ch - '㉑' + 21, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '㊱' && ch <= '㊿')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.CopyFromBottom, Value = ch - '㊱' + 36, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.CopyFromBottom, Value = ch - '㊱' + 36, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '⓵' && ch <= '⓾')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.MoveFromTop, Value = ch - '⓵' + 1, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.MoveFromTop, Value = ch - '⓵' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '❶' && ch <= '❿')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.CopyFromTop, Value = ch - '❶' + 1, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.CopyFromTop, Value = ch - '❶' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '⓫' && ch <= '⓴')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.CopyFromTop, Value = ch - '⓫' + 11, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.CopyFromTop, Value = ch - '⓫' + 11, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '⑴' && ch <= '⒇')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.MoveFromBottom, Value = ch - '⑴' + 1, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.MoveFromBottom, Value = ch - '⑴' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= '⒈' && ch <= '⒛')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.SwapFromBottom, Value = ch - '⒈' + 1, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.SwapFromBottom, Value = ch - '⒈' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= 'Ⓐ' && ch <= 'Ⓩ')
-                    ret.Add(new StackOrRegexInstruction { Type = StackOrRegexInstructionType.RegexCapture, Value = ch - 'Ⓐ' + 1, Index = index++ + addIndex, Count = 1 });
+                    ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.RegexCapture, Value = ch - 'Ⓐ' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (getInstructionInfo(ch, out instruction, out type))
                 {
-                    if (type == InstructionType.SingularInstruction)
-                        ret.Add(new SingularInstruction { ThisInstruction = instruction, Index = index++ + addIndex, Count = 1 });
-                    else if (type == InstructionType.BlockHead)
+                    switch (type)
                     {
-                        int endIndex;
-                        int? elseIndex;
-                        bool elsePops;
-                        FindMatchingEnd(source, index, addIndex, out endIndex, out elseIndex, out elsePops);
-                        var primaryBlock = parse(source.Substring(index + 1, (elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
-                        var elseBlock = elseIndex == null ? null : parse(source.Substring(elseIndex.Value + 1, endIndex - elseIndex.Value - 1), elseIndex.Value + 1 + addIndex);
-                        var blockInstr = createBlockInstruction(instruction, index, addIndex, elseIndex, elsePops);
-                        blockInstr.PrimaryBlock = primaryBlock;
-                        blockInstr.ElseBlock = elseBlock;
-                        blockInstr.ElseBlockPops = elsePops;
-                        blockInstr.Index = index + addIndex;
-                        blockInstr.Count = endIndex - index + 1;
-                        blockInstr.ElseIndex = (elseIndex ?? 0) + addIndex;
-                        ret.Add(blockInstr);
-                        index = endIndex + 1;
+                        case nodeType.SingularNode:
+                            ret.Add(new singularNode { ThisInstruction = instruction, Index = index++ + addIndex, Count = 1 });
+                            break;
+
+                        case nodeType.FunctionExecutionNode:
+                            ret.Add(new executeFunction { Instruction = instruction, Index = index++ + addIndex, Count = 1 });
+                            break;
+
+                        case nodeType.BlockHead:
+                            int endIndex;
+                            int? elseIndex;
+                            bool elsePops;
+                            FindMatchingEnd(source, index, addIndex, out endIndex, out elseIndex, out elsePops);
+                            var primaryBlock = parse(source.Substring(index + 1, (elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
+                            var elseBlock = elseIndex == null ? null : parse(source.Substring(elseIndex.Value + 1, endIndex - elseIndex.Value - 1), elseIndex.Value + 1 + addIndex);
+                            var blockInstr = createBlockNode(instruction, index, addIndex, elseIndex, elsePops);
+                            blockInstr.PrimaryBlock = primaryBlock;
+                            blockInstr.ElseBlock = elseBlock;
+                            blockInstr.ElseBlockPops = elsePops;
+                            blockInstr.Index = index + addIndex;
+                            blockInstr.Count = endIndex - index + 1;
+                            blockInstr.ElseIndex = (elseIndex ?? 0) + addIndex;
+                            ret.Add(blockInstr);
+                            index = endIndex + 1;
+                            break;
+
+                        case nodeType.BlockElse:
+                        case nodeType.BlockEnd:
+                            throw new ParseException("Else or end instruction encountered without a matching block head instruction.", index + addIndex, 1);
+
+                        default:
+                            throw new ParseException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
                     }
-                    else
-                        throw new ParseException("Else or end instruction encountered without a matching block head instruction.", index + addIndex, 1);
                 }
                 else
                     throw new ParseException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
@@ -307,22 +320,30 @@ namespace EsotericIDE.Languages
             return ret;
         }
 
+        private sealed class duplicateCharacterException : Exception
+        {
+            public char Character { get; private set; }
+            public duplicateCharacterException(char chr, string message) : base(message) { Character = chr; }
+        }
+
         private static void initInstructionsDictionary()
         {
             if (_instructions == null)
             {
-                _instructions = new Dictionary<char, ScliptingInstruction>();
-                _instructionTypes = new Dictionary<char, InstructionType>();
-                foreach (var field in typeof(ScliptingInstruction).GetFields(BindingFlags.Static | BindingFlags.Public))
+                _instructions = new Dictionary<char, instruction>();
+                _instructionTypes = new Dictionary<char, nodeType>();
+                foreach (var field in typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public))
                 {
-                    var attr = field.GetCustomAttributes<InstructionAttribute>().First();
-                    _instructions[attr.Character] = (ScliptingInstruction) field.GetValue(null);
+                    var attr = field.GetCustomAttributes<instructionAttribute>().First();
+                    if (_instructions.ContainsKey(attr.Character))
+                        throw new duplicateCharacterException(attr.Character, "The character “{0}” is used for more than one instruction.".Fmt(attr.Character));
+                    _instructions[attr.Character] = (instruction) field.GetValue(null);
                     _instructionTypes[attr.Character] = attr.Type;
                 }
             }
         }
 
-        private static bool getInstructionInfo(char character, out ScliptingInstruction instruction, out InstructionType type)
+        private static bool getInstructionInfo(char character, out instruction instruction, out nodeType type)
         {
             initInstructionsDictionary();
             if (_instructions.TryGetValue(character, out instruction))
@@ -332,60 +353,94 @@ namespace EsotericIDE.Languages
             }
             else
             {
-                type = default(InstructionType);
+                type = default(nodeType);
                 return false;
             }
         }
 
-        private static BlockInstruction createBlockInstruction(ScliptingInstruction instruction, int index, int addIndex, int? elseIndex, bool elsePops)
+        private static blockNode createBlockNode(instruction instruction, int index, int addIndex, int? elseIndex, bool elsePops)
         {
             switch (instruction)
             {
-                case ScliptingInstruction.Yes:
-                case ScliptingInstruction.If:
-                    return new If { PrimaryBlockPops = instruction == ScliptingInstruction.Yes };
+                case instruction.Yes:
+                case instruction.If:
+                    return new ifBlock { PrimaryBlockPops = instruction == instruction.Yes };
 
-                case ScliptingInstruction.Count:
+                case instruction.Count:
                     if (elseIndex != null && !elsePops)
                         throw new ParseException("The block else instruction “逆” cannot be used with the block head instruction “數”.", index + addIndex, elseIndex.Value - index + 1);
-                    return new ForLoop();
+                    return new forLoop();
 
-                case ScliptingInstruction.Each:
-                case ScliptingInstruction.Every:
-                    return new ForEachLoop { PrimaryBlockPops = instruction == ScliptingInstruction.Each };
+                case instruction.Each:
+                case instruction.Every:
+                    return new forEachLoop { PrimaryBlockPops = instruction == instruction.Each };
 
-                case ScliptingInstruction.Loop:
-                case ScliptingInstruction.Necessity:
-                case ScliptingInstruction.Until:
-                case ScliptingInstruction.Arrive:
-                    return new WhileLoop
+                case instruction.Loop:
+                case instruction.Necessity:
+                case instruction.Until:
+                case instruction.Arrive:
+                    return new whileLoop
                     {
-                        PrimaryBlockPops = instruction == ScliptingInstruction.Loop || instruction == ScliptingInstruction.Until,
-                        WhileTrue = instruction == ScliptingInstruction.Loop || instruction == ScliptingInstruction.Necessity
+                        PrimaryBlockPops = instruction == instruction.Loop || instruction == instruction.Until,
+                        WhileTrue = instruction == instruction.Loop || instruction == instruction.Necessity
                     };
 
-                case ScliptingInstruction.ReplaceFirstPop:
-                case ScliptingInstruction.ReplaceFirstNoPop:
-                case ScliptingInstruction.ReplaceAllPop:
-                case ScliptingInstruction.ReplaceAllNoPop:
-                    return new RegexSubstitute
+                case instruction.ReplaceFirstPop:
+                case instruction.ReplaceFirstNoPop:
+                case instruction.ReplaceAllPop:
+                case instruction.ReplaceAllNoPop:
+                    return new regexSubstitute
                     {
-                        PrimaryBlockPops = instruction == ScliptingInstruction.ReplaceFirstPop || instruction == ScliptingInstruction.ReplaceAllPop,
-                        FirstMatchOnly = instruction == ScliptingInstruction.ReplaceFirstPop || instruction == ScliptingInstruction.ReplaceFirstNoPop
+                        PrimaryBlockPops = instruction == instruction.ReplaceFirstPop || instruction == instruction.ReplaceAllPop,
+                        FirstMatchOnly = instruction == instruction.ReplaceFirstPop || instruction == instruction.ReplaceFirstNoPop
                     };
+
+                case instruction.Block:
+                case instruction.Capture:
+                    if (elseIndex != null)
+                        throw new ParseException("The block instruction “塊” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
+                    return new functionNode { Capture = instruction == instruction.Capture };
 
                 default:
                     throw new ParseException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
             }
         }
 
+        private static executeFunction createFunctionExecutionNode(instruction instruction, int index, int addIndex)
+        {
+            switch (instruction)
+            {
+                case instruction.Initiate:
+                case instruction.Handle:
+                case instruction.Perform:
+                    return new executeFunction { Instruction = instruction };
+
+                default:
+                    throw new ParseException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
+            }
+        }
+
+
 #if DEBUG
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
-            initInstructionsDictionary();
-            foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == InstructionType.BlockHead).Select(kvp => _instructions[kvp.Key]))
-                try { createBlockInstruction(instr, 0, 0, null, false); }
-                catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instr), "ScliptingLanguage", "BlockInstruction createBlockInstruction", "default"); }
+            try { initInstructionsDictionary(); }
+            catch (duplicateCharacterException e)
+            {
+                rep.Error(@"Same character is used multiple times for the same instruction. (First use here.)".Fmt(e.Character), "enum ScliptingInstructions", e.Character.ToString());
+                rep.Error(@"Same character is used multiple times for the same instruction. (Second use here.)".Fmt(e.Character), "enum ScliptingInstructions", e.Character.ToString(), e.Character.ToString());
+                return;
+            }
+            foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == nodeType.BlockHead).Select(kvp => _instructions[kvp.Key]))
+            {
+                try { createBlockNode(instr, 0, 0, null, false); }
+                catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instr), "blockNode createBlockNode", "default"); }
+            }
+            foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == nodeType.FunctionExecutionNode).Select(kvp => _instructions[kvp.Key]))
+            {
+                try { createFunctionExecutionNode(instr, 0, 0); }
+                catch { rep.Error(@"Function execution instruction ""{0}"" is not processed.".Fmt(instr), "executeFunction createFunctionExecutionNode", "default"); }
+            }
         }
 #endif
 
@@ -414,20 +469,20 @@ namespace EsotericIDE.Languages
             elseIndex = null;
             elsePops = false;
             var depth = 0;
-            ScliptingInstruction instruction;
-            InstructionType type;
+            instruction instruction;
+            nodeType type;
             for (int i = start; i < source.Length; i++)
             {
                 if (getInstructionInfo(source[i], out instruction, out type))
                 {
-                    if (type == InstructionType.BlockHead)
+                    if (type == nodeType.BlockHead)
                         depth++;
-                    else if (type == InstructionType.BlockElse && depth == 1)
+                    else if (type == nodeType.BlockElse && depth == 1)
                     {
                         elseIndex = i;
                         elsePops = source[i] == '不';
                     }
-                    else if (type == InstructionType.BlockEnd)
+                    else if (type == nodeType.BlockEnd)
                     {
                         depth--;
                         if (depth == 0)
@@ -633,21 +688,21 @@ namespace EsotericIDE.Languages
                 else
                 {
                     var num = ToNumeric(item);
-                    if (item is double)
+                    if (num is double)
                     {
                         if (!isDouble)
                         {
                             dbl = (double) bigInt;
                             isDouble = true;
                         }
-                        dbl += (double) item;
+                        dbl += (double) num;
                     }
-                    else if (item is BigInteger)
+                    else if (num is BigInteger)
                     {
                         if (isDouble)
-                            dbl += (double) (BigInteger) item;
+                            dbl += (double) (BigInteger) num;
                         else
-                            bigInt += (BigInteger) item;
+                            bigInt += (BigInteger) num;
                     }
                     else
                         throw new InternalErrorException("I expected this item to be either a float or an integer.");

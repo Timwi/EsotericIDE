@@ -325,6 +325,11 @@ namespace EsotericIDE
                 DlgMessage.Show("Compilation failed:" + Environment.NewLine + e.Message, "Esoteric IDE", DlgType.Error, "&OK");
                 return false;
             }
+            catch (Exception e)
+            {
+                DlgMessage.Show("Compilation failed:" + Environment.NewLine + e.Message + " (" + e.GetType().FullName + ")", "Esoteric IDE", DlgType.Error, "&OK");
+                return false;
+            }
         }
 
         private void run(object _, EventArgs __)

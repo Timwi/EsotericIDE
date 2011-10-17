@@ -358,22 +358,23 @@ namespace EsotericIDE.Languages
             }
         }
 
-        private static blockNode createBlockNode(instruction instruction, int index, int addIndex, int? elseIndex, bool elsePops)
+        private static blockNode createBlockNode(instruction instr, int index, int addIndex, int? elseIndex, bool elsePops)
         {
-            switch (instruction)
+            switch (instr)
             {
                 case instruction.Yes:
                 case instruction.If:
-                    return new ifBlock { PrimaryBlockPops = instruction == instruction.Yes };
+                    return new ifBlock { PrimaryBlockPops = instr == instruction.Yes };
 
-                case instruction.Count:
+                case instruction.Up:
+                case instruction.Down:
                     if (elseIndex != null && !elsePops)
                         throw new ParseException("The block else instruction “逆” cannot be used with the block head instruction “數”.", index + addIndex, elseIndex.Value - index + 1);
-                    return new forLoop();
+                    return new forLoop { Backwards = instr == instruction.Down };
 
                 case instruction.Each:
                 case instruction.Every:
-                    return new forEachLoop { PrimaryBlockPops = instruction == instruction.Each };
+                    return new forEachLoop { PrimaryBlockPops = instr == instruction.Each };
 
                 case instruction.Loop:
                 case instruction.Necessity:
@@ -381,8 +382,8 @@ namespace EsotericIDE.Languages
                 case instruction.Arrive:
                     return new whileLoop
                     {
-                        PrimaryBlockPops = instruction == instruction.Loop || instruction == instruction.Until,
-                        WhileTrue = instruction == instruction.Loop || instruction == instruction.Necessity
+                        PrimaryBlockPops = instr == instruction.Loop || instr == instruction.Until,
+                        WhileTrue = instr == instruction.Loop || instr == instruction.Necessity
                     };
 
                 case instruction.ReplaceFirstPop:
@@ -391,18 +392,18 @@ namespace EsotericIDE.Languages
                 case instruction.ReplaceAllNoPop:
                     return new regexSubstitute
                     {
-                        PrimaryBlockPops = instruction == instruction.ReplaceFirstPop || instruction == instruction.ReplaceAllPop,
-                        FirstMatchOnly = instruction == instruction.ReplaceFirstPop || instruction == instruction.ReplaceFirstNoPop
+                        PrimaryBlockPops = instr == instruction.ReplaceFirstPop || instr == instruction.ReplaceAllPop,
+                        FirstMatchOnly = instr == instruction.ReplaceFirstPop || instr == instruction.ReplaceFirstNoPop
                     };
 
                 case instruction.Block:
                 case instruction.Capture:
                     if (elseIndex != null)
                         throw new ParseException("The block instruction “塊” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
-                    return new functionNode { Capture = instruction == instruction.Capture };
+                    return new functionNode { Capture = instr == instruction.Capture };
 
                 default:
-                    throw new ParseException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
+                    throw new ParseException("Instruction “{0}” missing.".Fmt(instr), index + addIndex, 1);
             }
         }
 
@@ -574,27 +575,10 @@ namespace EsotericIDE.Languages
             }
         }
 
-        public static List<object> ToList(object item)
-        {
-            List<object> l;
-            byte[] b;
-            string s;
-
-            if ((l = item as List<object>) != null)
-                return l;
-            if ((s = item as string) != null)
-                return s.Cast<object>().ToList();
-            if ((b = item as byte[]) != null)
-                return b.Select(byt => (object) (BigInteger) byt).ToList();
-
-            if (item == null)
-                return new List<object>();
-
-            return new List<object> { item };
-        }
-
         public static string ToString(object item)
         {
+            if (item == null || item is mark || item is function)
+                return "";
             if (item is BigInteger)
                 return ((BigInteger) item).ToString(CultureInfo.InvariantCulture);
             if (item is double)
@@ -611,7 +595,7 @@ namespace EsotericIDE.Languages
             if ((l = item as List<object>) != null)
                 return l.Select(i => ToString(i)).JoinString();
 
-            return "";
+            throw new ArgumentException("Unrecognised item type for conversion to string: " + item.GetType().Name);
         }
 
         public static bool IsTrue(object item)
@@ -643,9 +627,14 @@ namespace EsotericIDE.Languages
         public static BigInteger ToInt(object item)
         {
             List<object> l;
+            byte[] b;
+            string s;
+            BigInteger i;
+
+            if (item == null || item is mark || item is function)
+                return 0;
             if ((l = item as List<object>) != null)
                 item = recursiveListSum(l);
-
             if (item is BigInteger)
                 return (BigInteger) item;
             if (item is double)
@@ -656,16 +645,12 @@ namespace EsotericIDE.Languages
                 return (BigInteger) d;
             }
 
-            byte[] b;
-            string s;
-            BigInteger i;
-
             if ((b = item as byte[]) != null)
                 return new BigInteger(new byte[] { 0 }.Concat(b).Reverse().ToArray());
             if ((s = item as string) != null)
                 return BigInteger.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out i) ? i : 0;
 
-            return item == null ? 0 : 1;
+            throw new ArgumentException("Unrecognised item type for conversion to int: " + item.GetType().Name);
         }
 
         public static object recursiveListSum(List<object> list)

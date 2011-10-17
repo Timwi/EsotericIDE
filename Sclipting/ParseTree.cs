@@ -58,9 +58,9 @@ namespace EsotericIDE.Languages
             public instruction ThisInstruction;
 
             // This is static and returns a delegate so that the post-build check can test it without needing to execute all the instructions
-            private static Action<executionEnvironment> getMethod(instruction instruction)
+            private static Action<executionEnvironment> getMethod(instruction instr)
             {
-                switch (instruction)
+                switch (instr)
                 {
 
                     // GENERAL
@@ -85,7 +85,7 @@ namespace EsotericIDE.Languages
 
                     case instruction.Excavate:
                     case instruction.DigOut:
-                        return stringListOperation(instruction == instruction.Excavate,
+                        return stringListOperation(instr == instruction.Excavate,
                             (s, i) => i < 0 || i >= s.Length ? (object) "" : s[(int) i].ToString(),
                             (l, i) => i < 0 || i >= l.Count ? (object) "" : l[(int) i]);
 
@@ -143,6 +143,9 @@ namespace EsotericIDE.Languages
                     case instruction.Same: return e => { var item2 = e.Pop(); e.CurrentStack.Add(e.Pop().Equals(item2) ? BigInteger.One : BigInteger.Zero); };
                     case instruction.Equal: return e => { var item2 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
                     case instruction.Resemble: return e => { var item2 = Sclipting.ToString(e.Pop()); e.CurrentStack.Add(Sclipting.ToString(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
+                    case instruction.Different1: return e => { var item2 = e.Pop(); e.CurrentStack.Add(e.Pop().Equals(item2) ? BigInteger.Zero : BigInteger.One); };
+                    case instruction.Different2: return e => { var item2 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) == item2 ? BigInteger.Zero : BigInteger.One); };
+                    case instruction.Different3: return e => { var item2 = Sclipting.ToString(e.Pop()); e.CurrentStack.Add(Sclipting.ToString(e.Pop()) == item2 ? BigInteger.Zero : BigInteger.One); };
                     case instruction.IsIt: return e => { var no = e.Pop(); var yes = e.Pop(); e.CurrentStack.Add(Sclipting.IsTrue(e.Pop()) ? yes : no); };
                     case instruction.Power: return e =>
                     {
@@ -164,7 +167,7 @@ namespace EsotericIDE.Languages
 
 
                     default:
-                        throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instruction));
+                        throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instr));
                 }
             }
 
@@ -201,26 +204,19 @@ namespace EsotericIDE.Languages
 
             private static void repeat(executionEnvironment e)
             {
-                string str;
+                List<object> list;
                 byte[] b;
 
                 var numTimes = (int) Sclipting.ToInt(e.Pop());
                 var item = e.Pop();
                 if (numTimes < 1)
                     e.CurrentStack.Add("");
-                else if ((str = item as string) != null)
+                else if ((list = item as List<object>) != null)
                 {
-                    if (numTimes == 1) e.CurrentStack.Add(str);
-                    else if (numTimes == 2) e.CurrentStack.Add(str + str);
-                    else if (numTimes == 3) e.CurrentStack.Add(str + str + str);
-                    else if (numTimes == 4) e.CurrentStack.Add(str + str + str + str);
-                    else
-                    {
-                        var sb = new StringBuilder();
-                        for (; numTimes > 0; numTimes--)
-                            sb.Append(str);
-                        e.CurrentStack.Add(sb.ToString());
-                    }
+                    var newList = new List<object>(list.Count * numTimes);
+                    while (numTimes-- > 0)
+                        newList.AddRange(list);
+                    e.CurrentStack.Add(newList);
                 }
                 else if ((b = item as byte[]) != null)
                 {
@@ -230,13 +226,7 @@ namespace EsotericIDE.Languages
                     e.CurrentStack.Add(newByteArray);
                 }
                 else
-                {
-                    var list = Sclipting.ToList(item);
-                    var newList = new List<object>(list.Count * numTimes);
-                    while (numTimes-- > 0)
-                        newList.AddRange(list);
-                    e.CurrentStack.Add(newList);
-                }
+                    e.CurrentStack.Add(Sclipting.ToString(item).Repeat(numTimes));
             }
 
             private static Action<executionEnvironment> stringListOperation(bool pop, Func<string, object> stringOperation, Func<List<object>, object> listOperation)
@@ -444,24 +434,33 @@ namespace EsotericIDE.Languages
 
         private sealed class forLoop : blockNode
         {
+            public bool Backwards;
             public override IEnumerable<Position> Execute(executionEnvironment environment)
             {
                 yield return new Position(Index, 1);
                 var b = Sclipting.ToInt(environment.Pop());
                 var a = Sclipting.ToInt(environment.Pop());
-                if (a > b)
+                if (Backwards ? (a < b) : (a > b))
                 {
+                    // “Else” block
+                    if (ElseBlock != null)
+                    {
+                        yield return new Position(ElseIndex, 1);
+                        foreach (var instr in ElseBlock)
+                            foreach (var pos in instr.Execute(environment))
+                                yield return pos;
+                    }
                     // “End” instruction
                     yield return new Position(Index + Count - 1, 1);
                 }
                 else
                 {
-                    for (var i = a; i <= b; i++)
+                    for (var i = a; Backwards ? (i >= b) : (i <= b); i += Backwards ? -1 : 1)
                     {
                         yield return new Position(Index, 1);
                         environment.CurrentStack.Add(i);
-                        foreach (var instruction in PrimaryBlock)
-                            foreach (var pos in instruction.Execute(environment))
+                        foreach (var instr in PrimaryBlock)
+                            foreach (var pos in instr.Execute(environment))
                                 yield return pos;
                         // “End” instruction
                         yield return new Position(Index + Count - 1, 1);
@@ -475,22 +474,36 @@ namespace EsotericIDE.Languages
             public override IEnumerable<Position> Execute(executionEnvironment environment)
             {
                 yield return new Position(Index, 1);
-                var orig = environment.Pop();
-                var list = orig is string ? ((string) orig).Select(ch => (object) ch.ToString()).ToList() : Sclipting.ToList(orig);
+                var orig = environment.CurrentStack.Last();
+                var list =
+                    orig is List<object> ? (List<object>) orig :
+                    orig is byte[] ? ((byte[]) orig).Select(b => (object) (BigInteger) b) :
+                    Sclipting.ToString(orig).Select(ch => (object) ch.ToString());
                 bool any = false;
                 foreach (var item in list)
                 {
+                    if (!any && PrimaryBlockPops)
+                        environment.Pop();
                     any = true;
                     yield return new Position(Index, 1);
                     environment.CurrentStack.Add(item);
-                    foreach (var instruction in PrimaryBlock)
-                        foreach (var pos in instruction.Execute(environment))
+                    foreach (var instr in PrimaryBlock)
+                        foreach (var pos in instr.Execute(environment))
                             yield return pos;
                     // “End” instruction
                     yield return new Position(Index + Count - 1, 1);
                 }
                 if (!any)
                 {
+                    // Jump to the “else” instruction
+                    if (ElseBlock != null)
+                        yield return new Position(ElseIndex, 1);
+                    if ((ElseBlock == null && PrimaryBlockPops) || (ElseBlock != null && ElseBlockPops))
+                        environment.Pop();
+                    if (ElseBlock != null)
+                        foreach (var instr in ElseBlock)
+                            foreach (var pos in instr.Execute(environment))
+                                yield return pos;
                     // “End” instruction
                     yield return new Position(Index + Count - 1, 1);
                 }

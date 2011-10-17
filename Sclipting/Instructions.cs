@@ -98,6 +98,12 @@ namespace EsotericIDE.Languages
             Equal,
             [instruction('肖', "resemble", "Equal as strings.", nodeType.SingularNode)]
             Resemble,
+            [instruction('差', "different", "Not exactly the same.", nodeType.SingularNode)]
+            Different1,
+            [instruction('异', "different", "Not equal as integers.", nodeType.SingularNode)]
+            Different2,
+            [instruction('殊', "different", "Not equal as strings.", nodeType.SingularNode)]
+            Different3,
             [instruction('嗎', "is it?", "Conditional operator.", nodeType.SingularNode)]
             IsIt,
 
@@ -114,8 +120,10 @@ namespace EsotericIDE.Languages
             Yes,
             [instruction('倘', "if", "If (no pop)", nodeType.BlockHead)]
             If,
-            [instruction('數', "count", "For loop", nodeType.BlockHead)]
-            Count,
+            [instruction('上', "up", "Integer for loop", nodeType.BlockHead)]
+            Up,
+            [instruction('下', "down", "Integer for loop (backwards)", nodeType.BlockHead)]
+            Down,
             [instruction('各', "each", "Foreach loop (pop)", nodeType.BlockHead)]
             Each,
             [instruction('每', "every", "Foreach loop (no pop)", nodeType.BlockHead)]

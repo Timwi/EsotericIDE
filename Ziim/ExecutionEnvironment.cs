@@ -72,7 +72,18 @@ namespace EsotericIDE.Languages
 
                         case instruction.Stdin:
                             {
-                                activeThread.CurrentValue = bits.FromString(Input);
+                                if (string.IsNullOrEmpty(Input))
+                                    activeThread.CurrentValue = bits.Empty;
+                                else if (char.IsSurrogate(Input, 0))
+                                {
+                                    activeThread.CurrentValue = bits.FromString(Input.Substring(0, 2));
+                                    Input = Input.Substring(2);
+                                }
+                                else
+                                {
+                                    activeThread.CurrentValue = bits.FromString(Input.Substring(0, 1));
+                                    Input = Input.Substring(1);
+                                }
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }
@@ -115,37 +126,6 @@ namespace EsotericIDE.Languages
                                 newThread.CurrentValue = activeThread.CurrentValue;
                                 Threads.Add(newThread);
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
-                                break;
-                            }
-
-                        case instruction.Producer:
-                            {
-                                activeThread.Role = activeThread.CurrentInstruction.PointedToBy.IndexOf(activeThread.PrevInstruction);
-                                Ut.Assert(activeThread.Role == 0 || activeThread.Role == 1);
-                                var dataThread = Threads.FirstOrDefault(t => t.Suspended && t.CurrentInstruction == activeThread.CurrentInstruction && t.Role == 0);
-
-                                if (dataThread == null)
-                                {
-                                    activeThread.Suspended = true;
-                                    if (activeThread.Role == 0)
-                                        foreach (var thr in Threads)
-                                            if (thr.Suspended && thr.CurrentInstruction == activeThread.CurrentInstruction && thr.Role == 1)
-                                            {
-                                                thr.CurrentValue = activeThread.CurrentValue;
-                                                thr.CurrentInstruction = thr.CurrentInstruction.PointsTo[0];
-                                                thr.Suspended = false;
-                                            }
-                                }
-                                else if (activeThread.Role == 0)
-                                {
-                                    exception = new RuntimeException(new Position(activeThread.CurrentInstruction.Index, 1), "Data channel is already initialised.");
-                                    goto finished;
-                                }
-                                else
-                                {
-                                    activeThread.CurrentValue = dataThread.CurrentValue;
-                                    activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
-                                }
                                 break;
                             }
 

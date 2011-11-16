@@ -19,7 +19,6 @@ namespace EsotericIDE.Languages
         private int[] _inverse = { 5 };
         private int[] _noop = { 3 };
         private int[] _label = { 3, 5 };
-        private int[] _producer = { 1, 2 };
 
         // Double arrow angle combinations
         private int[][] _splitter = { new[] { 2 }, new[] { 6 } };
@@ -114,7 +113,6 @@ namespace EsotericIDE.Languages
                         pointedToFrom.SequenceEqual(_inverse) ? instruction.Inverse :
                         pointedToFrom.SequenceEqual(_noop) ? instruction.NoOp :
                         pointedToFrom.SequenceEqual(_label) ? instruction.Label :
-                        pointedToFrom.SequenceEqual(_producer) ? instruction.Producer :
                         Ut.Throw<instruction>(new ParseException("Invalid combination of arrows pointing at arrow.", i, 1))
                     : // double arrow
                         pointedToFrom.SequenceEqual(_splitter[0]) || pointedToFrom.SequenceEqual(_splitter[1]) ? instruction.Splitter :

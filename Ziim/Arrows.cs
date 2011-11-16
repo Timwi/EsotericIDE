@@ -13,7 +13,6 @@ namespace EsotericIDE.Languages
             Inverse,
             Label,
             Splitter,
-            Producer,
             IsZero,
             IsEmpty
         }

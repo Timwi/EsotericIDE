@@ -25,7 +25,7 @@ namespace EsotericIDE
 #if DEBUG
         private static void PostBuildCheck(IPostBuildReporter rep)
         {
-            SettingsUtil.PostBuildStep(rep, typeof(Settings));
+            SettingsUtil.PostBuildStep<Settings>(rep);
         }
 #endif
     }

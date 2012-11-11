@@ -42,8 +42,8 @@ namespace EsotericIDE
                 if (_splitterDistanceBugWorkaround)
                     return;
                 _splitterDistanceBugWorkaround = true;
-                if (EsotericIDEProgram.Settings.SplitterDistance != 0)
-                    ctSplit.SplitterDistance = EsotericIDEProgram.Settings.SplitterDistance;
+                if (EsotericIDEProgram.Settings.SplitterPercent != 0)
+                    ctSplit.SplitterDistance = (int) (ctSplit.Height * EsotericIDEProgram.Settings.SplitterPercent);
             };
 
             if (EsotericIDEProgram.Settings.LanguageSettings == null)
@@ -459,7 +459,7 @@ namespace EsotericIDE
         private void splitterMoved(object _, EventArgs __)
         {
             if (_splitterDistanceBugWorkaround)
-                EsotericIDEProgram.Settings.SplitterDistance = ctSplit.SplitterDistance;
+                EsotericIDEProgram.Settings.SplitterPercent = (double) ctSplit.SplitterDistance / ctSplit.Height;
         }
 
         private void about(object _, EventArgs __)

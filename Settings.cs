@@ -16,7 +16,7 @@ namespace EsotericIDE
         public string ExecutionStateFontName;
         public float ExecutionStateFontSize;
         public string LastDirectory;
-        public int SplitterDistance;
+        public double SplitterPercent;
         public string DebugInput;
         public bool SaveWhenRun = true;
 

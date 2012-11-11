@@ -58,9 +58,9 @@ namespace EsotericIDE.Languages
                             var array = DecodeByteArray(hangeul);
                             return "Byte array: {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ToInt(array));
                         }
-                        catch (CompileException pe)
+                        catch (CompileException ce)
                         {
-                            return "Error while decoding byte array: " + pe.Message;
+                            return "Error while decoding byte array: " + ce.Message;
                         }
                     }
                     else if (index > cursorPos)
@@ -251,9 +251,9 @@ namespace EsotericIDE.Languages
                     {
                         ret.Add(new byteArray { Array = DecodeByteArray(hangeul), Index = origIndex + addIndex, Count = index - origIndex });
                     }
-                    catch (CompileException pe)
+                    catch (CompileException ce)
                     {
-                        throw new CompileException(pe.Message, pe.Index + origIndex + addIndex, pe.Length);
+                        throw new CompileException(ce.Message, ce.Index + origIndex + addIndex, ce.Length);
                     }
                 }
                 else if (ch >= 0xbc00 && ch <= 0xd7a3)

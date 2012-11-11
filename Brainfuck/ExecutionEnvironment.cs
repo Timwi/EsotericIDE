@@ -93,16 +93,10 @@ namespace EsotericIDE.Languages
 
             protected override void run()
             {
-                if (State == ExecutionState.Finished)
-                {
-                    _resetEvent.Reset();
-                    return;
-                }
-
                 using (var instructionPointer = _program.Execute(this).GetEnumerator())
                 {
                     bool canceled = false;
-                    RuntimeException exception = null;
+                    RuntimeError error = null;
                     try
                     {
                         while (instructionPointer.MoveNext())
@@ -132,11 +126,12 @@ namespace EsotericIDE.Languages
                     }
                     catch (Exception e)
                     {
-                        exception = new RuntimeException(instructionPointer.Current, e.Message + " (" + e.GetType().Name + ")");
+                        var type = e.GetType();
+                        error = new RuntimeError(instructionPointer.Current, e.Message + (type != typeof(Exception) ? " (" + type.Name + ")" : ""));
                     }
 
                     finished:
-                    fireExecutionFinished(canceled, exception);
+                    fireExecutionFinished(canceled, error);
                     State = ExecutionState.Finished;
                     _resetEvent.Reset();
                 }

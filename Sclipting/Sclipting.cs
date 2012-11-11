@@ -58,7 +58,7 @@ namespace EsotericIDE.Languages
                             var array = DecodeByteArray(hangeul);
                             return "Byte array: {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ToInt(array));
                         }
-                        catch (ParseException pe)
+                        catch (CompileException pe)
                         {
                             return "Error while decoding byte array: " + pe.Message;
                         }
@@ -251,9 +251,9 @@ namespace EsotericIDE.Languages
                     {
                         ret.Add(new byteArray { Array = DecodeByteArray(hangeul), Index = origIndex + addIndex, Count = index - origIndex });
                     }
-                    catch (ParseException pe)
+                    catch (CompileException pe)
                     {
-                        throw new ParseException(pe.Message, pe.Index + origIndex + addIndex, pe.Length);
+                        throw new CompileException(pe.Message, pe.Index + origIndex + addIndex, pe.Length);
                     }
                 }
                 else if (ch >= 0xbc00 && ch <= 0xd7a3)
@@ -308,14 +308,14 @@ namespace EsotericIDE.Languages
 
                         case nodeType.BlockElse:
                         case nodeType.BlockEnd:
-                            throw new ParseException("Else or end instruction encountered without a matching block head instruction.", index + addIndex, 1);
+                            throw new CompileException("Else or end instruction encountered without a matching block head instruction.", index + addIndex, 1);
 
                         default:
-                            throw new ParseException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
+                            throw new CompileException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
                     }
                 }
                 else
-                    throw new ParseException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
+                    throw new CompileException("Unrecognised instruction: “{0}”.".Fmt(ch), index + addIndex, 1);
             }
             return ret;
         }
@@ -369,7 +369,7 @@ namespace EsotericIDE.Languages
                 case instruction.Up:
                 case instruction.Down:
                     if (elseIndex != null && !elsePops)
-                        throw new ParseException("The block else instruction “逆” cannot be used with the block head instruction “數”.", index + addIndex, elseIndex.Value - index + 1);
+                        throw new CompileException("The block else instruction “逆” cannot be used with the block head instruction “數”.", index + addIndex, elseIndex.Value - index + 1);
                     return new forLoop { Backwards = instr == instruction.Down };
 
                 case instruction.Each:
@@ -399,11 +399,11 @@ namespace EsotericIDE.Languages
                 case instruction.Block:
                 case instruction.Capture:
                     if (elseIndex != null)
-                        throw new ParseException("The block instruction “塊” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
+                        throw new CompileException("The block instruction “塊” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
                     return new functionNode { Capture = instr == instruction.Capture };
 
                 default:
-                    throw new ParseException("Instruction “{0}” missing.".Fmt(instr), index + addIndex, 1);
+                    throw new CompileException("Instruction “{0}” missing.".Fmt(instr), index + addIndex, 1);
             }
         }
 
@@ -417,7 +417,7 @@ namespace EsotericIDE.Languages
                     return new executeFunction { Instruction = instruction };
 
                 default:
-                    throw new ParseException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
+                    throw new CompileException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
             }
         }
 
@@ -494,7 +494,7 @@ namespace EsotericIDE.Languages
                     }
                 }
             }
-            throw new ParseException("Block instruction “{0}” is missing a matching end instruction.".Fmt(source[start]), start + addIndex, 1);
+            throw new CompileException("Block instruction “{0}” is missing a matching end instruction.".Fmt(source[start]), start + addIndex, 1);
         }
 
         public byte[] DecodeByteArray(string source)
@@ -510,9 +510,9 @@ namespace EsotericIDE.Languages
                     default:
                         {
                             if (source[i] < 0xac00 || source[i] >= 0xbc00)
-                                throw new ParseException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
+                                throw new CompileException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
                             if (source[i + 1] < 0xac00 || source[i + 1] > 0xbc0f)
-                                throw new ParseException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
+                                throw new CompileException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
                             int a = source[i] - 0xac00, b = source[i + 1] - 0xac00;
                             bool two = b >= 0x1000;
                             output.Add((byte) (a >> 4));
@@ -525,7 +525,7 @@ namespace EsotericIDE.Languages
                     case 1:
                         {
                             if (source[i] < 0xac00 || source[i] >= 0xbc00)
-                                throw new ParseException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
+                                throw new CompileException("Unexpected character in program: “{0}”.".Fmt(source[i]), i, 1);
                             output.Add((byte) ((source[i] - 0xac00) >> 4));
                             i++;
                             break;

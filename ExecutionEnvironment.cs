@@ -20,8 +20,8 @@ namespace EsotericIDE
         public event Action<Position> DebuggerBreak;
         protected void fireDebuggerBreak(Position position) { if (DebuggerBreak != null) DebuggerBreak(position); }
 
-        public event Action<bool, RuntimeException> ExecutionFinished;
-        protected void fireExecutionFinished(bool canceled, RuntimeException exception) { if (ExecutionFinished != null) ExecutionFinished(canceled, exception); }
+        public event Action<bool, RuntimeError> ExecutionFinished;
+        protected void fireExecutionFinished(bool canceled, RuntimeError error) { if (ExecutionFinished != null) ExecutionFinished(canceled, error); }
 
         public event Action BreakpointsChanged;
 
@@ -66,7 +66,25 @@ namespace EsotericIDE
             {
                 _runner = new Thread(() =>
                 {
-                    run();
+                    if (State == ExecutionState.Finished)
+                    {
+                        _resetEvent.Reset();
+                        return;
+                    }
+
+                    try
+                    {
+                        run();
+                    }
+                    catch (Exception e)
+                    {
+                        var type = e.GetType();
+                        var error = new RuntimeError(null, e.Message + (type != typeof(Exception) ? " (" + type.Name + ")" : ""));
+                        fireExecutionFinished(true, error);
+                        State = ExecutionState.Finished;
+                        _resetEvent.Reset();
+                    }
+
                     _runner = null;
                 });
                 _runner.Start();

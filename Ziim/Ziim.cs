@@ -33,7 +33,7 @@ namespace EsotericIDE.Languages
         {
             var lines = source.Replace("\r", "").Split('\n');
             if (lines.Length == 0)
-                throw new ParseException("Program does not contain any arrows.", 0, 0);
+                throw new CompileException("Program does not contain any arrows.", 0, 0);
 
             var width = lines.Max(line => line.Length);
             var height = lines.Length;
@@ -54,7 +54,7 @@ namespace EsotericIDE.Languages
                         continue;
                     }
                     if (chars[y][x] != ch)
-                        throw new ParseException("Internal parse error: This is a bug in the parser.", i, 1);
+                        throw new CompileException("Internal parse error: This is a bug in the parser.", i, 1);
                     if (ch != ' ')
                     {
                         var p = "↖↑↗→↘↓↙←".IndexOf(ch);
@@ -65,7 +65,7 @@ namespace EsotericIDE.Languages
                             single = false;
                         }
                         if (p == -1)
-                            throw new ParseException("Invalid character: “{0}”.".Fmt(ch), i, 1);
+                            throw new CompileException("Invalid character: “{0}”.".Fmt(ch), i, 1);
                         action(x, y, i, single, p, ch);
                     }
                     x++;
@@ -113,12 +113,12 @@ namespace EsotericIDE.Languages
                         pointedToFrom.SequenceEqual(_inverse) ? instruction.Inverse :
                         pointedToFrom.SequenceEqual(_noop) ? instruction.NoOp :
                         pointedToFrom.SequenceEqual(_label) ? instruction.Label :
-                        Ut.Throw<instruction>(new ParseException("Invalid combination of arrows pointing at arrow.", i, 1))
+                        Ut.Throw<instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1))
                     : // double arrow
                         pointedToFrom.SequenceEqual(_splitter[0]) || pointedToFrom.SequenceEqual(_splitter[1]) ? instruction.Splitter :
                         pointedToFrom.SequenceEqual(_isZero[0]) || pointedToFrom.SequenceEqual(_isZero[1]) ? instruction.IsZero :
                         pointedToFrom.SequenceEqual(_isEmpty[0]) || pointedToFrom.SequenceEqual(_isEmpty[1]) ? instruction.IsEmpty :
-                        Ut.Throw<instruction>(new ParseException("Invalid combination of arrows pointing at arrow.", i, 1)));
+                        Ut.Throw<instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1)));
             });
 
             // STEP 3: For each node, determine which other nodes it is pointing to and are pointing to it

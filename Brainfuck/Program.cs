@@ -45,10 +45,10 @@ namespace EsotericIDE.Languages
                                 }
                             }
                         }
-                        throw new ParseException("Unclosed ‘[’.", index, 1);
+                        throw new CompileException("Unclosed ‘[’.", index, 1);
                     }
                     else if (source[index] == ']')
-                        throw new ParseException("Unmatched closing ‘]’.", index, 1);
+                        throw new CompileException("Unmatched closing ‘]’.", index, 1);
                     index++;
                 }
                 return list.ToArray();

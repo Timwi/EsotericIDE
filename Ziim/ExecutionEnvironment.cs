@@ -29,13 +29,7 @@ namespace EsotericIDE.Languages
 
             protected override void run()
             {
-                if (State == ExecutionState.Finished)
-                {
-                    _resetEvent.Reset();
-                    return;
-                }
-
-                RuntimeException exception = null;
+                RuntimeError error = null;
 
                 while (State == ExecutionState.Debugging || State == ExecutionState.Running)
                 {
@@ -147,13 +141,13 @@ namespace EsotericIDE.Languages
                             break;
 
                         default:
-                            exception = new RuntimeException(new Position(activeThread.CurrentInstruction.Index, 1), "Unrecognised instruction encountered. (This indicates a bug in the parser, which should have caught this at compile-time.)");
+                            error = new RuntimeError(new Position(activeThread.CurrentInstruction.Index, 1), "Unrecognised instruction encountered. (This indicates a bug in the parser, which should have caught this at compile-time.)");
                             goto finished;
                     }
                 }
 
                 finished:
-                fireExecutionFinished(State == ExecutionState.Stop || exception != null, exception);
+                fireExecutionFinished(State == ExecutionState.Stop || error != null, error);
                 State = ExecutionState.Finished;
                 _resetEvent.Reset();
             }

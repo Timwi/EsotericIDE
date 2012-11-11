@@ -77,18 +77,22 @@ namespace EsotericIDE.Languages
 
         public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText)
         {
-            ToolStripMenuItem[] menus = null;
+            var menuItems = new List<Tuple<ToolStripMenuItem, Func<bool>>>();
 
             var update = Ut.Lambda(() =>
             {
-                foreach (var menu in menus.First().DropDownItems.OfType<ToolStripMenuItem>())
-                    if (menu.Tag is Func<bool>)
-                        menu.Checked = ((Func<bool>) menu.Tag)();
+                foreach (var tuple in menuItems)
+                    tuple.Item1.Checked = tuple.Item2();
             });
 
-            var createItem = Ut.Lambda((string label, Action action, Func<bool> func) => new ToolStripMenuItem(label, null, (s, e) => { action(); update(); }) { Tag = func });
+            var createItem = Ut.Lambda((string label, Action action, Func<bool> checkedFunc) =>
+            {
+                var menuItem = new ToolStripMenuItem(label, null, (s, e) => { action(); update(); });
+                menuItems.Add(new Tuple<ToolStripMenuItem, Func<bool>>(menuItem, checkedFunc));
+                return menuItem;
+            });
 
-            menus = Ut.NewArray<ToolStripMenuItem>(
+            var ret = Ut.NewArray<ToolStripMenuItem>(
                 new ToolStripMenuItem("&Semantics", null,
                     createItem("Input as &numbers", () => { _settings.InputType = ioType.Numbers; }, () => _settings.InputType == ioType.Numbers),
                     createItem("Input as &characters", () => { _settings.InputType = ioType.Characters; }, () => _settings.InputType == ioType.Characters),
@@ -103,7 +107,7 @@ namespace EsotericIDE.Languages
                 )
             );
             update();
-            return menus;
+            return ret;
         }
     }
 }

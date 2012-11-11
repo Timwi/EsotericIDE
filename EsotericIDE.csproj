@@ -54,16 +54,24 @@
     <Compile Include="Brainfuck\Program.cs" />
     <Compile Include="Brainfuck\Settings.cs" />
     <Compile Include="ExecutionEnvironment.cs" />
+    <Compile Include="Funciton\Compiler.cs" />
+    <Compile Include="Funciton\ExecutionEnvironment.cs" />
+    <Compile Include="Funciton\Helper.cs" />
+    <Compile Include="Funciton\MenuUI.cs" />
+    <Compile Include="Funciton\Settings.cs" />
+    <Compile Include="Funciton\FuncitonFunction.cs" />
+    <Compile Include="Funciton\FuncitonLanguage.cs" />
     <Compile Include="Mainform.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Mainform.Designer.cs">
       <DependentUpon>Mainform.cs</DependentUpon>
     </Compile>
-    <Compile Include="Misc.cs" />
+    <Compile Include="CompileException.cs" />
     <Compile Include="EsotericIDEProgram.cs" />
+    <Compile Include="Position.cs" />
     <Compile Include="ProgrammingLanguage.cs" />
-    <Compile Include="RuntimeException.cs" />
+    <Compile Include="RuntimeError.cs" />
     <Compile Include="Sclipting\ExecutionEnvironment.cs" />
     <Compile Include="Sclipting\Instructions.cs" />
     <Compile Include="Sclipting\Misc.cs" />

@@ -318,10 +318,13 @@ namespace EsotericIDE
                 _currentEnvironment.BreakpointsChanged += () => { this.Invoke(new Action(() => breakpointsChanged())); };
                 return true;
             }
-            catch (ParseException e)
+            catch (CompileException e)
             {
-                txtSource.SelectionStart = e.Index;
-                txtSource.SelectionLength = e.Length;
+                if (e.Index != null)
+                {
+                    txtSource.SelectionStart = e.Index.Value;
+                    txtSource.SelectionLength = e.Length ?? 0;
+                }
                 DlgMessage.Show("Compilation failed:" + Environment.NewLine + e.Message, "Esoteric IDE", DlgType.Error, "&OK");
                 return false;
             }
@@ -339,25 +342,28 @@ namespace EsotericIDE
             _currentEnvironment.Continue();
         }
 
-        private void executionFinished(bool canceled, RuntimeException exception)
+        private void executionFinished(bool canceled, RuntimeError runtimeError)
         {
             txtExecutionState.Text = "(not running)";
             txtOutput.Text = _currentEnvironment.Output.UnifyLineEndings();
-            if (canceled && exception == null)
+            if (canceled && runtimeError == null)
                 txtOutput.Text += Environment.NewLine + Environment.NewLine + "Execution stopped.";
             ctTabs.SelectedTab = tabOutput;
             _currentEnvironment = null;
             _currentPosition = null;
 
             txtSource.Focus();
-            if (exception != null)
+            if (runtimeError != null)
             {
-                var msg = "A run-time exception occurred:{0}{0}{1}".Fmt(Environment.NewLine, exception.Message);
+                var msg = "A run-time error occurred:{0}{0}{1}".Fmt(Environment.NewLine, runtimeError.Message);
                 txtOutput.Text += Environment.NewLine + Environment.NewLine + msg;
                 txtSource.Focus();
-                txtSource.SelectionStart = exception.Position.Index;
-                txtSource.SelectionLength = exception.Position.Length;
-                DlgMessage.Show(msg, "Run-time exception", DlgType.Error, "&OK");
+                if (runtimeError.Position != null)
+                {
+                    txtSource.SelectionStart = runtimeError.Position.Index;
+                    txtSource.SelectionLength = runtimeError.Position.Length;
+                }
+                DlgMessage.Show(msg, "Run-time error", DlgType.Error, "&OK");
             }
         }
 

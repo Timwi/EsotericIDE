@@ -76,13 +76,13 @@ namespace EsotericIDE.Languages
 
             private bool nextStep()
             {
-                var next = _currentNode.NextToEvaluate(_traceFunctions);
+                var next = _currentNode.NextToEvaluate(_traceFunctions, this);
 
                 // small performance optimisation (saves a push and a pop for every literal)
                 while (next is FuncitonFunction.LiteralNode)
                 {
                     _currentNode.PreviousSubresult = next.Result;
-                    next = _currentNode.NextToEvaluate(_traceFunctions);
+                    next = _currentNode.NextToEvaluate(_traceFunctions, this);
                 }
 
                 if (next != null)
@@ -105,6 +105,11 @@ namespace EsotericIDE.Languages
                 }
 
                 return false;
+            }
+
+            public void AddTraceLine(string traceLine)
+            {
+                _output.AppendLine(traceLine);
             }
         }
 

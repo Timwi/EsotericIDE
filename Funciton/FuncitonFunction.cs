@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using RT.Util;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages
@@ -34,21 +35,80 @@ namespace EsotericIDE.Languages
                 /// read its result, store that in <see cref="PreviousSubresult"/> and then call <see cref="NextToEvaluate"/> again.</description></item>
                 /// </list>
                 /// </remarks>
-                public Node NextToEvaluate(IEnumerable<string> traceFunctions)
+                public Node NextToEvaluate(IEnumerable<string> traceFunctions, executionEnvironment ee)
                 {
                     var res = nextToEvaluate();
-                    if (traceFunctions != null && res == null && !(this is LiteralNode) && traceFunctions.Contains(_thisFunction.Name))
-                    {
-                        if (_alreadyTraced == null)
-                            _alreadyTraced = new HashSet<Node>();
-                        if (_alreadyTraced.Add(this))
-                            Console.WriteLine("{0}: {1} = {2} (\"{3}\")", _thisFunction.Name, getExpression(null, false), _result, FuncitonHelper.IntegerToString(_result).CLiteralEscape());
-                    }
+                    if (traceFunctions != null && traceFunctions.Contains(_thisFunction.Name))
+                        trace(res, ee);
+                    else
+                        releaseMemory();
                     return res;
                 }
-                private static HashSet<Node> _alreadyTraced;
+
+                private void trace(Node res, executionEnvironment ee)
+                {
+                    // Only output a trace if this node is fully evaluated
+                    if (res != null)
+                        return;
+
+                    // Don’t bother showing extra trace lines for literals
+                    if (this is LiteralNode)
+                        return;
+
+                    // Only output a trace if we haven’t already done so for this node
+                    if (!_alreadyTraced.Add(this))
+                        return;
+
+                    // See if the result happens to be a valid string
+                    string str;
+                    try { str = @"""{0}""".Fmt(FuncitonHelper.IntegerToString(_result).CLiteralEscape()); }
+                    catch { str = null; }
+
+                    // See if the result happens to be a valid list
+                    string list = null;
+                    try
+                    {
+                        if (_result < 0)
+                            goto notAValidList;
+                        var intList = new List<BigInteger>();
+                        var result = _result;
+                        var mask = (BigInteger.One << 22) - 1;
+                        while (result > 0)
+                        {
+                            var curItem = BigInteger.Zero;
+                            while (true)
+                            {
+                                bool endHere = (result & 1) == 1;
+                                curItem = (curItem << 21) | ((result & mask) >> 1);
+                                result >>= 22;
+                                if (endHere)
+                                    break;
+                                if (result == 0)
+                                    goto notAValidList;
+                            }
+                            if ((result & 1) == 1)
+                                curItem = ~curItem;
+                            result >>= 1;
+                            intList.Add(curItem);
+                        }
+                        list = string.Format(@"[{0}]", string.Join(", ", intList));
+                        notAValidList: ;
+                    }
+                    catch { }
+
+                    ee.AddTraceLine("{0}: {1} = {2}".Fmt(_thisFunction.Name, getExpression(null, false), _result));
+                    if (str != null)
+                        ee.AddTraceLine("        " + str);
+                    if (list != null)
+                        ee.AddTraceLine("        " + list);
+                }
+
+                // This is a static field rather than a boolean instance field because an instance field would make
+                // every Node instance larger and thus use significantly more memory even when not tracing.
+                private static HashSet<Node> _alreadyTraced = new HashSet<Node>();
 
                 protected abstract Node nextToEvaluate();
+                protected abstract void releaseMemory();
 
                 protected BigInteger _result;
                 protected BigInteger _previousSubresult;
@@ -142,9 +202,7 @@ namespace EsotericIDE.Languages
                     {
                         case 0:
                             _state = 1;
-                            var ret = CallNode.ClonedFunctionOutputs[OutputPosition];
-                            CallNode = null;
-                            return ret;
+                            return CallNode.ClonedFunctionOutputs[OutputPosition];
                         case 1:
                             _result = _previousSubresult;
                             _state = 2;
@@ -152,6 +210,12 @@ namespace EsotericIDE.Languages
                         default: // = 2
                             return null;
                     }
+                }
+
+                protected override void releaseMemory()
+                {
+                    if (_state == 1)
+                        CallNode = null;
                 }
 
                 protected override FuncitonFunction findFunction(string functionName, HashSet<Node> alreadyVisited)
@@ -223,28 +287,24 @@ namespace EsotericIDE.Languages
                 private BigInteger _leftEval;
                 protected override Node nextToEvaluate()
                 {
-                    Node ret = null;
                     switch (_state)
                     {
                         case 0:
                             _state = 1;
-                            ret = Left;
-                            Left = null;
-                            return ret;
+                            return Left;
                         case 1:
                             if (_previousSubresult.IsZero)
                             {
                                 _result = BigInteger.MinusOne;
                                 _state = 3;
+                                return null;
                             }
                             else
                             {
                                 _leftEval = _previousSubresult;
                                 _state = 2;
-                                ret = Right;
+                                return Right;
                             }
-                            Right = null;
-                            return ret;
                         case 2:
                             _result = ~(_leftEval & _previousSubresult);
                             _state = 3;
@@ -252,6 +312,14 @@ namespace EsotericIDE.Languages
                         default: // = 3
                             return null;
                     }
+                }
+
+                protected override void releaseMemory()
+                {
+                    if (_state == 1)
+                        Left = null;
+                    else if (_state > 1)
+                        Right = null;
                 }
 
                 protected override FuncitonFunction findFunction(string functionName, HashSet<Node> alreadyVisited)
@@ -277,11 +345,11 @@ namespace EsotericIDE.Languages
                     // detect “or” (¬a @ ¬b = a | b)
                     var leftNand = Left as NandNode;
                     var rightNand = Right as NandNode;
-                    if (leftNand != null && leftNand.Left == leftNand.Right && rightNand != null && rightNand.Left == rightNand.Right && !letNodes.Contains(Left) && !letNodes.Contains(Right))
+                    if (leftNand != null && leftNand.Left == leftNand.Right && rightNand != null && rightNand.Left == rightNand.Right && (letNodes == null || !letNodes.Contains(Left)) && (letNodes == null || !letNodes.Contains(Right)))
                         return open + leftNand.Left.GetExpression(letNodes, false, true) + " | " + rightNand.Left.GetExpression(letNodes, false, true) + close;
 
                     // detect “and” (¬(a @ b) = a & b)
-                    if (Left == Right && leftNand != null && !letNodes.Contains(Left))
+                    if (Left == Right && leftNand != null && (letNodes == null || !letNodes.Contains(Left)))
                         return open + leftNand.Left.GetExpression(letNodes, false, true) + " & " + leftNand.Right.GetExpression(letNodes, false, true) + close;
 
                     // detect “not” (a @ a = ¬a)
@@ -327,20 +395,15 @@ namespace EsotericIDE.Languages
                 private BigInteger _leftEval;
                 protected override Node nextToEvaluate()
                 {
-                    Node ret;
                     switch (_state)
                     {
                         case 0:
                             _state = 1;
-                            ret = Left;
-                            Left = null;
-                            return ret;
+                            return Left;
                         case 1:
                             _leftEval = _previousSubresult;
                             _state = 2;
-                            ret = Right;
-                            Right = null;
-                            return ret;
+                            return Right;
                         case 2:
                             _result = _leftEval < _previousSubresult ? BigInteger.MinusOne : BigInteger.Zero;
                             _state = 3;
@@ -348,6 +411,13 @@ namespace EsotericIDE.Languages
                         default: // = 3
                             return null;
                     }
+                }
+                protected override void releaseMemory()
+                {
+                    if (_state == 1)
+                        Left = null;
+                    else if (_state == 2)
+                        Right = null;
                 }
                 protected override string _operator { get { return " < "; } }
             }
@@ -360,20 +430,15 @@ namespace EsotericIDE.Languages
                 private BigInteger _leftEval;
                 protected override Node nextToEvaluate()
                 {
-                    Node ret;
                     switch (_state)
                     {
                         case 0:
                             _state = 1;
-                            ret = Left;
-                            Left = null;
-                            return ret;
+                            return Left;
                         case 1:
                             _leftEval = _previousSubresult;
                             _state = 2;
-                            ret = Right;
-                            Right = null;
-                            return ret;
+                            return Right;
                         case 2:
                             _result = _previousSubresult.IsZero ? _leftEval : _previousSubresult > 0 ? _leftEval << (int) _previousSubresult : _leftEval >> (int) -_previousSubresult;
                             _state = 3;
@@ -381,6 +446,13 @@ namespace EsotericIDE.Languages
                         default: // = 3
                             return null;
                     }
+                }
+                protected override void releaseMemory()
+                {
+                    if (_state == 1)
+                        Left = null;
+                    else if (_state == 2)
+                        Right = null;
                 }
                 protected override string _operator { get { return " SHL "; } }
             }
@@ -407,9 +479,7 @@ namespace EsotericIDE.Languages
                     {
                         case 0:
                             _state = 1;
-                            var ret = _functionInputs[InputPosition];
-                            _functionInputs = null;
-                            return ret;
+                            return _functionInputs[InputPosition];
                         case 1:
                             _result = _previousSubresult;
                             _state = 2;
@@ -417,6 +487,11 @@ namespace EsotericIDE.Languages
                         default: // = 2
                             return null;
                     }
+                }
+                protected override void releaseMemory()
+                {
+                    if (_state == 1)
+                        _functionInputs = null;
                 }
                 protected override FuncitonFunction findFunction(string functionName, HashSet<Node> alreadyVisited) { return null; }
                 protected override void analysisPass1(HashSet<Node> singleUseNodes, HashSet<Node> multiUseNodes) { }
@@ -429,6 +504,7 @@ namespace EsotericIDE.Languages
                 public LiteralNode(FuncitonFunction thisFunction, Position position, BigInteger literal) : base(thisFunction, position) { _result = literal; }
                 public override Node Clone(int clonedId, Node[] functionInputs) { return this; }
                 protected override Node nextToEvaluate() { return null; }
+                protected override void releaseMemory() { }
                 protected override FuncitonFunction findFunction(string functionName, HashSet<Node> alreadyVisited) { return null; }
                 protected override void analysisPass1(HashSet<Node> singleUseNodes, HashSet<Node> multiUseNodes) { }
                 protected override string getExpression(Node[] letNodes, bool requireParentheses) { return _result.ToString().Replace('-', '−'); }
@@ -453,6 +529,7 @@ namespace EsotericIDE.Languages
                     }
                     return null;
                 }
+                protected override void releaseMemory() { }
                 protected override FuncitonFunction findFunction(string functionName, HashSet<Node> alreadyVisited) { return null; }
                 protected override void analysisPass1(HashSet<Node> singleUseNodes, HashSet<Node> multiUseNodes) { }
                 protected override string getExpression(Node[] letNodes, bool requireParentheses) { return "♦"; }

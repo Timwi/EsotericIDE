@@ -38,7 +38,7 @@ namespace EsotericIDE.Languages
                 if (longestLine == 0)
                     continue;
 
-                var source = new sourceAsChars { Chars = lines.Select(l => l.PadRight(longestLine).ToCharArray()).ToArray(), SourceText = sourceText };
+                var source = new sourceAsChars(lines.Select(l => l.PadRight(longestLine).ToCharArray()).ToArray(), sourceText);
 
                 // Detect some common problems
                 for (int y = 0; y < source.Height; y++)
@@ -46,9 +46,9 @@ namespace EsotericIDE.Languages
                     for (int x = 0; x < source.Width; x++)
                     {
                         if (x < source.Width - 1 && source.RightLine(x, y) != lineType.None && source.LeftLine(x + 1, y) != lineType.None && source.RightLine(x, y) != source.LeftLine(x + 1, y))
-                            FuncitonHelper.ThrowParseError("Single line cannot suddenly switch to double line.", x + 1, y, sourceFile);
+                            throw new CompileException("Single line cannot suddenly switch to double line.", source.GetIndex(x + 1, y), 1);
                         if (y < source.Height - 1 && source.BottomLine(x, y) != lineType.None && source.TopLine(x, y + 1) != lineType.None && source.BottomLine(x, y) != source.TopLine(x, y + 1))
-                            FuncitonHelper.ThrowParseError("Single line cannot suddenly switch to double line.", x, y + 1, sourceFile);
+                            throw new CompileException("Single line cannot suddenly switch to double line.", source.GetIndex(x, y + 1), 1);
                     }
                 }
 
@@ -115,7 +115,7 @@ namespace EsotericIDE.Languages
                             type = nodeType.Call;
                         else
                         {
-                            FuncitonHelper.ThrowParseError("Unrecognised box type.", x, y, sourceFile);
+                            throw new CompileException("Unrecognised box type.", source.GetIndex(x, y), 1);
                             continue;
                         }
 
@@ -129,40 +129,40 @@ namespace EsotericIDE.Languages
                         for (int i = x + 1; i < x + width; i++)
                         {
                             if (source.TopLine(i, y) == lineType.Double)
-                                FuncitonHelper.ThrowParseError("Box has outgoing double edge.", i, y, sourceFile);
+                                throw new CompileException("Box has outgoing double edge.", source.GetIndex(i, y), 1);
                             else if (source.TopLine(i, y) == lineType.Single)
                             {
                                 if (topEdge != null)
-                                    FuncitonHelper.ThrowParseError("Box has duplicate outgoing edge along the top.", i, y, sourceFile);
+                                    throw new CompileException("Box has duplicate outgoing edge along the top.", source.GetIndex(i, y), 1);
                                 topEdge = new unfinishedEdge { StartNode = getBox(), DirectionFromStartNode = direction.Up, DirectionGoingTo = direction.Up, StartX = i, StartY = y, EndX = i, EndY = y };
                             }
 
                             if (source.BottomLine(i, y + height) == lineType.Double)
-                                FuncitonHelper.ThrowParseError("Box has outgoing double edge.", i, y + height, sourceFile);
+                                throw new CompileException("Box has outgoing double edge.", source.GetIndex(i, y + height), 1);
                             else if (source.BottomLine(i, y + height) == lineType.Single)
                             {
                                 if (bottomEdge != null)
-                                    FuncitonHelper.ThrowParseError("Box has duplicate outgoing edge along the bottom.", i, y + height, sourceFile);
+                                    throw new CompileException("Box has duplicate outgoing edge along the bottom.", source.GetIndex(i, y + height), 1);
                                 bottomEdge = new unfinishedEdge { StartNode = getBox(), DirectionFromStartNode = direction.Down, DirectionGoingTo = direction.Down, StartX = i, StartY = y + height, EndX = i, EndY = y + height };
                             }
                         }
                         for (int i = y + 1; i < y + height; i++)
                         {
                             if (source.LeftLine(x, i) == lineType.Double)
-                                FuncitonHelper.ThrowParseError("Box has outgoing double edge.", x, i, sourceFile);
+                                throw new CompileException("Box has outgoing double edge.", source.GetIndex(x, i), 1);
                             else if (source.LeftLine(x, i) == lineType.Single)
                             {
                                 if (leftEdge != null)
-                                    FuncitonHelper.ThrowParseError("Box has duplicate outgoing edge along the left.", x, i, sourceFile);
+                                    throw new CompileException("Box has duplicate outgoing edge along the left.", source.GetIndex(x, i), 1);
                                 leftEdge = new unfinishedEdge { StartNode = getBox(), DirectionFromStartNode = direction.Left, DirectionGoingTo = direction.Left, StartX = x, StartY = i, EndX = x, EndY = i };
                             }
 
                             if (source.RightLine(x + width, i) == lineType.Double)
-                                FuncitonHelper.ThrowParseError("Box has outgoing double edge.", x + width, i, sourceFile);
+                                throw new CompileException("Box has outgoing double edge.", source.GetIndex(x + width, i), 1);
                             else if (source.RightLine(x + width, i) == lineType.Single)
                             {
                                 if (rightEdge != null)
-                                    FuncitonHelper.ThrowParseError("Box has duplicate outgoing edge along the right.", x + width, i, sourceFile);
+                                    throw new CompileException("Box has duplicate outgoing edge along the right.", source.GetIndex(x + width, i), 1);
                                 rightEdge = new unfinishedEdge { StartNode = getBox(), DirectionFromStartNode = direction.Right, DirectionGoingTo = direction.Right, StartX = x + width, StartY = i, EndX = x + width, EndY = i };
                             }
                         }
@@ -173,7 +173,7 @@ namespace EsotericIDE.Languages
                             if (type == nodeType.Literal)
                                 type = nodeType.Comment;
                             else
-                                FuncitonHelper.ThrowParseError("Box without outgoing edges not allowed unless it has only double-lined edges (making it a comment).", x, y, sourceFile);
+                                throw new CompileException("Box without outgoing edges not allowed unless it has only double-lined edges (making it a comment).", source.GetIndex(x, y), 1);
                         }
 
                         // If it’s a comment, kill its contents so that it can contain boxes if it wants to.
@@ -202,7 +202,7 @@ namespace EsotericIDE.Languages
                         if (nodes.Any(b => b.X <= x && b.X + b.Width >= x && b.Y <= y && b.Y + b.Height >= y))
                             continue;
                         if ((!source.AnyLine(x, y) || source.TopLine(x, y) == lineType.Double || source.LeftLine(x, y) == lineType.Double || source.BottomLine(x, y) == lineType.Double || source.RightLine(x, y) == lineType.Double))
-                            FuncitonHelper.ThrowParseError("Stray character: " + source.Chars[y][x], x, y, sourceFile);
+                            throw new CompileException("Stray character: " + source.Chars[y][x], source.GetIndex(x, y), 1);
 
                         var singleLines = new[] { source.TopLine(x, y), source.RightLine(x, y), source.BottomLine(x, y), source.LeftLine(x, y) }.Select(line => line == lineType.Single).ToArray();
                         var count = singleLines.Count(sl => sl);
@@ -230,24 +230,12 @@ namespace EsotericIDE.Languages
                     lineType connector;
                     switch (edge.DirectionGoingTo)
                     {
-                        case direction.Up:
-                            y--;
-                            connector = source.BottomLine(x, y);
-                            break;
-                        case direction.Left:
-                            x--;
-                            connector = source.RightLine(x, y);
-                            break;
-                        case direction.Down:
-                            y++;
-                            connector = source.TopLine(x, y);
-                            break;
-                        case direction.Right:
-                            x++;
-                            connector = source.LeftLine(x, y);
-                            break;
+                        case direction.Up: y--; connector = source.BottomLine(x, y); break;
+                        case direction.Left: x--; connector = source.RightLine(x, y); break;
+                        case direction.Down: y++; connector = source.TopLine(x, y); break;
+                        case direction.Right: x++; connector = source.LeftLine(x, y); break;
                         default:
-                            FuncitonHelper.ThrowParseError("The parser encountered an internal error.", x, y, sourceFile);
+                            throw new CompileException("The parser encountered an internal error.", source.GetIndex(x, y), 1);
                             continue;
                     }
                     if (y >= 0 && y < visited.Length && x >= 0 && x < visited[y].Length)
@@ -278,14 +266,14 @@ namespace EsotericIDE.Languages
                                 edge.DirectionGoingTo != direction.Up && source.BottomLine(x, y) == lineType.Single ? direction.Down :
                                 edge.DirectionGoingTo != direction.Left && source.RightLine(x, y) == lineType.Single ? direction.Right :
                                 edge.DirectionGoingTo != direction.Right && source.LeftLine(x, y) == lineType.Single ? direction.Left :
-                                FuncitonHelper.ThrowParseError<direction>("The parser encountered an internal error.", x, y, sourceFile);
+                                Ut.Throw<direction>(new CompileException("The parser encountered an internal error.", source.GetIndex(x, y), 1));
                             edge.EndX = x;
                             edge.EndY = y;
                             break;
 
                         case lineType.Double:
                         default:
-                            FuncitonHelper.ThrowParseError("Unexpected double line.", x, y, sourceFile);
+                            throw new CompileException("Unexpected double line.", source.GetIndex(x, y), 1);
                             continue;
                     }
                 }
@@ -294,7 +282,7 @@ namespace EsotericIDE.Languages
                 for (int y = 0; y < source.Height; y++)
                     for (int x = 0; x < source.Width; x++)
                         if (source.Chars[y][x] != ' ' && !visited[y][x] && !nodes.Any(b => b.X <= x && b.X + b.Width >= x && b.Y <= y && b.Y + b.Height >= y))
-                            FuncitonHelper.ThrowParseError("Stray line not connected to any program or function.", x, y, sourceFile);
+                            throw new CompileException("Stray line not connected to any program or function.", source.GetIndex(x, y), 1);
 
                 // Collect everything that is connected to each declaration node
                 List<node> collectedNodes;
@@ -315,11 +303,11 @@ namespace EsotericIDE.Languages
                 // If there is anything left, it must be the program. There must be exactly one output
                 var outputs = nodes.Where(n => n.Type == nodeType.End).ToList();
                 if (outputs.Count > 1)
-                    FuncitonHelper.ThrowParseError("Cannot have more than one program output.", outputs[1].X, outputs[1].Y, sourceFile);
+                    throw new CompileException("Cannot have more than one program output.", source.GetIndex(outputs[1].X, outputs[1].Y), 1);
                 else if (outputs.Count == 1)
                 {
                     if (program != null)
-                        FuncitonHelper.ThrowParseError("Cannot have more than one program.", outputs[0].X, outputs[0].Y, sourceFile);
+                        throw new CompileException("Cannot have more than one program.", source.GetIndex(outputs[0].X, outputs[0].Y), 1);
                     collectAllConnected(nodes, edges, outputs[0], out collectedNodes, out collectedEdges);
                     program = new unparsedProgram(collectedNodes, collectedEdges, source);
                 }
@@ -327,17 +315,17 @@ namespace EsotericIDE.Languages
                 // If there is *still* anything left (other than comments), it’s an error
                 var strayNode = nodes.FirstOrDefault(n => n.Type != nodeType.Comment);
                 if (strayNode != null)
-                    FuncitonHelper.ThrowParseError("Stray node unconnected to any declaration or program.", strayNode.X, strayNode.Y, sourceFile);
+                    throw new CompileException("Stray node unconnected to any declaration or program.", source.GetIndex(strayNode.X, strayNode.Y), 1);
                 var strayEdge = edges.FirstOrDefault();
                 if (strayEdge != null)
-                    FuncitonHelper.ThrowParseError("Stray edge unconnected to any declaration or program.", strayEdge.StartX, strayEdge.StartY, sourceFile);
+                    throw new CompileException("Stray edge unconnected to any declaration or program.", source.GetIndex(strayEdge.StartX, strayEdge.StartY), 1);
 
                 // Check that all function names are unique
                 var privateDeclarationsByName = new Dictionary<string, unparsedFunctionDeclaration>();
                 foreach (var decl in declarations)
                 {
                     if (declarationsByName.ContainsKey(decl.DeclarationName) || privateDeclarationsByName.ContainsKey(decl.DeclarationName))
-                        FuncitonHelper.ThrowParseError("Duplicate function declaration: ‘{0}’.".Fmt(decl.DeclarationName), decl.DeclarationNode.X, decl.DeclarationNode.Y, sourceFile);
+                        throw new CompileException("Duplicate function declaration: ‘{0}’.".Fmt(decl.DeclarationName), source.GetIndex(decl.DeclarationNode.X, decl.DeclarationNode.Y), 1);
                     (decl.DeclarationIsPrivate ? privateDeclarationsByName : declarationsByName)[decl.DeclarationName] = decl;
                 }
 
@@ -355,7 +343,7 @@ namespace EsotericIDE.Languages
             }
 
             if (program == null)
-                FuncitonHelper.ThrowParseError("Source files do not contain a program (program must have an output).", 0, 0);
+                throw new CompileException("Source files do not contain a program (program must have an output).");
 
             var functions = new Dictionary<unparsedDeclaration, FuncitonFunction>();
 
@@ -404,8 +392,10 @@ namespace EsotericIDE.Languages
 
         private sealed class sourceAsChars
         {
-            public char[][] Chars;
-            public string SourceText;
+            public char[][] Chars { get; private set; }
+            public string SourceText { get; private set; }
+
+            public sourceAsChars(char[][] chars, string sourceText) { Chars = chars; SourceText = sourceText; }
 
             public lineType TopLine(int x, int y)
             {
@@ -457,18 +447,10 @@ namespace EsotericIDE.Languages
                 {
                     switch (dir)
                     {
-                        case direction.Up:
-                            y--;
-                            break;
-                        case direction.Left:
-                            x--;
-                            break;
-                        case direction.Down:
-                            y++;
-                            break;
-                        case direction.Right:
-                            x++;
-                            break;
+                        case direction.Up: y--; break;
+                        case direction.Left: x--; break;
+                        case direction.Down: y++; break;
+                        case direction.Right: x++; break;
                     }
                     var arr = new[] { x > minX && x < maxX && y > minY ? TopLine(x, y) : lineType.None,
                                                x < maxX && y > minY && y < maxY ? RightLine(x, y) : lineType.None, 
@@ -483,7 +465,7 @@ namespace EsotericIDE.Languages
                             dir != direction.Left && arr[1] != lineType.None ? direction.Right :
                             dir != direction.Up && arr[2] != lineType.None ? direction.Down :
                             dir != direction.Right && arr[3] != lineType.None ? direction.Left :
-                            FuncitonHelper.ThrowParseError<direction>("The parser encountered an internal error.", x, y, SourceText);
+                            Ut.Throw<direction>(new CompileException("The parser encountered an internal error.", GetIndex(x, y), 1));
                     ret += dir2str(dir, arr[(int) dir]);
                 }
             }
@@ -496,7 +478,7 @@ namespace EsotericIDE.Languages
                     var p = SourceText.IndexOf('\n', index);
                     if (p == -1)
                         return SourceText.Length;
-                    index = p;
+                    index = p + 1;
                     y--;
                 }
                 return index + x;
@@ -538,12 +520,12 @@ namespace EsotericIDE.Languages
                     case nodeType.Call:
                         unparsedFunctionDeclaration func;
                         if (!unparsedDeclarationsByNode.TryGetValue(this, out func) && !unparsedDeclarationsByName.TryGetValue(GetContent(source), out func))
-                            FuncitonHelper.ThrowParseError("Call to undefined function: {0}".Fmt(GetContent(source)), X, Y, source.SourceText);
+                            throw new CompileException("Call to undefined function: {0}".Fmt(GetContent(source)), X);
                         if (func.Connectors.Count(fc => fc != connectorType.None) != edges.Count(e => e != null))
-                            FuncitonHelper.ThrowParseError("Incorrect number of connectors on call to function: {0}".Fmt(GetContent(source)), X, Y, source.SourceText);
+                            throw new CompileException("Incorrect number of connectors on call to function: {0}".Fmt(GetContent(source)), X);
                         return deduceGiven(edges, known, isCorrect, isFlipped, () =>
                         {
-                            FuncitonHelper.ThrowParseError("Incorrect orientation of connectors on call to function: {0}".Fmt(GetContent(source)), X, Y, source.SourceText);
+                            throw new CompileException("Incorrect orientation of connectors on call to function: {0}".Fmt(GetContent(source)), X);
                         }, func.Connectors);
 
                     case nodeType.Literal:
@@ -561,35 +543,35 @@ namespace EsotericIDE.Languages
 
                     case nodeType.TJunction:
                         if (edges.Count(e => e != null) != 3)
-                            FuncitonHelper.ThrowParseError("Incorrect number of connectors to T junction (this error indicates a bug in the parser; please report it).", X, Y, source.SourceText);
+                            throw new CompileException("Incorrect number of connectors to T junction (this error indicates a bug in the parser; please report it).", X);
                         connectorType[] conn1 = { connectorType.Input, connectorType.Output, connectorType.None, connectorType.Output };
                         connectorType[] conn2 = { connectorType.Output, connectorType.Input, connectorType.None, connectorType.Input };
                         return deduceGiven(edges, known, isCorrect, isFlipped, () =>
                         {
-                            FuncitonHelper.ThrowParseError("Incorrect orientation of connectors on T junction (this error indicates a bug in the parser; please report it).", X, Y, source.SourceText);
+                            throw new CompileException("Incorrect orientation of connectors on T junction (this error indicates a bug in the parser; please report it).", X);
                         }, conn1, conn2);
 
                     case nodeType.CrossJunction:
                         if (edges.Count(e => e != null) != 4)
-                            FuncitonHelper.ThrowParseError("Incorrect number of connectors to cross junction (this error indicates a bug in the parser; please report it).", X, Y, source.SourceText);
+                            throw new CompileException("Incorrect number of connectors to cross junction (this error indicates a bug in the parser; please report it).", X);
                         connectorType[] conn = { connectorType.Input, connectorType.Output, connectorType.Output, connectorType.Input };
                         return deduceGiven(edges, known, isCorrect, isFlipped, () =>
                         {
-                            FuncitonHelper.ThrowParseError("Incorrect orientation of connectors on cross junction (this error indicates a bug in the parser; please report it).", X, Y, source.SourceText);
+                            throw new CompileException("Incorrect orientation of connectors on cross junction (this error indicates a bug in the parser; please report it).", X);
                         }, conn);
 
                     case nodeType.End:
                         // Ends have just one input
                         if (edges.Count(e => e != null) != 1)
-                            FuncitonHelper.ThrowParseError("Incorrect number of connectors to end node (this error indicates a bug in the parser; please report it).", X, Y, source.SourceText);
+                            throw new CompileException("Incorrect number of connectors to end node (this error indicates a bug in the parser; please report it).", X);
                         connectorType[] conn3 = { connectorType.Input, connectorType.None, connectorType.None, connectorType.None };
                         return deduceGiven(edges, known, isCorrect, isFlipped, () =>
                         {
-                            FuncitonHelper.ThrowParseError("Incorrect orientation of connectors to end node (this error indicates a bug in the parser; please report it).", X, Y, source.SourceText);
+                            throw new CompileException("Incorrect orientation of connectors to end node (this error indicates a bug in the parser; please report it).", X);
                         }, conn3);
                 }
 
-                FuncitonHelper.ThrowParseError("The parser encountered an internal error: unrecognised node type: {0}".Fmt(Type), X, Y, source.SourceText);
+                throw new CompileException("The parser encountered an internal error: unrecognised node type: {0}".Fmt(Type), X);
                 return false;
             }
 
@@ -601,6 +583,7 @@ namespace EsotericIDE.Languages
                 bool[] validKnowns = null;
                 edge[] validEdges = null;
                 connectorType[] validConn = null;
+                int validRotation = 0;
 
                 foreach (var conn in connectors)
                 {
@@ -620,6 +603,7 @@ namespace EsotericIDE.Languages
                             validEdges = rotatedEdges;
                             validKnowns = rotatedKnowns;
                             validConn = conn;
+                            validRotation = rot;
                         }
                     }
                 }
@@ -632,7 +616,10 @@ namespace EsotericIDE.Languages
 
                 for (int i = 0; i < 4; i++)
                     if (validConn[i] != connectorType.None)
-                        ((validEdges[i].EndNode == this) ^ (validConn[i] == connectorType.Input) ? isFlipped : isCorrect)(validEdges[i]);
+                        if (validEdges[i].StartNode == this && (int) validEdges[i].DirectionFromStartNode == (i + validRotation) % 4)
+                            (validConn[i] == connectorType.Output ? isCorrect : isFlipped)(validEdges[i]);
+                        else if (validEdges[i].EndNode == this && (int) validEdges[i].DirectionFromEndNode == (i + validRotation) % 4)
+                            (validConn[i] == connectorType.Input ? isCorrect : isFlipped)(validEdges[i]);
                 Edges = validEdges;
                 Connectors = validConn;
                 return true;
@@ -643,16 +630,11 @@ namespace EsotericIDE.Languages
         {
             switch (dir)
             {
-                case direction.Up:
-                    return direction.Down;
-                case direction.Right:
-                    return direction.Left;
-                case direction.Down:
-                    return direction.Up;
-                case direction.Left:
-                    return direction.Right;
-                default:
-                    throw new InvalidOperationException();
+                case direction.Up: return direction.Down;
+                case direction.Right: return direction.Left;
+                case direction.Down: return direction.Up;
+                case direction.Left: return direction.Right;
+                default: throw new InvalidOperationException();
             }
         }
 
@@ -727,7 +709,7 @@ namespace EsotericIDE.Languages
                 Action<edge> isFlipped = e =>
                 {
                     if (processedEdges.Contains(e))
-                        FuncitonHelper.ThrowParseError("Program is ambiguous: cannot determine the direction of this edge.", e.StartX, e.StartY, _source.SourceText);
+                        throw new CompileException("Program is ambiguous: cannot determine the direction of this edge.", _source.GetIndex(e.StartX, e.StartY), 1);
                     e.Flip();
                     processedEdges.Add(e);
                 };
@@ -748,7 +730,7 @@ namespace EsotericIDE.Languages
                         if (enqueued == q.Count)
                         {
                             var funcName = this is unparsedFunctionDeclaration ? "function “{0}”".Fmt(((unparsedFunctionDeclaration) this).DeclarationName) : "the main program";
-                            FuncitonHelper.ThrowParseError("Program is ambiguous: cannot determine the direction of all the edges in {0}.".Fmt(funcName));
+                            throw new CompileException("Program is ambiguous: cannot determine the direction of all the edges in {0}.".Fmt(funcName));
                         }
                     }
                     else
@@ -837,7 +819,7 @@ namespace EsotericIDE.Languages
                     case nodeType.Call:
                         unparsedFunctionDeclaration decl;
                         if (!unparsedFunctionsByNode.TryGetValue(node, out decl) && !unparsedFunctionsByName.TryGetValue(node.GetContent(_source), out decl))
-                            FuncitonHelper.ThrowParseError("Call to undefined function “{0}”.".Fmt(node.GetContent(_source)), node.X, node.Y, _source.SourceText);
+                            throw new CompileException("Call to undefined function “{0}”.".Fmt(node.GetContent(_source)), _source.GetIndex(node.X, node.Y), 1);
 
                         FuncitonFunction func;
                         if (!parsedFunctions.TryGetValue(decl, out func))
@@ -880,7 +862,7 @@ namespace EsotericIDE.Languages
                         {
                             BigInteger literal;
                             if (!BigInteger.TryParse(content, out literal))
-                                FuncitonHelper.ThrowParseError("Literal does not represent a valid integer.", node.X, node.Y, _source.SourceText);
+                                throw new CompileException("Literal does not represent a valid integer.", _source.GetIndex(node.X, node.Y), 1);
                             newLiteralNode = new FuncitonFunction.LiteralNode(function, new Position(_source.GetIndex(edge.StartX, edge.StartY), 1), literal);
                         }
                         edgesAlready[edge] = newLiteralNode;
@@ -889,7 +871,7 @@ namespace EsotericIDE.Languages
                     case nodeType.End:
                     case nodeType.Comment:
                     default:
-                        FuncitonHelper.ThrowParseError("The parser encountered an internal error.", node.X, node.Y, _source.SourceText);
+                        throw new CompileException("The parser encountered an internal error.", _source.GetIndex(node.X, node.Y), 1);
                         return null;
                 }
             }
@@ -904,7 +886,7 @@ namespace EsotericIDE.Languages
                         var isStart = edge.StartNode.Type == nodeType.End;
                         var dir = isStart ? edge.DirectionFromStartNode : edge.DirectionFromEndNode;
                         if (connectors[(int) dir] != connectorType.None)
-                            FuncitonHelper.ThrowParseError("Duplicate connector: ‘{0}’ is already an ‘{1}’.".Fmt(dir, connectors[(int) dir]), isStart ? edge.StartX : edge.EndX, isStart ? edge.StartY : edge.EndY, _source.SourceText);
+                            throw new CompileException("Duplicate connector: ‘{0}’ is already an ‘{1}’.".Fmt(dir, connectors[(int) dir]), _source.GetIndex(isStart ? edge.StartX : edge.EndX, isStart ? edge.StartY : edge.EndY), 1);
                         connectors[(int) dir] = connectorType.Output;
                     }
                     return connectors;
@@ -923,26 +905,26 @@ namespace EsotericIDE.Languages
             {
                 var decls = Nodes.Where(n => n.Type == nodeType.Declaration).ToList();
                 if (decls.Count > 1)
-                    FuncitonHelper.ThrowParseError("Cannot have more than one declaration box connected with each other.", decls[0].X, decls[0].Y, _source.SourceText);
+                    throw new CompileException("Cannot have more than one declaration box connected with each other.", _source.GetIndex(decls[0].X, decls[0].Y), 1);
 
                 DeclarationNode = decls[0];
                 if (DeclarationNode.Height != 2)
-                    FuncitonHelper.ThrowParseError("Declaration box must have exactly one line of content.", DeclarationNode.X, DeclarationNode.Y, _source.SourceText);
+                    throw new CompileException("Declaration box must have exactly one line of content.", _source.GetIndex(DeclarationNode.X, DeclarationNode.Y), 1);
 
                 foreach (var callbox in nodes.Where(n => n.Type == nodeType.Call))
                     if (callbox.Height != 2)
-                        FuncitonHelper.ThrowParseError("Call box must have exactly one line of content.", callbox.X, callbox.Y, _source.SourceText);
+                        throw new CompileException("Call box must have exactly one line of content.", _source.GetIndex(callbox.X, callbox.Y), 1);
 
                 DeclarationName = new string(source.Chars[DeclarationNode.Y + 1].Subarray(DeclarationNode.X + 1, DeclarationNode.Width - 1)).Trim();
                 if (DeclarationName.Length < 1)
-                    FuncitonHelper.ThrowParseError("Function name missing.", DeclarationNode.X, DeclarationNode.Y, _source.SourceText);
+                    throw new CompileException("Function name missing.", _source.GetIndex(DeclarationNode.X, DeclarationNode.Y), 1);
                 DeclarationIsPrivate = false;
 
                 // Find the private marker
                 var privateMarkerPosition = 0;
                 var left = source.RightLine(DeclarationNode.X, DeclarationNode.Y + 1);
                 if (left == lineType.Double)
-                    FuncitonHelper.ThrowParseError("Unrecognised marker.", DeclarationNode.X, DeclarationNode.Y + 1, _source.SourceText);
+                    throw new CompileException("Unrecognised marker.", _source.GetIndex(DeclarationNode.X, DeclarationNode.Y + 1), 1);
                 else if (left == lineType.Single)
                 {
                     var shape = source.GetLineShape(DeclarationNode.X, DeclarationNode.Y + 1, direction.Right, DeclarationNode.X, DeclarationNode.Y, DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + DeclarationNode.Height);
@@ -953,35 +935,35 @@ namespace EsotericIDE.Languages
                         privateMarkerPosition = shape == "→↑" ? 1 : 3;
                     }
                     else
-                        FuncitonHelper.ThrowParseError("Unrecognised marker.", DeclarationNode.X, DeclarationNode.Y + 1, _source.SourceText);
+                        throw new CompileException("Unrecognised marker.", _source.GetIndex(DeclarationNode.X, DeclarationNode.Y + 1), 1);
                 }
 
                 var right = source.LeftLine(DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1);
                 if (right == lineType.Double)
-                    FuncitonHelper.ThrowParseError("Unrecognised marker.", DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1, _source.SourceText);
+                    throw new CompileException("Unrecognised marker.", _source.GetIndex(DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1), 1);
                 else if (right == lineType.Single)
                 {
                     var shape = source.GetLineShape(DeclarationNode.X, DeclarationNode.Y + 1, direction.Left, DeclarationNode.X, DeclarationNode.Y, DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + DeclarationNode.Height);
                     if (shape == "←↑" || shape == "←↓")
                     {
                         if (DeclarationIsPrivate)
-                            FuncitonHelper.ThrowParseError("Duplicate private marker.", DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1, _source.SourceText);
+                            throw new CompileException("Duplicate private marker.", _source.GetIndex(DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1), 1);
                         DeclarationIsPrivate = true;
                         DeclarationName = new string(source.Chars[DeclarationNode.Y + 1].Subarray(DeclarationNode.X + 1, DeclarationNode.Width - 2)).Trim();
                         privateMarkerPosition = shape == "←↑" ? 2 : 4;
                     }
                     else
-                        FuncitonHelper.ThrowParseError("Unrecognised marker.", DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1, _source.SourceText);
+                        throw new CompileException("Unrecognised marker.", _source.GetIndex(DeclarationNode.X + DeclarationNode.Width, DeclarationNode.Y + 1), 1);
                 }
 
                 for (int i = DeclarationNode.X + 1; i < DeclarationNode.X + DeclarationNode.Width; i++)
                 {
                     if ((i != DeclarationNode.X + 1 || privateMarkerPosition != 1) && (i != DeclarationNode.X + DeclarationNode.Width - 1 || privateMarkerPosition != 2))
                         if (source.BottomLine(i, DeclarationNode.Y) != lineType.None)
-                            FuncitonHelper.ThrowParseError("Unrecognised marker.", i, DeclarationNode.Y, _source.SourceText);
+                            throw new CompileException("Unrecognised marker.", _source.GetIndex(i, DeclarationNode.Y), 1);
                     if ((i != DeclarationNode.X + 1 || privateMarkerPosition != 3) && (i != DeclarationNode.X + DeclarationNode.Width - 1 || privateMarkerPosition != 4))
                         if (source.TopLine(i, DeclarationNode.Y + DeclarationNode.Height) != lineType.None)
-                            FuncitonHelper.ThrowParseError("Unrecognised marker.", i, DeclarationNode.Y + DeclarationNode.Height, _source.SourceText);
+                            throw new CompileException("Unrecognised marker.", _source.GetIndex(i, DeclarationNode.Y + DeclarationNode.Height), 1);
                 }
             }
 
@@ -1007,7 +989,7 @@ namespace EsotericIDE.Languages
                         var isStart = edge.StartNode == DeclarationNode;
                         var dir = isStart ? edge.DirectionFromStartNode : edge.DirectionFromEndNode;
                         if (connectors[(int) dir] != connectorType.None)
-                            FuncitonHelper.ThrowParseError("Duplicate connector: ‘{0}’ is already an ‘{1}’.".Fmt(dir, connectors[(int) dir]), isStart ? edge.StartX : edge.EndX, isStart ? edge.StartY : edge.EndY, _source.SourceText);
+                            throw new CompileException("Duplicate connector: ‘{0}’ is already an ‘{1}’.".Fmt(dir, connectors[(int) dir]), _source.GetIndex(isStart ? edge.StartX : edge.EndX, isStart ? edge.StartY : edge.EndY), 1);
                         connectors[(int) dir] = connectorType.Input;
                     }
                     return connectors;

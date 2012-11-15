@@ -11,14 +11,14 @@ namespace EsotericIDE.Languages
 {
     partial class Funciton
     {
-        private sealed class executionEnvironment : ExecutionEnvironment
+        private sealed class funcitonExecutionEnvironment : ExecutionEnvironment
         {
             private FuncitonProgram _program;
             private string[] _traceFunctions;
             private Stack<FuncitonFunction.Node> _evaluationStack;
             private FuncitonFunction.Node _currentNode;
 
-            public executionEnvironment(FuncitonProgram program, string[] traceFunctions)
+            public funcitonExecutionEnvironment(FuncitonProgram program, string[] traceFunctions)
             {
                 _program = program;
                 _traceFunctions = traceFunctions;
@@ -26,7 +26,7 @@ namespace EsotericIDE.Languages
 
             public override string DescribeExecutionState()
             {
-                return "";
+                return _currentNode.Position.ToString();
             }
 
             protected override void run()
@@ -113,10 +113,10 @@ namespace EsotericIDE.Languages
             }
         }
 
-        private sealed class analysisExecutionEnvironment : ExecutionEnvironment
+        private sealed class funcitonAnalysisExecutionEnvironment : ExecutionEnvironment
         {
             private string _analysis;
-            public analysisExecutionEnvironment(string analysis) { _analysis = analysis; }
+            public funcitonAnalysisExecutionEnvironment(string analysis) { _analysis = analysis; }
             public override string DescribeExecutionState() { return ""; }
 
             protected override void run()

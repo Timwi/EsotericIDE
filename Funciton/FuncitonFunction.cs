@@ -35,7 +35,7 @@ namespace EsotericIDE.Languages
                 /// read its result, store that in <see cref="PreviousSubresult"/> and then call <see cref="NextToEvaluate"/> again.</description></item>
                 /// </list>
                 /// </remarks>
-                public Node NextToEvaluate(IEnumerable<string> traceFunctions, executionEnvironment ee)
+                public Node NextToEvaluate(IEnumerable<string> traceFunctions, funcitonExecutionEnvironment ee)
                 {
                     var res = nextToEvaluate();
                     if (traceFunctions != null && traceFunctions.Contains(_thisFunction.Name))
@@ -45,7 +45,7 @@ namespace EsotericIDE.Languages
                     return res;
                 }
 
-                private void trace(Node res, executionEnvironment ee)
+                private void trace(Node res, funcitonExecutionEnvironment ee)
                 {
                     // Only output a trace if this node is fully evaluated
                     if (res != null)

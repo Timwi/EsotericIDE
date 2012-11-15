@@ -22,7 +22,7 @@ namespace EsotericIDE.Languages
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new executionEnvironment(new program { Instructions = parse(source, 0), Index = 0, Count = source.Length }, input);
+            return new scliptingExecutionEnvironment(new program { Instructions = parse(source, 0), Index = 0, Count = source.Length }, input);
         }
 
         public override string GetInfo(string source, int cursorPos)

@@ -11,14 +11,14 @@ namespace EsotericIDE.Languages
 {
     partial class Sclipting
     {
-        private sealed class executionEnvironment : ExecutionEnvironment
+        private sealed class scliptingExecutionEnvironment : ExecutionEnvironment
         {
             public List<object> CurrentStack = new List<object>();
             public List<regexMatch> RegexObjects = new List<regexMatch>();
             private program _program;
             public string Input { get; private set; }
 
-            public executionEnvironment(program program, string input)
+            public scliptingExecutionEnvironment(program program, string input)
             {
                 _program = program;
                 _runner = null;

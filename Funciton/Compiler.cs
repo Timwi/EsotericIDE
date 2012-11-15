@@ -348,9 +348,9 @@ namespace EsotericIDE.Languages
             var functions = new Dictionary<unparsedDeclaration, FuncitonFunction>();
 
             if (_settings.AnalyzeFunction == null)
-                return new executionEnvironment(program.Parse(declarationsByName, callToDecl, functions, stdin), _settings.TraceFunctions);
+                return new funcitonExecutionEnvironment(program.Parse(declarationsByName, callToDecl, functions, stdin), _settings.TraceFunctions);
 
-            return new analysisExecutionEnvironment(
+            return new funcitonAnalysisExecutionEnvironment(
                 _settings.AnalyzeFunction == "" ? program.Parse(declarationsByName, callToDecl, functions, stdin).Analyse() :
                 functionToAnalyse == null ? "No such function: “{0}”.{1}".Fmt(_settings.AnalyzeFunction, Environment.NewLine) :
                 functionToAnalyse.Parse(declarationsByName, callToDecl, functions, stdin).Analyse()

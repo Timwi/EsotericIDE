@@ -32,8 +32,14 @@ namespace EsotericIDE.Languages
             var inputQ = new Queue<BigInteger>();
             switch (_settings.InputType)
             {
-                case ioType.Numbers:
-                    inputQ.EnqueueRange(input.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => BigInteger.Parse(s)));
+                case ioType.Numbers: try
+                    {
+                        inputQ.EnqueueRange(input.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => BigInteger.Parse(s)));
+                    }
+                    catch (FormatException)
+                    {
+                        throw new Exception("Please provide the input as a comma-separated sequence of integers (or change the semantics in the Semantics menu).");
+                    }
                     break;
                 case ioType.Characters:
                     inputQ.EnqueueRange(input.Select(ch => (BigInteger) (int) ch));

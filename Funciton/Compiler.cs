@@ -114,10 +114,7 @@ namespace EsotericIDE.Languages
                         else if (edgeTypes.Count(e => e == lineType.Double) == 2)
                             type = nodeType.Call;
                         else
-                        {
                             throw new CompileException("Unrecognised box type.", source.GetIndex(x, y), 1);
-                            continue;
-                        }
 
                         // Right now, “type” is “Literal” if it is a double-lined box, but it could be a Comment too,
                         // so don’t create the box yet. When we encounter an outgoing edge, we’ll know it’s a literal.
@@ -236,7 +233,6 @@ namespace EsotericIDE.Languages
                         case direction.Right: x++; connector = source.LeftLine(x, y); break;
                         default:
                             throw new CompileException("The parser encountered an internal error.", source.GetIndex(x, y), 1);
-                            continue;
                     }
                     if (y >= 0 && y < visited.Length && x >= 0 && x < visited[y].Length)
                         visited[y][x] = true;
@@ -274,7 +270,6 @@ namespace EsotericIDE.Languages
                         case lineType.Double:
                         default:
                             throw new CompileException("Unexpected double line.", source.GetIndex(x, y), 1);
-                            continue;
                     }
                 }
 
@@ -572,7 +567,6 @@ namespace EsotericIDE.Languages
                 }
 
                 throw new CompileException("The parser encountered an internal error: unrecognised node type: {0}".Fmt(Type), X);
-                return false;
             }
 
             public edge[] Edges { get; private set; }
@@ -872,7 +866,6 @@ namespace EsotericIDE.Languages
                     case nodeType.Comment:
                     default:
                         throw new CompileException("The parser encountered an internal error.", _source.GetIndex(node.X, node.Y), 1);
-                        return null;
                 }
             }
 

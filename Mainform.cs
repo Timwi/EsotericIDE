@@ -442,7 +442,7 @@ namespace EsotericIDE
                 _anyChanges = true;
             _timerPreviousSource = source;
 
-            if (cursorPos < 0 || cursorPos >= source.Length)
+            if (cursorPos < 0 || cursorPos > source.Length)
                 lblInfo.Text = "";
             else
                 lblInfo.Text = _currentLanguage.GetInfo(source, cursorPos);

@@ -396,9 +396,7 @@ namespace EsotericIDE
             txtExecutionState.Text = _currentEnvironment.DescribeExecutionState();
             txtOutput.Text = _currentEnvironment.Output;
             ctTabs.SelectedTab = tabExecutionState;
-            txtSource.Focus();
-            txtSource.SelectionStart = _currentPosition.Index;
-            txtSource.SelectionLength = _currentPosition.Length;
+            goToCurrentInstruction();
         }
 
         private void runToCursor(object _, EventArgs __)
@@ -448,12 +446,14 @@ namespace EsotericIDE
                 lblInfo.Text = _currentLanguage.GetInfo(source, cursorPos);
         }
 
-        private void goToCurrentInstruction(object _, EventArgs __)
+        private void goToCurrentInstruction(object _ = null, EventArgs __ = null)
         {
             if (_currentEnvironment == null || _currentPosition == null)
                 return;
+            txtSource.Focus();
             txtSource.SelectionStart = _currentPosition.Index;
             txtSource.SelectionLength = _currentPosition.Length;
+            txtSource.ScrollToCaret();
         }
 
         private void splitterMoved(object _, EventArgs __)

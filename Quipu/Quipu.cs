@@ -56,7 +56,7 @@ namespace EsotericIDE.Languages
                 {
                     case "\\n": info = @"Pushes a newline onto the stack (or merges with a previous string, e.g. 'a followed by \\n pushes the string ""a\\n"" onto the stack)."; break;
                     case "[]": info = "Pushes the value of thread n."; break;
-                    case ";break;;break;": info = "Noop. Delimiter for numbers and strings."; break;
+                    case ";;": info = "Noop. Delimiter for numbers and strings."; break;
                     case "\\/": info = "Inputs a value."; break;
                     case "/\\": info = "Outputs a value."; break;
                     case "^^": info = "Pushes the value of the current thread."; break;

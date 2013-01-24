@@ -198,12 +198,12 @@ namespace EsotericIDE.Languages
                                     break;
 
                                 case "++": operation = (a, b) => a + b; goto case "%%";
-                                case "--": operation = (a, b) => a - b; goto case "%%";
+                                case "--": operation = (a, b) => b - a; goto case "%%";
                                 case "**": operation = (a, b) => a * b; goto case "%%";
-                                case "//": operation = (a, b) => a / b; goto case "%%";
+                                case "//": operation = (a, b) => b / a; goto case "%%";
                                 case "%%":
                                     if (operation == null)
-                                        operation = (a, b) => a % b;
+                                        operation = (a, b) => b % a;
                                     instruction = qee =>
                                     {
                                         var r = operation(qee.GetNumber(), qee.GetNumber());
@@ -295,10 +295,10 @@ namespace EsotericIDE.Languages
                     if (result != null)
                     {
                         if (result.Value == -1)
-                            break;
+                            yield break;
                         if (result.Value < -1 || result.Value >= Threads.Length)
                             throw new InvalidOperationException(@"Jump to invalid thread {0}.".Fmt(result));
-                        var value = qee.Stack.Pop();
+                        qee.ThreadValues[qee.CurrentThread] = qee.Stack.Pop();
                         qee.CurrentThread = result.Value;
                         qee.CurrentKnot = 0;
                         qee.Stack.Clear();
@@ -309,8 +309,7 @@ namespace EsotericIDE.Languages
                         qee.CurrentKnot++;
                         if (qee.CurrentKnot >= Threads[qee.CurrentThread].Knots.Count)
                         {
-                            var value = qee.GetNumber();
-                            qee.ThreadValues[qee.CurrentThread] = value;
+                            qee.ThreadValues[qee.CurrentThread] = qee.Stack.Pop();
                             qee.CurrentThread++;
                             if (qee.CurrentThread >= Threads.Length)
                                 break;

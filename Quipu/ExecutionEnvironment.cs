@@ -13,7 +13,7 @@ namespace EsotericIDE.Languages
         private sealed class quipuExecutionEnvironment : ExecutionEnvironment
         {
             private program _program;
-            public List<BigInteger> ThreadValues;
+            public List<object> ThreadValues;
             public int CurrentThread;
             public int CurrentKnot;
             public Stack<object> Stack;
@@ -22,7 +22,7 @@ namespace EsotericIDE.Languages
             public quipuExecutionEnvironment(program program, string input)
             {
                 _program = program;
-                ThreadValues = program.Threads.Select(t => BigInteger.Zero).ToList();
+                ThreadValues = program.Threads.Select(t => (object) BigInteger.Zero).ToList();
                 CurrentThread = 0;
                 Stack = new Stack<object>();
                 Stack.Push(BigInteger.Zero);
@@ -31,11 +31,12 @@ namespace EsotericIDE.Languages
 
             public override string DescribeExecutionState()
             {
-                return "Thread values: {1}{0}{0}Stack:{0}{2}".Fmt(
-                    Environment.NewLine,
-                    ThreadValues.JoinString(", "),
-                    Stack.Select(s => s is string ? @"""{0}""".Fmt(((string) s).CLiteralEscape()) : s.ToString()).JoinString(Environment.NewLine)
-                );
+                var threadValues = new[] { "Thread values:" }.Concat(ThreadValues.Select((s, i) => (s is string ? @"{{0}}: ""{0}""".Fmt(((string) s).CLiteralEscape()) : @"{{0}}: {0}".Fmt(s)).Fmt(i))).ToArray();
+                var stackValues = new[] { "Stack:" }.Concat(Stack.Select(s => s is string ? @"""{0}""".Fmt(((string) s).CLiteralEscape()) : s.ToString())).ToArray();
+                var width = stackValues.Max(v => v.Length);
+                return Enumerable.Range(0, Math.Max(threadValues.Length, stackValues.Length))
+                    .Select(l => "{{0,{0}}}  {{1}}".Fmt(width).Fmt(l < stackValues.Length ? stackValues[l] : "", l < threadValues.Length ? threadValues[l] : ""))
+                    .JoinString(Environment.NewLine);
             }
 
             public void AddOutput(string str) { _output.Append(str); }

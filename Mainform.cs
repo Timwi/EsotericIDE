@@ -322,8 +322,10 @@ namespace EsotericIDE
             {
                 if (e.Index != null)
                 {
+                    txtSource.Focus();
                     txtSource.SelectionStart = e.Index.Value;
                     txtSource.SelectionLength = e.Length ?? 0;
+                    txtSource.ScrollToCaret();
                 }
                 DlgMessage.Show("Compilation failed:" + Environment.NewLine + e.Message, "Esoteric IDE", DlgType.Error, "&OK");
                 return false;
@@ -470,7 +472,7 @@ namespace EsotericIDE
 
         private void input(object _, EventArgs __)
         {
-            _input = InputBox.GetLine("Please type the input to the program:", _input, "Esoteric IDE", "&OK", "&Cancel") ?? _input;
+            _input = InputBox.GetLine("Please type the input to the program:", _input, "Esoteric IDE", "&OK", "&Cancel", useMultilineBox: true) ?? _input;
         }
 
         private void clearInput(object _, EventArgs __)

@@ -60,7 +60,7 @@ namespace EsotericIDE.Languages
                             throw new CompileException("Instructions must be two characters long.");
                         instructionStr = instructionStr.Substring(0, 2);
 
-                        var position = new Position(sourceLines[i].Item2, 2);
+                        var position = new Position(sourceLines[i].Item2 + threadIndex + indentation, 2);
 
                         Func<quipuExecutionEnvironment, int?> instruction = null;
                         BigInteger? instructionIsThousands = null;
@@ -180,7 +180,7 @@ namespace EsotericIDE.Languages
                                     {
                                         if (qee.Stack.Count < 1)
                                             throw new InvalidOperationException("Stack underflow.");
-                                        qee.AddOutput(qee.Stack.Pop().ToString());
+                                        qee.AddOutput(qee.Stack.Peek().ToString());
                                         return null;
                                     };
                                     break;
@@ -206,8 +206,12 @@ namespace EsotericIDE.Languages
                                         operation = (a, b) => b % a;
                                     instruction = qee =>
                                     {
-                                        var r = operation(qee.GetNumber(), qee.GetNumber());
-                                        qee.Stack.Push(r);
+                                        // This operation is not supposed to pop from the stack
+                                        var item1 = qee.GetNumber();
+                                        var item2 = qee.GetNumber();
+                                        qee.Stack.Push(item2);
+                                        qee.Stack.Push(item1);
+                                        qee.Stack.Push(operation(item1, item2));
                                         return null;
                                     };
                                     break;

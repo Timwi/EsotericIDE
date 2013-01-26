@@ -48,16 +48,16 @@ namespace EsotericIDE
 
             if (EsotericIDEProgram.Settings.LanguageSettings == null)
                 EsotericIDEProgram.Settings.LanguageSettings = new Dictionary<string, LanguageSettings>();
-            var languages = Assembly.GetExecutingAssembly().GetTypes()
+            _languages = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => typeof(ProgrammingLanguage).IsAssignableFrom(t) && !t.IsAbstract)
                 .Select(t => (ProgrammingLanguage) Activator.CreateInstance(t))
                 .OrderBy(t => t.LanguageName)
                 .ToArray();
             LanguageSettings settings;
-            foreach (var lang in languages)
+            foreach (var lang in _languages)
                 if (EsotericIDEProgram.Settings.LanguageSettings.TryGetValue(lang.LanguageName, out settings) && settings != null)
                     lang.SetSettings(settings);
-            cmbLanguage.Items.AddRange(languages);
+            cmbLanguage.Items.AddRange(_languages);
 
             ToolStripMenuItem[] currentLanguageSpecificMenus = null;
             cmbLanguage.SelectedIndexChanged += (_, __) =>
@@ -71,10 +71,11 @@ namespace EsotericIDE
                 currentLanguageSpecificMenus = _currentLanguage.CreateMenus(() => txtSource.SelectedText, s => { txtSource.SelectedText = s; });
                 ctMenu.Items.AddRange(currentLanguageSpecificMenus);
             };
-            var ll = languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
+            var ll = _languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
             cmbLanguage.SelectedIndex = ll == -1 ? 0 : ll;
         }
 
+        private ProgrammingLanguage[] _languages;
         private ProgrammingLanguage _currentLanguage;
 
         private string _input
@@ -237,7 +238,15 @@ namespace EsotericIDE
         {
             if (!canDestroy())
                 return;
-            using (var open = new OpenFileDialog { Title = "Open file", DefaultExt = _currentLanguage.DefaultFileExtension })
+
+            var filter = _languages
+                .OrderByDescending(lang => lang == _currentLanguage)
+                .ThenBy(lang => lang.LanguageName)
+                .Select(lang => "{1} (*.{0})|*.{0}".Fmt(lang.DefaultFileExtension, lang.LanguageName))
+                .JoinString("|")
+                + "|All files (*.*)|*.*";
+
+            using (var open = new OpenFileDialog { Title = "Open file", DefaultExt = _currentLanguage.DefaultFileExtension, Filter = filter })
             {
                 if (EsotericIDEProgram.Settings.LastDirectory != null)
                     try { open.InitialDirectory = EsotericIDEProgram.Settings.LastDirectory; }

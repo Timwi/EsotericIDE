@@ -39,7 +39,6 @@ namespace EsotericIDE.Languages
                 sourceLines.Add(new Tuple<string, int>(source, index));
                 var threads = new List<thread>();
                 var threadIndex = 0;
-                var first = true;
 
                 while (true)
                 {
@@ -268,7 +267,6 @@ namespace EsotericIDE.Languages
                         prevInstructionWasUnits = instructionIsUnits;
                     }
 
-                    first = false;
                     if (curThread.Knots.Count == 0)
                         break;
                     threads.Add(curThread);

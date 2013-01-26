@@ -7,7 +7,7 @@ using RT.Util;
 using RT.Util.Lingo;
 
 [assembly: AssemblyTitle("Esoteric IDE")]
-[assembly: AssemblyDescription("IDE (Interpreter, Debugger, Evaluator) for esoteric programming languages")]
+[assembly: AssemblyDescription("IDE (Interpreter/Debugger Engine) for esoteric programming languages")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Esoteric IDE")]

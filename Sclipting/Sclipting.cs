@@ -15,7 +15,7 @@ namespace EsotericIDE.Languages
     sealed partial class Sclipting : ProgrammingLanguage
     {
         public override string LanguageName { get { return "Sclipting"; } }
-        public override string DefaultFileExtension { get { return ".sclipt"; } }
+        public override string DefaultFileExtension { get { return "sclipt"; } }
 
         private static Dictionary<char, instruction> _instructions;
         private static Dictionary<char, nodeType> _instructionTypes;

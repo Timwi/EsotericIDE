@@ -191,7 +191,7 @@ namespace EsotericIDE
 
         private DialogResult saveAs()
         {
-            using (var save = new SaveFileDialog { Title = "Save file", DefaultExt = _currentLanguage.DefaultFileExtension })
+            using (var save = new SaveFileDialog { Title = "Save file", DefaultExt = _currentLanguage.DefaultFileExtension, Filter = "{1} (*.{0})|*.{0}".Fmt(_currentLanguage.DefaultFileExtension, _currentLanguage.LanguageName) })
             {
                 var result = save.ShowDialog();
                 if (result == DialogResult.OK)
@@ -371,8 +371,10 @@ namespace EsotericIDE
                 txtSource.Focus();
                 if (runtimeError.Position != null)
                 {
+                    txtSource.Focus();
                     txtSource.SelectionStart = runtimeError.Position.Index;
                     txtSource.SelectionLength = runtimeError.Position.Length;
+                    txtSource.ScrollToCaret();
                 }
                 DlgMessage.Show(msg, "Run-time error", DlgType.Error, "&OK");
             }

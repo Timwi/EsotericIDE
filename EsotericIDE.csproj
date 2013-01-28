@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="CompileException.cs" />
     <Compile Include="EsotericIDEProgram.cs" />
+    <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="ProgrammingLanguage.cs" />
     <Compile Include="Quipu\ExecutionEnvironment.cs" />

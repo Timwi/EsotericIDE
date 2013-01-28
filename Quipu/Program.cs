@@ -33,7 +33,7 @@ namespace EsotericIDE.Languages
                 while ((m = Regex.Match(source, @"\r?\n")).Success)
                 {
                     sourceLines.Add(new Tuple<string, int>(source.Substring(0, m.Index), index));
-                    index += m.Index + 2;
+                    index += m.Index + m.Length;
                     source = source.Substring(m.Index + m.Length);
                 }
                 sourceLines.Add(new Tuple<string, int>(source, index));
@@ -56,7 +56,7 @@ namespace EsotericIDE.Languages
                         if (string.IsNullOrWhiteSpace(instructionStr))
                             break;
                         if ((instructionStr.Length != 3 || instructionStr[2] != ' ') && instructionStr.Length != 2)
-                            throw new CompileException("Instructions must be two characters long.");
+                            throw new CompileException("Instructions must be two characters long.", sourceLines[i].Item2 + threadIndex + indentation, instructionStr.Length);
                         instructionStr = instructionStr.Substring(0, 2);
 
                         var position = new Position(sourceLines[i].Item2 + threadIndex + indentation, 2);

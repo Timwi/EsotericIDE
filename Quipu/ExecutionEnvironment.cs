@@ -50,7 +50,7 @@ namespace EsotericIDE.Languages
                 return (raw is BigInteger ? (BigInteger) raw : BigInteger.TryParse((string) raw, out result) ? result : Ut.Throw<BigInteger>(new InvalidOperationException("Value is not a valid integer.")));
             }
 
-            protected override void run()
+            protected override void Run()
             {
                 using (var instructionPointer = _program.Execute(this).GetEnumerator())
                 {

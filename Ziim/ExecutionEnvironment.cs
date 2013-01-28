@@ -27,7 +27,7 @@ namespace EsotericIDE.Languages
                 ).JoinString(Environment.NewLine);
             }
 
-            protected override void run()
+            protected override void Run()
             {
                 RuntimeError error = null;
 

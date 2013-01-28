@@ -74,7 +74,7 @@ namespace EsotericIDE
 
                     try
                     {
-                        run();
+                        Run();
                     }
                     catch (Exception e)
                     {
@@ -101,6 +101,6 @@ namespace EsotericIDE
         }
 
         public abstract string DescribeExecutionState();
-        protected abstract void run();
+        protected abstract void Run();
     }
 }

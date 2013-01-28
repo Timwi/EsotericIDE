@@ -113,7 +113,7 @@ namespace EsotericIDE.Languages
                 return "{0,2}.  {1}".Fmt(index, describe(item));
             }
 
-            protected override void run()
+            protected override void Run()
             {
                 using (var instructionPointer = _program.Execute(this).GetEnumerator())
                 {

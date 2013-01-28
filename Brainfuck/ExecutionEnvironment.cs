@@ -91,7 +91,7 @@ namespace EsotericIDE.Languages
 
             protected abstract void outputCharacter();
 
-            protected override void run()
+            protected override void Run()
             {
                 using (var instructionPointer = _program.Execute(this).GetEnumerator())
                 {

@@ -1,6 +1,6 @@
-﻿# EsotericIDE
+﻿# Esoteric IDE
 
-EsotericIDE is an interpreter and debugger for some *esoteric programming languages* (or *esolangs*).
+Esoteric IDE is an interpreter and debugger for some *esoteric programming languages* (or *esolangs*).
 
 ## Features
 
@@ -12,7 +12,7 @@ EsotericIDE is an interpreter and debugger for some *esoteric programming langua
 
 ## Supported Languages
 
-In chronological order of implementation in EsotericIDE:
+In chronological order of implementation in Esoteric IDE:
 
 * **[Sclipting](http://esolangs.org/wiki/Sclipting)** — Similar to GolfScript but using Chinese characters.
 * **[Ziim](http://esolangs.org/wiki/Ziim)** — 2D language using only arrows (← ↑ → ↓ etc.).
@@ -27,7 +27,7 @@ In chronological order of implementation in EsotericIDE:
 
 ## Incomplete implementations
 
-There are incomplete implementations for these included in the source. However, the C# project (the `csproj` file) does not include them, so the IDE doesn’t list them. You will have to include the files in the EsotericIDE project and recompile it.
+There are incomplete implementations for these included in the source. However, the C# project (the `csproj` file) does not include them, so the IDE doesn’t list them. You will have to include the files in the Esoteric IDE project and recompile it.
 
 * **[Funciton](http://esolangs.org/wiki/Funciton)** — Struggling to support stepwise debugging for this one. For the moment, use [Funciton Interpreter](https://bitbucket.org/Timwi/funciton-interpreter) instead, which includes a Funciton-to-IL compiler.
 * **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** — No support for the jumpstack.

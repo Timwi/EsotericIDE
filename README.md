@@ -1,4 +1,4 @@
-# EsotericIDE
+Ôªø# EsotericIDE
 
 EsotericIDE is an interpreter and debugger for some *esoteric programming languages* (or *esolangs*).
 
@@ -14,10 +14,10 @@ EsotericIDE is an interpreter and debugger for some *esoteric programming langua
 
 In chronological order of implementation in EsotericIDE:
 
-* **[Sclipting](http://esolangs.org/wiki/Sclipting)** ó Similar to GolfScript but using Chinese characters.
-* **[Ziim](http://esolangs.org/wiki/Ziim)** ó 2D language using only arrows (? ? ? ? etc.).
-* **[Brainfuck](http://esolangs.org/wiki/Brainfuck)** ó The classic. Supports many different flavours, e.g. cells can be byte-size or arbitrary-size; output can be as numbers or as Unicode characters.
-* **[Quipu](http://esolangs.org/wiki/Quipu)** ó Inspired by the ancient Incaís [quipu](http://en.wikipedia.org/wiki/Quipu) system of recording information as knots in a thread, thus also known as *talking knots*.
+* **[Sclipting](http://esolangs.org/wiki/Sclipting)** ‚Äî Similar to GolfScript but using Chinese characters.
+* **[Ziim](http://esolangs.org/wiki/Ziim)** ‚Äî 2D language using only arrows (‚Üê ‚Üë ‚Üí ‚Üì etc.).
+* **[Brainfuck](http://esolangs.org/wiki/Brainfuck)** ‚Äî The classic. Supports many different flavours, e.g. cells can be byte-size or arbitrary-size; output can be as numbers or as Unicode characters.
+* **[Quipu](http://esolangs.org/wiki/Quipu)** ‚Äî Inspired by the ancient Inca‚Äôs [quipu](http://en.wikipedia.org/wiki/Quipu) system of recording information as knots in a thread, thus also known as *talking knots*.
 
 ## Most wanted implementations
 
@@ -27,7 +27,7 @@ In chronological order of implementation in EsotericIDE:
 
 ## Incomplete implementations
 
-There are incomplete implementations for these included in the source. However, the C# project (the `csproj` file) does not include them, so the IDE doesnít list them. You will have to include the files in the EsotericIDE project and recompile it.
+There are incomplete implementations for these included in the source. However, the C# project (the `csproj` file) does not include them, so the IDE doesn‚Äôt list them. You will have to include the files in the EsotericIDE project and recompile it.
 
-* **[Funciton](http://esolangs.org/wiki/Funciton)** ó Struggling to support stepwise debugging for this one. For the moment, use [Funciton Interpreter](https://bitbucket.org/Timwi/funciton-interpreter) instead, which includes a Funciton-to-IL compiler.
-* **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** ó No support for the jumpstack.
+* **[Funciton](http://esolangs.org/wiki/Funciton)** ‚Äî Struggling to support stepwise debugging for this one. For the moment, use [Funciton Interpreter](https://bitbucket.org/Timwi/funciton-interpreter) instead, which includes a Funciton-to-IL compiler.
+* **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** ‚Äî No support for the jumpstack.

@@ -76,7 +76,7 @@
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ctMenu = new System.Windows.Forms.MenuStrip();
             this.cmbLanguage = new System.Windows.Forms.ToolStripComboBox();
-            ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ctSplit)).BeginInit();
             this.ctSplit.Panel1.SuspendLayout();
             this.ctSplit.Panel2.SuspendLayout();
             this.ctSplit.SuspendLayout();
@@ -97,7 +97,7 @@
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
             this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtOutput.Size = new System.Drawing.Size(952, 390);
+            this.txtOutput.Size = new System.Drawing.Size(952, 389);
             this.txtOutput.TabIndex = 8;
             // 
             // lblSource
@@ -118,7 +118,7 @@
             // ctSplit
             // 
             this.ctSplit.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ctSplit.Location = new System.Drawing.Point(0, 25);
+            this.ctSplit.Location = new System.Drawing.Point(0, 27);
             this.ctSplit.Name = "ctSplit";
             this.ctSplit.Orientation = System.Windows.Forms.Orientation.Horizontal;
             this.ctSplit.PaintSplitter = true;
@@ -130,8 +130,8 @@
             // ctSplit.Panel2
             // 
             this.ctSplit.Panel2.Controls.Add(this.ctTabs);
-            this.ctSplit.Size = new System.Drawing.Size(966, 775);
-            this.ctSplit.SplitterDistance = 349;
+            this.ctSplit.Size = new System.Drawing.Size(966, 773);
+            this.ctSplit.SplitterDistance = 348;
             this.ctSplit.TabIndex = 2;
             this.ctSplit.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitterMoved);
             // 
@@ -149,7 +149,7 @@
             this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.ctLayoutTop.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.ctLayoutTop.Size = new System.Drawing.Size(966, 349);
+            this.ctLayoutTop.Size = new System.Drawing.Size(966, 348);
             this.ctLayoutTop.TabIndex = 0;
             // 
             // txtSource
@@ -161,14 +161,14 @@
             this.txtSource.Multiline = true;
             this.txtSource.Name = "txtSource";
             this.txtSource.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSource.Size = new System.Drawing.Size(956, 293);
+            this.txtSource.Size = new System.Drawing.Size(956, 292);
             this.txtSource.TabIndex = 2;
             this.txtSource.KeyDown += new System.Windows.Forms.KeyEventHandler(this.sourceKeyDown);
             // 
             // lblInfo
             // 
             this.lblInfo.AutoSize = true;
-            this.lblInfo.Location = new System.Drawing.Point(5, 331);
+            this.lblInfo.Location = new System.Drawing.Point(5, 330);
             this.lblInfo.Margin = new System.Windows.Forms.Padding(5);
             this.lblInfo.Name = "lblInfo";
             this.lblInfo.Size = new System.Drawing.Size(0, 13);
@@ -184,7 +184,7 @@
             this.ctTabs.Location = new System.Drawing.Point(0, 0);
             this.ctTabs.Name = "ctTabs";
             this.ctTabs.SelectedIndex = 0;
-            this.ctTabs.Size = new System.Drawing.Size(966, 422);
+            this.ctTabs.Size = new System.Drawing.Size(966, 421);
             this.ctTabs.TabIndex = 1;
             // 
             // tabExecutionState
@@ -193,7 +193,7 @@
             this.tabExecutionState.Location = new System.Drawing.Point(4, 22);
             this.tabExecutionState.Name = "tabExecutionState";
             this.tabExecutionState.Padding = new System.Windows.Forms.Padding(3);
-            this.tabExecutionState.Size = new System.Drawing.Size(958, 396);
+            this.tabExecutionState.Size = new System.Drawing.Size(958, 395);
             this.tabExecutionState.TabIndex = 1;
             this.tabExecutionState.Text = "Execution State";
             this.tabExecutionState.UseVisualStyleBackColor = true;
@@ -207,7 +207,7 @@
             this.txtExecutionState.Name = "txtExecutionState";
             this.txtExecutionState.ReadOnly = true;
             this.txtExecutionState.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtExecutionState.Size = new System.Drawing.Size(952, 390);
+            this.txtExecutionState.Size = new System.Drawing.Size(952, 389);
             this.txtExecutionState.TabIndex = 9;
             // 
             // tabOutput
@@ -216,7 +216,7 @@
             this.tabOutput.Location = new System.Drawing.Point(4, 22);
             this.tabOutput.Name = "tabOutput";
             this.tabOutput.Padding = new System.Windows.Forms.Padding(3);
-            this.tabOutput.Size = new System.Drawing.Size(958, 396);
+            this.tabOutput.Size = new System.Drawing.Size(958, 395);
             this.tabOutput.TabIndex = 0;
             this.tabOutput.Text = "Output";
             this.tabOutput.UseVisualStyleBackColor = true;
@@ -226,7 +226,7 @@
             this.tabBreakpoints.Controls.Add(this.lstBreakpoints);
             this.tabBreakpoints.Location = new System.Drawing.Point(4, 22);
             this.tabBreakpoints.Name = "tabBreakpoints";
-            this.tabBreakpoints.Size = new System.Drawing.Size(958, 396);
+            this.tabBreakpoints.Size = new System.Drawing.Size(958, 395);
             this.tabBreakpoints.TabIndex = 2;
             this.tabBreakpoints.Text = "Breakpoints";
             this.tabBreakpoints.UseVisualStyleBackColor = true;
@@ -238,7 +238,7 @@
             this.lstBreakpoints.Location = new System.Drawing.Point(0, 0);
             this.lstBreakpoints.Name = "lstBreakpoints";
             this.lstBreakpoints.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.lstBreakpoints.Size = new System.Drawing.Size(958, 396);
+            this.lstBreakpoints.Size = new System.Drawing.Size(958, 395);
             this.lstBreakpoints.TabIndex = 0;
             this.lstBreakpoints.SelectedIndexChanged += new System.EventHandler(this.breakpointsSelectedIndexChanged);
             this.lstBreakpoints.KeyDown += new System.Windows.Forms.KeyEventHandler(this.breakpointsKeyDown);
@@ -253,49 +253,49 @@
             this.miSep1,
             this.miExit});
             this.mnuFile.Name = "mnuFile";
-            this.mnuFile.Size = new System.Drawing.Size(35, 21);
+            this.mnuFile.Size = new System.Drawing.Size(37, 23);
             this.mnuFile.Text = "&File";
             // 
             // miNew
             // 
             this.miNew.Name = "miNew";
-            this.miNew.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.miNew.Size = new System.Drawing.Size(152, 22);
+            this.miNew.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+            this.miNew.Size = new System.Drawing.Size(155, 22);
             this.miNew.Text = "&New";
             this.miNew.Click += new System.EventHandler(this.newFile);
             // 
             // miOpen
             // 
             this.miOpen.Name = "miOpen";
-            this.miOpen.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.miOpen.Size = new System.Drawing.Size(152, 22);
+            this.miOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.miOpen.Size = new System.Drawing.Size(155, 22);
             this.miOpen.Text = "&Open...";
             this.miOpen.Click += new System.EventHandler(this.open);
             // 
             // miSave
             // 
             this.miSave.Name = "miSave";
-            this.miSave.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.miSave.Size = new System.Drawing.Size(152, 22);
+            this.miSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.miSave.Size = new System.Drawing.Size(155, 22);
             this.miSave.Text = "&Save";
             this.miSave.Click += new System.EventHandler(this.save);
             // 
             // miSaveAs
             // 
             this.miSaveAs.Name = "miSaveAs";
-            this.miSaveAs.Size = new System.Drawing.Size(152, 22);
+            this.miSaveAs.Size = new System.Drawing.Size(155, 22);
             this.miSaveAs.Text = "Save &As...";
             this.miSaveAs.Click += new System.EventHandler(this.saveAs);
             // 
             // miSep1
             // 
             this.miSep1.Name = "miSep1";
-            this.miSep1.Size = new System.Drawing.Size(149, 6);
+            this.miSep1.Size = new System.Drawing.Size(152, 6);
             // 
             // miExit
             // 
             this.miExit.Name = "miExit";
-            this.miExit.Size = new System.Drawing.Size(152, 22);
+            this.miExit.Size = new System.Drawing.Size(155, 22);
             this.miExit.Text = "E&xit";
             this.miExit.Click += new System.EventHandler(this.exit);
             // 
@@ -312,69 +312,69 @@
             this.miSep5,
             this.miBreakpoints});
             this.mnuView.Name = "mnuView";
-            this.mnuView.Size = new System.Drawing.Size(41, 21);
+            this.mnuView.Size = new System.Drawing.Size(44, 23);
             this.mnuView.Text = "&View";
             // 
             // miSourceFont
             // 
             this.miSourceFont.Name = "miSourceFont";
-            this.miSourceFont.Size = new System.Drawing.Size(209, 22);
+            this.miSourceFont.Size = new System.Drawing.Size(217, 22);
             this.miSourceFont.Text = "&Source Font...";
             this.miSourceFont.Click += new System.EventHandler(this.font);
             // 
             // miSep3
             // 
             this.miSep3.Name = "miSep3";
-            this.miSep3.Size = new System.Drawing.Size(206, 6);
+            this.miSep3.Size = new System.Drawing.Size(214, 6);
             // 
             // miExecutionState
             // 
             this.miExecutionState.Name = "miExecutionState";
-            this.miExecutionState.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
-                        | System.Windows.Forms.Keys.E)));
-            this.miExecutionState.Size = new System.Drawing.Size(209, 22);
+            this.miExecutionState.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.E)));
+            this.miExecutionState.Size = new System.Drawing.Size(217, 22);
             this.miExecutionState.Text = "&Execution State";
             this.miExecutionState.Click += new System.EventHandler(this.viewExecutionState);
             // 
             // miExecutionStateFont
             // 
             this.miExecutionStateFont.Name = "miExecutionStateFont";
-            this.miExecutionStateFont.Size = new System.Drawing.Size(209, 22);
+            this.miExecutionStateFont.Size = new System.Drawing.Size(217, 22);
             this.miExecutionStateFont.Text = "E&xecution State Font...";
             this.miExecutionStateFont.Click += new System.EventHandler(this.font);
             // 
             // miSep4
             // 
             this.miSep4.Name = "miSep4";
-            this.miSep4.Size = new System.Drawing.Size(206, 6);
+            this.miSep4.Size = new System.Drawing.Size(214, 6);
             // 
             // miOutput
             // 
             this.miOutput.Name = "miOutput";
-            this.miOutput.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
-                        | System.Windows.Forms.Keys.O)));
-            this.miOutput.Size = new System.Drawing.Size(209, 22);
+            this.miOutput.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.O)));
+            this.miOutput.Size = new System.Drawing.Size(217, 22);
             this.miOutput.Text = "&Output";
             this.miOutput.Click += new System.EventHandler(this.viewOutput);
             // 
             // miOutputFont
             // 
             this.miOutputFont.Name = "miOutputFont";
-            this.miOutputFont.Size = new System.Drawing.Size(209, 22);
+            this.miOutputFont.Size = new System.Drawing.Size(217, 22);
             this.miOutputFont.Text = "O&utput Font...";
             this.miOutputFont.Click += new System.EventHandler(this.font);
             // 
             // miSep5
             // 
             this.miSep5.Name = "miSep5";
-            this.miSep5.Size = new System.Drawing.Size(206, 6);
+            this.miSep5.Size = new System.Drawing.Size(214, 6);
             // 
             // miBreakpoints
             // 
             this.miBreakpoints.Name = "miBreakpoints";
-            this.miBreakpoints.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
-                        | System.Windows.Forms.Keys.B)));
-            this.miBreakpoints.Size = new System.Drawing.Size(209, 22);
+            this.miBreakpoints.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.B)));
+            this.miBreakpoints.Size = new System.Drawing.Size(217, 22);
             this.miBreakpoints.Text = "&Breakpoints";
             this.miBreakpoints.Click += new System.EventHandler(this.viewBreakpoints);
             // 
@@ -391,22 +391,22 @@
             this.miInput,
             this.miClearInput});
             this.mnuDebug.Name = "mnuDebug";
-            this.mnuDebug.Size = new System.Drawing.Size(50, 21);
+            this.mnuDebug.Size = new System.Drawing.Size(54, 23);
             this.mnuDebug.Text = "&Debug";
             // 
             // miRun
             // 
             this.miRun.Name = "miRun";
             this.miRun.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.miRun.Size = new System.Drawing.Size(225, 22);
+            this.miRun.Size = new System.Drawing.Size(240, 22);
             this.miRun.Text = "&Run";
             this.miRun.Click += new System.EventHandler(this.run);
             // 
             // miStopDebugging
             // 
             this.miStopDebugging.Name = "miStopDebugging";
-            this.miStopDebugging.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F5)));
-            this.miStopDebugging.Size = new System.Drawing.Size(225, 22);
+            this.miStopDebugging.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F5)));
+            this.miStopDebugging.Size = new System.Drawing.Size(240, 22);
             this.miStopDebugging.Text = "&Stop debugging";
             this.miStopDebugging.Click += new System.EventHandler(this.stopDebugging);
             // 
@@ -414,23 +414,23 @@
             // 
             this.miStep.Name = "miStep";
             this.miStep.ShortcutKeys = System.Windows.Forms.Keys.F10;
-            this.miStep.Size = new System.Drawing.Size(225, 22);
+            this.miStep.Size = new System.Drawing.Size(240, 22);
             this.miStep.Text = "S&tep";
             this.miStep.Click += new System.EventHandler(this.step);
             // 
             // miRunToCursor
             // 
             this.miRunToCursor.Name = "miRunToCursor";
-            this.miRunToCursor.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F10)));
-            this.miRunToCursor.Size = new System.Drawing.Size(225, 22);
+            this.miRunToCursor.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F10)));
+            this.miRunToCursor.Size = new System.Drawing.Size(240, 22);
             this.miRunToCursor.Text = "Run to &cursor";
             this.miRunToCursor.Click += new System.EventHandler(this.runToCursor);
             // 
             // miGoToCurrentInstruction
             // 
             this.miGoToCurrentInstruction.Name = "miGoToCurrentInstruction";
-            this.miGoToCurrentInstruction.ShortcutKeys = ((System.Windows.Forms.Keys) ((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.D0)));
-            this.miGoToCurrentInstruction.Size = new System.Drawing.Size(225, 22);
+            this.miGoToCurrentInstruction.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.D0)));
+            this.miGoToCurrentInstruction.Size = new System.Drawing.Size(240, 22);
             this.miGoToCurrentInstruction.Text = "&Go to current instruction";
             this.miGoToCurrentInstruction.Click += new System.EventHandler(this.goToCurrentInstruction);
             // 
@@ -438,26 +438,26 @@
             // 
             this.miToggleBreakpoint.Name = "miToggleBreakpoint";
             this.miToggleBreakpoint.ShortcutKeys = System.Windows.Forms.Keys.F9;
-            this.miToggleBreakpoint.Size = new System.Drawing.Size(225, 22);
+            this.miToggleBreakpoint.Size = new System.Drawing.Size(240, 22);
             this.miToggleBreakpoint.Text = "Toggle &breakpoint";
             this.miToggleBreakpoint.Click += new System.EventHandler(this.toggleBreakpoint);
             // 
             // miSep2
             // 
             this.miSep2.Name = "miSep2";
-            this.miSep2.Size = new System.Drawing.Size(222, 6);
+            this.miSep2.Size = new System.Drawing.Size(237, 6);
             // 
             // miInput
             // 
             this.miInput.Name = "miInput";
-            this.miInput.Size = new System.Drawing.Size(225, 22);
+            this.miInput.Size = new System.Drawing.Size(240, 22);
             this.miInput.Text = "&Input...";
             this.miInput.Click += new System.EventHandler(this.input);
             // 
             // miClearInput
             // 
             this.miClearInput.Name = "miClearInput";
-            this.miClearInput.Size = new System.Drawing.Size(225, 22);
+            this.miClearInput.Size = new System.Drawing.Size(240, 22);
             this.miClearInput.Text = "C&lear input";
             this.miClearInput.Click += new System.EventHandler(this.clearInput);
             // 
@@ -467,7 +467,7 @@
             this.miSaveWhenRun,
             this.miSelectProgrammingLanguage});
             this.mnuOptions.Name = "mnuOptions";
-            this.mnuOptions.Size = new System.Drawing.Size(56, 21);
+            this.mnuOptions.Size = new System.Drawing.Size(61, 23);
             this.mnuOptions.Text = "&Options";
             // 
             // miSaveWhenRun
@@ -475,16 +475,16 @@
             this.miSaveWhenRun.Checked = true;
             this.miSaveWhenRun.CheckState = System.Windows.Forms.CheckState.Checked;
             this.miSaveWhenRun.Name = "miSaveWhenRun";
-            this.miSaveWhenRun.Size = new System.Drawing.Size(288, 22);
+            this.miSaveWhenRun.Size = new System.Drawing.Size(309, 22);
             this.miSaveWhenRun.Text = "&Save when Run";
             this.miSaveWhenRun.Click += new System.EventHandler(this.toggleSaveWhenRun);
             // 
             // miSelectProgrammingLanguage
             // 
             this.miSelectProgrammingLanguage.Name = "miSelectProgrammingLanguage";
-            this.miSelectProgrammingLanguage.ShortcutKeys = ((System.Windows.Forms.Keys) (((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
-                        | System.Windows.Forms.Keys.L)));
-            this.miSelectProgrammingLanguage.Size = new System.Drawing.Size(288, 22);
+            this.miSelectProgrammingLanguage.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt) 
+            | System.Windows.Forms.Keys.L)));
+            this.miSelectProgrammingLanguage.Size = new System.Drawing.Size(309, 22);
             this.miSelectProgrammingLanguage.Text = "Select Programming &Language...";
             this.miSelectProgrammingLanguage.Click += new System.EventHandler(this.selectProgrammingLanguage);
             // 
@@ -493,13 +493,13 @@
             this.mnuHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miAbout});
             this.mnuHelp.Name = "mnuHelp";
-            this.mnuHelp.Size = new System.Drawing.Size(40, 21);
+            this.mnuHelp.Size = new System.Drawing.Size(44, 23);
             this.mnuHelp.Text = "&Help";
             // 
             // miAbout
             // 
             this.miAbout.Name = "miAbout";
-            this.miAbout.Size = new System.Drawing.Size(115, 22);
+            this.miAbout.Size = new System.Drawing.Size(116, 22);
             this.miAbout.Text = "&About...";
             this.miAbout.Click += new System.EventHandler(this.about);
             // 
@@ -514,7 +514,7 @@
             this.cmbLanguage});
             this.ctMenu.Location = new System.Drawing.Point(0, 0);
             this.ctMenu.Name = "ctMenu";
-            this.ctMenu.Size = new System.Drawing.Size(966, 25);
+            this.ctMenu.Size = new System.Drawing.Size(966, 27);
             this.ctMenu.TabIndex = 1;
             this.ctMenu.Text = "Main menu";
             // 
@@ -522,7 +522,7 @@
             // 
             this.cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLanguage.Name = "cmbLanguage";
-            this.cmbLanguage.Size = new System.Drawing.Size(121, 21);
+            this.cmbLanguage.Size = new System.Drawing.Size(121, 23);
             // 
             // Mainform
             // 
@@ -537,7 +537,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.exiting);
             this.ctSplit.Panel1.ResumeLayout(false);
             this.ctSplit.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize) (this.ctSplit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ctSplit)).EndInit();
             this.ctSplit.ResumeLayout(false);
             this.ctLayoutTop.ResumeLayout(false);
             this.ctLayoutTop.PerformLayout();

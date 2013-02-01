@@ -29,6 +29,9 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\EsotericIDEIcon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="RT.Util">
       <HintPath>Thirdparty\RT.Util.dll</HintPath>
@@ -71,6 +74,11 @@
     <Compile Include="Quipu\Program.cs" />
     <Compile Include="Quipu\Quipu.cs" />
     <Compile Include="Quipu\Settings.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="RuntimeError.cs" />
     <Compile Include="Sclipting\ExecutionEnvironment.cs" />
     <Compile Include="Sclipting\Instructions.cs" />
@@ -89,6 +97,14 @@
     <EmbeddedResource Include="Mainform.resx">
       <DependentUpon>Mainform.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\EsotericIDEIcon.ico" />
+    <None Include="Resources\EsotericIDELogo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

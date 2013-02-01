@@ -20,6 +20,7 @@ namespace EsotericIDE
             : base(settings.FormSettings)
         {
             InitializeComponent();
+            Icon = Resources.EsotericIDEIcon;
             init();
         }
 

@@ -123,18 +123,17 @@ namespace EsotericIDE.Languages
                     {
                         while (instructionPointer.MoveNext())
                         {
-                            lock (_locker)
-                                if (_breakpoints.Any(bp => bp >= instructionPointer.Current.Index && bp < instructionPointer.Current.Index + Math.Max(instructionPointer.Current.Length, 1)))
-                                    State = ExecutionState.Debugging;
-
                             switch (State)
                             {
+                                case ExecutionState.Running:
+                                    lock (_locker)
+                                        if (_breakpoints.Any(bp => bp >= instructionPointer.Current.Index && bp < instructionPointer.Current.Index + Math.Max(instructionPointer.Current.Length, 1)))
+                                            goto case ExecutionState.Debugging;
+                                    continue;
                                 case ExecutionState.Debugging:
                                     fireDebuggerBreak(instructionPointer.Current);
                                     _resetEvent.Reset();
                                     _resetEvent.WaitOne();
-                                    continue;
-                                case ExecutionState.Running:
                                     continue;
                                 case ExecutionState.Stop:
                                     canceled = true;

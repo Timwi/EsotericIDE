@@ -1,3 +1,6 @@
+#version 3.7;
+
+background { color rgbt<0, 0, 0, 1> }
 
 global_settings {
   assumed_gamma 1.0
@@ -9,7 +12,7 @@ global_settings {
 }
 
 camera {
-  right x
+  right image_height/image_width
   location  <0,2.3,-4.5>
   look_at   <0,0,0>
 }
@@ -40,25 +43,6 @@ light_source {
     reflection on
   }
 }   
-   
-sky_sphere {
-  pigment {
-    gradient y
-    color_map {
-      [0 rgb <0.2,0.5,1.0>]
-      [1 rgb <0.0,0.1,0.8>]
-    }
-  }
-}
-     
-// Background (black or white)     
-plane {
-  y, -351
-  texture {
-    pigment { color rgb <0,0,0> }       // BLACK background
-//  pigment { color rgb <2.4,2.4,2.4> } // WHITE background
-  }
-} 
 
 difference {          
   // Main sphere
@@ -104,7 +88,7 @@ difference {
     reflection on
   }         
 }         
-          
+
 // Greenish swirly thing          
 isosurface {
   function {
@@ -122,7 +106,7 @@ isosurface {
   pigment { color rgb <.2,1,.6> }
   finish { ambient .3 }
 }
-       
+
 // Reddish swirly thing       
 isosurface {
   function {

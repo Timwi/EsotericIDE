@@ -114,15 +114,13 @@ namespace EsotericIDE.Languages
         public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText)
         {
             var mnuInsert = new ToolStripMenuItem("&Insert");
-            var miInsertSingularInstruction = new ToolStripMenuItem("Si&ngular instruction");
-            var miInsertBlockInstruction = new ToolStripMenuItem("&Block instruction");
-            var miInsertStackInstruction = new ToolStripMenuItem("S&tack instruction");
+            var groupMenuItems = typeof(instructionGroup).GetFields(BindingFlags.Public | BindingFlags.Static)
+                .ToDictionary(f => (instructionGroup) f.GetValue(null), f => new ToolStripMenuItem(f.GetCustomAttributes<instructionGroupAttribute>().First().Label));
             var miInsertStackInstructionCopyFromBottom = new ToolStripMenuItem("&Copy from bottom");
             var miInsertStackInstructionMoveFromBottom = new ToolStripMenuItem("&Move from bottom");
             var miInsertStackInstructionSwapFromBottom = new ToolStripMenuItem("&Swap from bottom");
             var miInsertStackInstructionCopyFromTop = new ToolStripMenuItem("C&opy from top");
             var miInsertStackInstructionMoveFromTop = new ToolStripMenuItem("Mo&ve from top");
-            var miInsertRegexInstruction = new ToolStripMenuItem("&Regex instruction");
             var miInsertInteger = new ToolStripMenuItem("&Integer...");
             var miInsertString = new ToolStripMenuItem("&String...");
             var miInsertByteArray = new ToolStripMenuItem("Byte &array...");
@@ -131,8 +129,20 @@ namespace EsotericIDE.Languages
             miInsertString.Click += (_, __) => { insertString(getSelectedText, insertText); };
             miInsertByteArray.Click += (_, __) => { insertByteArray(getSelectedText, insertText); };
 
-            mnuInsert.DropDownItems.AddRange(new ToolStripItem[] { miInsertSingularInstruction, miInsertBlockInstruction, miInsertStackInstruction, miInsertRegexInstruction, miInsertInteger, miInsertString, miInsertByteArray });
-            miInsertStackInstruction.DropDownItems.AddRange(new ToolStripItem[] { miInsertStackInstructionCopyFromBottom, miInsertStackInstructionMoveFromBottom, miInsertStackInstructionSwapFromBottom, miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop });
+            mnuInsert.DropDownItems.AddRange(groupMenuItems.Values.ToArray());
+            mnuInsert.DropDownItems.AddRange(new ToolStripItem[] { miInsertInteger, miInsertString, miInsertByteArray });
+
+            foreach (var instr in typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public))
+            {
+                var attr = instr.GetCustomAttributes<instructionAttribute>().First();
+                var ch = attr.Character;
+                groupMenuItems[attr.Group].DropDownItems.Add(
+                    new ToolStripMenuItem(ch + " &" + attr.Engrish + " — " + attr.Description + (attr.Type == nodeType.BlockHead ? " █" : ""), null, (_, __) => { insertText(ch.ToString()); })
+                );
+            }
+
+            groupMenuItems[instructionGroup.StackManipulation].DropDownItems.Add("-");
+            groupMenuItems[instructionGroup.StackManipulation].DropDownItems.AddRange(new ToolStripItem[] { miInsertStackInstructionCopyFromBottom, miInsertStackInstructionMoveFromBottom, miInsertStackInstructionSwapFromBottom, miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop });
 
             for (var ch = '①'; ch <= '⑳'; ch++)
                 miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '①' + 1, insertText));
@@ -150,18 +160,10 @@ namespace EsotericIDE.Languages
                 miInsertStackInstructionMoveFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⑴' + 1, insertText));
             for (var ch = '⒈'; ch <= '⒛'; ch++)
                 miInsertStackInstructionSwapFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⒈' + 1, insertText));
-            for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
-                miInsertRegexInstruction.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
 
-            foreach (var instr in typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public))
-            {
-                var attr = instr.GetCustomAttributes<instructionAttribute>().First();
-                var ch = attr.Character;
-                var superMenu = (attr.Type == nodeType.SingularNode || attr.Type == nodeType.FunctionExecutionNode) ? miInsertSingularInstruction : miInsertBlockInstruction;
-                superMenu.DropDownItems.Add(
-                    new ToolStripMenuItem(ch + " &" + attr.Engrish + " — " + attr.Description, null, (_, __) => { insertText(ch.ToString()); })
-                );
-            }
+            groupMenuItems[instructionGroup.Regex].DropDownItems.Add("-");
+            for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
+                groupMenuItems[instructionGroup.Regex].DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
 
             return Ut.NewArray<ToolStripMenuItem>(mnuInsert);
         }
@@ -402,6 +404,12 @@ namespace EsotericIDE.Languages
                         throw new CompileException("The block instruction “塊” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
                     return new functionNode { Capture = instr == instruction.Capture };
 
+                case instruction.Snap:
+                case instruction.Break:
+                case instruction.Rupture:
+                case instruction.Sever:
+                    return new splitLoop { Backward = instr == instruction.Break || instr == instruction.Sever, PrimaryBlockPops = instr == instruction.Snap || instr == instruction.Break };
+
                 default:
                     throw new CompileException("Instruction “{0}” missing.".Fmt(instr), index + addIndex, 1);
             }
@@ -428,8 +436,7 @@ namespace EsotericIDE.Languages
             try { initInstructionsDictionary(); }
             catch (duplicateCharacterException e)
             {
-                rep.Error(@"Same character is used multiple times for the same instruction. (First use here.)".Fmt(e.Character), "enum ScliptingInstructions", e.Character.ToString());
-                rep.Error(@"Same character is used multiple times for the same instruction. (Second use here.)".Fmt(e.Character), "enum ScliptingInstructions", e.Character.ToString(), e.Character.ToString());
+                rep.Error(@"Same character is used for multiple instructions. (First use here.)", "enum instruction", e.Character.ToString());
                 return;
             }
             foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == nodeType.BlockHead).Select(kvp => _instructions[kvp.Key]))
@@ -595,7 +602,7 @@ namespace EsotericIDE.Languages
             if ((l = item as List<object>) != null)
                 return l.Select(i => ToString(i)).JoinString();
 
-            throw new ArgumentException("Unrecognised item type for conversion to string: " + item.GetType().Name);
+            throw new ArgumentException("Unrecognised item type for conversion to string: " + item.GetType().Name, "item");
         }
 
         public static bool IsTrue(object item)
@@ -650,7 +657,7 @@ namespace EsotericIDE.Languages
             if ((s = item as string) != null)
                 return BigInteger.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out i) ? i : 0;
 
-            throw new ArgumentException("Unrecognised item type for conversion to int: " + item.GetType().Name);
+            throw new ArgumentException("Unrecognised item type for conversion to int: " + item.GetType().Name, "item");
         }
 
         public static object recursiveListSum(List<object> list)
@@ -693,6 +700,12 @@ namespace EsotericIDE.Languages
                         throw new InternalErrorException("I expected this item to be either a float or an integer.");
                 }
             }
+        }
+
+        public static void FlipIf(bool doFlip, Action first, Action second)
+        {
+            if (doFlip) { second(); first(); }
+            else { first(); second(); }
         }
     }
 }

@@ -5,6 +5,14 @@ namespace EsotericIDE.Languages
     {
         private enum instruction
         {
+            // Block structure
+            [instruction('不', "no", "Else (pop).", nodeType.BlockElse, instructionGroup.BlockStructure)]
+            No,
+            [instruction('逆', "opposite", "Else (no pop).", nodeType.BlockElse, instructionGroup.BlockStructure)]
+            Opposite,
+            [instruction('終', "end", "End of block.", nodeType.BlockEnd, instructionGroup.BlockStructure)]
+            End,
+
             // Stack manipulation
             [instruction('丟', "discard", "Pops an item.", nodeType.SingularNode, instructionGroup.StackManipulation)]
             Discard,
@@ -30,14 +38,6 @@ namespace EsotericIDE.Languages
             Until,
             [instruction('到', "arrive", "Until loop (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             Arrive,
-
-            // Block structure
-            [instruction('不', "no", "Else (pop).", nodeType.BlockElse, instructionGroup.BlockStructure)]
-            No,
-            [instruction('逆', "opposite", "Else (no pop).", nodeType.BlockElse, instructionGroup.BlockStructure)]
-            Opposite,
-            [instruction('終', "end", "End of block.", nodeType.BlockEnd, instructionGroup.BlockStructure)]
-            End,
 
             // Arithmetic
             [instruction('加', "add", "Adds two numbers.", nodeType.SingularNode, instructionGroup.Arithmetic)]
@@ -185,12 +185,12 @@ namespace EsotericIDE.Languages
 
         private enum instructionGroup
         {
+            [instructionGroup("&Block structure")]
+            BlockStructure,
             [instructionGroup("S&tack manipulation")]
             StackManipulation,
             [instructionGroup("Loops && &Conditionals")]
             LoopsConditionals,
-            [instructionGroup("&Block structure")]
-            BlockStructure,
             [instructionGroup("A&rithmetic")]
             Arithmetic,
             [instructionGroup("&Logic")]

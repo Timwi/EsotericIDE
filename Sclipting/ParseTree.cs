@@ -76,8 +76,8 @@ namespace EsotericIDE.Languages
                     case instruction.Repeat: return repeat;
                     case instruction.CombineString: return combineOperation(true);
                     case instruction.CombineList: return combineOperation(false);
-                    case instruction.Cultivate:
-                    case instruction.Insert: return e => insert(e, instr == instruction.Insert);
+                    case instruction.Cultivate: return insert(false);
+                    case instruction.Insert: return insert(true);
                     case instruction.Annihilate: return annihilate;
                     case instruction.Combine: return combine;
                     case instruction.Reverse: return stringListOperation(true, reverseString,
@@ -286,50 +286,53 @@ namespace EsotericIDE.Languages
                     e.CurrentStack.Add(Sclipting.ToString(item1) + Sclipting.ToString(item2));
             }
 
-            private static void insert(scliptingExecutionEnvironment e, bool replace)
+            private static Action<scliptingExecutionEnvironment> insert(bool replace)
             {
-                var item = e.Pop();
-                var bigInteger = Sclipting.ToInt(e.Pop());
-                if (bigInteger < 0 || bigInteger > int.MaxValue)
-                    return;
-                var listOrString = e.Pop();
-
-                var integer = (int) bigInteger;
-                var list = listOrString as List<object>;
-                if (list != null)
+                return e =>
                 {
-                    var newList = new List<object>(list);
-                    if (replace)
+                    var item = e.Pop();
+                    var bigInteger = Sclipting.ToInt(e.Pop());
+                    if (bigInteger < 0 || bigInteger > int.MaxValue)
+                        return;
+                    var listOrString = e.Pop();
+
+                    var integer = (int) bigInteger;
+                    var list = listOrString as List<object>;
+                    if (list != null)
                     {
-                        while (integer >= newList.Count)
-                            newList.Add("");
-                        newList[integer] = item;
+                        var newList = new List<object>(list);
+                        if (replace)
+                        {
+                            while (integer >= newList.Count)
+                                newList.Add("");
+                            newList[integer] = item;
+                        }
+                        else
+                        {
+                            while (integer > newList.Count)
+                                newList.Add("");
+                            newList.Insert(integer, item);
+                        }
+                        e.CurrentStack.Add(newList);
                     }
                     else
                     {
-                        while (integer > newList.Count)
-                            newList.Add("");
-                        newList.Insert(integer, item);
-                    }
-                    e.CurrentStack.Add(newList);
-                }
-                else
-                {
-                    // assume string
-                    var itemAsStr = Sclipting.ToString(item);
-                    var itemAsChar = itemAsStr == "" ? ' ' : itemAsStr[0];
-                    var input = Sclipting.ToString(listOrString);
+                        // assume string
+                        var itemAsStr = Sclipting.ToString(item);
+                        var itemAsChar = itemAsStr == "" ? ' ' : itemAsStr[0];
+                        var input = Sclipting.ToString(listOrString);
 
-                    if (input.Length < integer)
-                        input += new string(' ', integer - input.Length) + itemAsChar;
-                    else if (input.Length == integer)
-                        input += itemAsChar;
-                    else if (replace)
-                        input = input.Substring(0, integer) + itemAsChar + input.Substring(integer + 1);
-                    else
-                        input = input.Substring(0, integer) + itemAsChar + input.Substring(integer);
-                    e.CurrentStack.Add(input);
-                }
+                        if (input.Length < integer)
+                            input += new string(' ', integer - input.Length) + itemAsChar;
+                        else if (input.Length == integer)
+                            input += itemAsChar;
+                        else if (replace)
+                            input = input.Substring(0, integer) + itemAsChar + input.Substring(integer + 1);
+                        else
+                            input = input.Substring(0, integer) + itemAsChar + input.Substring(integer);
+                        e.CurrentStack.Add(input);
+                    }
+                };
             }
 
             private static void annihilate(scliptingExecutionEnvironment e)

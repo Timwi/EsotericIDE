@@ -60,14 +60,14 @@
     <Compile Include="Brainfuck\Program.cs" />
     <Compile Include="Brainfuck\Settings.cs" />
     <Compile Include="ExecutionEnvironment.cs" />
+    <Compile Include="CompileException.cs" />
+    <Compile Include="EsotericIDEProgram.cs" />
     <Compile Include="Mainform.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Mainform.Designer.cs">
       <DependentUpon>Mainform.cs</DependentUpon>
     </Compile>
-    <Compile Include="CompileException.cs" />
-    <Compile Include="EsotericIDEProgram.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="ProgrammingLanguage.cs" />
     <Compile Include="Quipu\ExecutionEnvironment.cs" />

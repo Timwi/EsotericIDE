@@ -72,6 +72,8 @@ namespace EsotericIDE.Languages
             Other,
             [instruction('倆', "clever", "Bitwise xor.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Clever,
+            [instruction('啃', "gnaw", "Split nibbles.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Gnaw,
 
             // Logic
             [instruction('小', "small", "Less than.", nodeType.SingularNode, instructionGroup.Logic)]
@@ -116,8 +118,10 @@ namespace EsotericIDE.Languages
             Perform,
 
             // List/string manipulation
-            [instruction('長', "length", "Returns length of list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            [instruction('長', "length", "Returns length of list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Length,
+            [instruction('梴', "long", "Returns length of list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Long,
             [instruction('復', "repeat", "Repeats a list, string, or byte array.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Repeat,
             [instruction('標', "mark", "Pushes a mark.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
@@ -138,6 +142,10 @@ namespace EsotericIDE.Languages
             Collect,
             [instruction('插', "insert", "Replaces the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Insert,
+            [instruction('栽', "cultivate", "Inserts an item/character into a list/string at a specified index.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Cultivate,
+            [instruction('殲', "annihilate", "Deletes the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Annihilate,
             [instruction('反', "reverse", "Reverses a list or string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Reverse,
             [instruction('捃', "sort", "Sort a list/string by string value.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]

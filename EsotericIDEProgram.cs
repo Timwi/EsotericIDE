@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using RT.Util;
-using RT.Util.Lingo;
 
 [assembly: AssemblyTitle("Esoteric IDE")]
 [assembly: AssemblyDescription("IDE (Interpreter/Debugger Engine) for esoteric programming languages")]

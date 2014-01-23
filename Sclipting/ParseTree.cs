@@ -72,10 +72,13 @@ namespace EsotericIDE.Languages
                     // STRING/LIST MANIPULATION
 
                     case instruction.Length: return stringListOperation(true, str => (BigInteger) str.Length, list => (BigInteger) list.Count);
+                    case instruction.Long: return stringListOperation(false, str => (BigInteger) str.Length, list => (BigInteger) list.Count);
                     case instruction.Repeat: return repeat;
                     case instruction.CombineString: return combineOperation(true);
                     case instruction.CombineList: return combineOperation(false);
-                    case instruction.Insert: return insert;
+                    case instruction.Cultivate:
+                    case instruction.Insert: return e => insert(e, instr == instruction.Insert);
+                    case instruction.Annihilate: return annihilate;
                     case instruction.Combine: return combine;
                     case instruction.Reverse: return stringListOperation(true, reverseString,
                         list => { var newList = new List<object>(list); newList.Reverse(); return newList; });
@@ -137,6 +140,13 @@ namespace EsotericIDE.Languages
                     case instruction.Both: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) & Sclipting.ToInt(e.Pop())); };
                     case instruction.Other: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) | Sclipting.ToInt(e.Pop())); };
                     case instruction.Clever: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) ^ Sclipting.ToInt(e.Pop())); };
+                    case instruction.Gnaw: return e =>
+                    {
+                        var b = (int) Sclipting.ToInt(e.Pop());
+                        var a = Sclipting.ToInt(e.Pop());
+                        e.CurrentStack.Add(a & ((BigInteger.One << b) - BigInteger.One));
+                        e.CurrentStack.Add(a >> b);
+                    };
 
 
                     // LOGIC
@@ -276,7 +286,7 @@ namespace EsotericIDE.Languages
                     e.CurrentStack.Add(Sclipting.ToString(item1) + Sclipting.ToString(item2));
             }
 
-            private static void insert(scliptingExecutionEnvironment e)
+            private static void insert(scliptingExecutionEnvironment e, bool replace)
             {
                 var item = e.Pop();
                 var bigInteger = Sclipting.ToInt(e.Pop());
@@ -289,9 +299,18 @@ namespace EsotericIDE.Languages
                 if (list != null)
                 {
                     var newList = new List<object>(list);
-                    while (integer >= newList.Count)
-                        newList.Add("");
-                    newList[integer] = item;
+                    if (replace)
+                    {
+                        while (integer >= newList.Count)
+                            newList.Add("");
+                        newList[integer] = item;
+                    }
+                    else
+                    {
+                        while (integer > newList.Count)
+                            newList.Add("");
+                        newList.Insert(integer, item);
+                    }
                     e.CurrentStack.Add(newList);
                 }
                 else
@@ -305,9 +324,36 @@ namespace EsotericIDE.Languages
                         input += new string(' ', integer - input.Length) + itemAsChar;
                     else if (input.Length == integer)
                         input += itemAsChar;
-                    else
+                    else if (replace)
                         input = input.Substring(0, integer) + itemAsChar + input.Substring(integer + 1);
+                    else
+                        input = input.Substring(0, integer) + itemAsChar + input.Substring(integer);
                     e.CurrentStack.Add(input);
+                }
+            }
+
+            private static void annihilate(scliptingExecutionEnvironment e)
+            {
+                var bigInteger = Sclipting.ToInt(e.Pop());
+                if (bigInteger < 0 || bigInteger > int.MaxValue)
+                    return;
+                var listOrString = e.Pop();
+
+                var integer = (int) bigInteger;
+                var list = listOrString as List<object>;
+                if (list != null)
+                {
+                    var newList = new List<object>(list);
+                    if (integer < newList.Count)
+                        newList.RemoveAt(integer);
+                    e.CurrentStack.Add(newList);
+                }
+                else
+                {
+                    // assume string
+                    var input = Sclipting.ToString(listOrString);
+                    // make sure we push the original object (not convert to string) if out of range
+                    e.CurrentStack.Add(integer >= input.Length ? listOrString : input.Substring(0, integer) + input.Substring(integer + 1));
                 }
             }
 
@@ -337,7 +383,6 @@ namespace EsotericIDE.Languages
 #if DEBUG
             private static void PostBuildCheck(IPostBuildReporter rep)
             {
-                var taken = new HashSet<char>();
                 foreach (var field in typeof(instruction).GetFields(BindingFlags.Public | BindingFlags.Static))
                 {
                     var attr = field.GetCustomAttributes<instructionAttribute>().First();
@@ -399,6 +444,71 @@ namespace EsotericIDE.Languages
                             }
                         }
                         break;
+                }
+            }
+        }
+
+        private sealed class listStringElementNode : node
+        {
+            public bool Backward { get; private set; }
+            public int ListStringIndex { get; private set; }
+            public bool Pop { get; private set; }
+
+            public const string ForwardPop = @"氫氦鋰鈹硼碳氮氧氟氖鈉鎂鋁矽磷硫氯氬鉀鈣鈧鈦釩鉻錳鐵鈷鎳銅鋅鎵鍺砷硒溴氪銣鍶釔鋯鈮鉬鎝釕銠鈀銀鎘銦錫";
+            public const string ForwardNoPop = @"銻碲碘氙銫鋇鑭鈰鐠釹鉕釤銪釓鋱鏑鈥鉺銩鐿鎦鉿鉭鎢錸鋨銥鉑金汞鉈鉛鉍釙砈氡鍅鐳錒釷鏷鈾錼鈽鋂鋦鉳鉲鑀鐨";
+            public const string BackwardPop = @"一二三四五六七八九十";
+            public const string BackwardNoPop = @"首跟副矩手蟜週蛛貓指";
+
+            public static readonly string[] ForwardPopEngrish = new[] { "hydrogen", "helium", "lithium", "beryllium", "boron", "carbon", "nitrogen", "oxygen", "fluorine",
+                "neon", "sodium", "magnesium", "aluminium", "silicon", "phosphorus", "sulfur", "chlorine", "argon", "potassium", "calcium", "scandium", "titanium", "vanadium",
+                "chromium", "manganese", "iron", "cobalt", "nickel", "copper", "zinc", "gallium", "germanium", "arsenic", "selenium", "bromine", "krypton", "rubidium",
+                "strontium", "yttrium", "zirconium", "niobium", "molybdenum", "technetium", "ruthenium", "rhodium", "palladium", "silver", "cadmium", "indium", "tin" };
+            public static readonly string[] ForwardNoPopEngrish = new[] { "antimony", "tellurium", "iodine", "xenon", "caesium", "barium", "lanthanum", "cerium",
+                "praseodymium", "neodymium", "promethium", "samarium", "europium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "thulium", "ytterbium",
+                "lutetium", "hafnium", "tantalum", "tungsten", "rhenium", "osmium", "iridium", "platinum", "gold", "mercury", "thallium", "lead", "bismuth", "polonium",
+                "astatine", "radon", "francium", "radium", "actinium", "thorium", "protactinium", "uranium", "neptunium", "plutonium", "americium", "curium", "berkelium",
+                "californium", "einsteinium", "fermium" };
+            public static readonly string[] BackwardPopEngrish = new[] { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" };
+            public static readonly string[] BackwardNoPopEngrish = new[] { "head", "follow", "supplement", "square", "hand", "insect", "week", "spider", "cat", "finger" };
+
+            public const string Characters = ForwardPop + ForwardNoPop + BackwardPop + BackwardNoPop;
+
+            public listStringElementNode(char ch, int sourceIndex)
+            {
+                if (
+                    !examine(ch, ForwardPop, false, true) &&
+                    !examine(ch, ForwardNoPop, false, false) &&
+                    !examine(ch, BackwardPop, true, true) &&
+                    !examine(ch, BackwardNoPop, true, false))
+                    throw new ArgumentException("The specified character is not a valid list/string element retrieval instruction.", "ch");
+                Index = sourceIndex;
+                Count = 1;
+            }
+
+            private bool examine(char ch, string str, bool backward, bool pop)
+            {
+                var p = str.IndexOf(ch);
+                if (p == -1)
+                    return false;
+                Backward = backward;
+                Pop = pop;
+                ListStringIndex = p;
+                return true;
+            }
+
+            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            {
+                yield return new Position(Index, Count);
+                List<object> list;
+                var item = Pop ? environment.Pop() : environment.CurrentStack.Last();
+                if ((list = item as List<object>) != null)
+                {
+                    environment.CurrentStack.Add(ListStringIndex < 0 || ListStringIndex >= list.Count ? (object) "" : list[Backward ? list.Count - 1 - ListStringIndex : ListStringIndex]);
+                }
+                else
+                {
+                    var str = Sclipting.ToString(item);
+                    environment.CurrentStack.Add(ListStringIndex < 0 || ListStringIndex >= str.Length ? (object) "" : str[Backward ? str.Length - 1 - ListStringIndex : ListStringIndex].ToString());
                 }
             }
         }

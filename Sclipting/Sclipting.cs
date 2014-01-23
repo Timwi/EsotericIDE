@@ -103,8 +103,18 @@ namespace EsotericIDE.Languages
                 description = "Swap top item with {0}th item from bottom.".Fmt(source[cursorPos] - '⒈' + 1);
             else if (source[cursorPos] >= 'Ⓐ' && source[cursorPos] <= 'Ⓩ')
             {
-                description = "Push content of the {0}th regex capturing parenthesis.".Fmt(source[cursorPos] - 'Ⓐ' + 1);
                 instructionType = "Regex instruction:";
+                description = "Push content of the {0}th regex capturing parenthesis.".Fmt(source[cursorPos] - 'Ⓐ' + 1);
+            }
+            else if (listStringElementNode.Characters.Contains(source[cursorPos]))
+            {
+                instructionType = "List/string manipulation:";
+                var instr = new listStringElementNode(source[cursorPos], cursorPos);
+                description = "Retrieve the {0}th{1} item from a list/string ({2}).".Fmt(
+                    instr.ListStringIndex + 1,
+                    instr.Backward ? "-last" : null,
+                    instr.Pop ? "pop" : "no pop"
+                );
             }
             else
                 return "";
@@ -116,11 +126,20 @@ namespace EsotericIDE.Languages
             var mnuInsert = new ToolStripMenuItem("&Insert");
             var groupMenuItems = typeof(instructionGroup).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .ToDictionary(f => (instructionGroup) f.GetValue(null), f => new ToolStripMenuItem(f.GetCustomAttributes<instructionGroupAttribute>().First().Label));
+
+            // Stack manipulation instructions
             var miInsertStackInstructionCopyFromBottom = new ToolStripMenuItem("&Copy from bottom");
             var miInsertStackInstructionMoveFromBottom = new ToolStripMenuItem("&Move from bottom");
             var miInsertStackInstructionSwapFromBottom = new ToolStripMenuItem("&Swap from bottom");
             var miInsertStackInstructionCopyFromTop = new ToolStripMenuItem("C&opy from top");
             var miInsertStackInstructionMoveFromTop = new ToolStripMenuItem("Mo&ve from top");
+
+            // List/string element retrieval instructions
+            var miListStringRetrieveForwardPop = new ToolStripMenuItem("&Retrieve nth item/character from list/string (pop)");
+            var miListStringRetrieveForwardNoPop = new ToolStripMenuItem("&Retrieve nth item/character from list/string (no pop)");
+            var miListStringRetrieveBackwardPop = new ToolStripMenuItem("&Retrieve nth-last item/character from list/string (pop)");
+            var miListStringRetrieveBackwardNoPop = new ToolStripMenuItem("&Retrieve nth-last item/character from list/string (no pop)");
+
             var miInsertInteger = new ToolStripMenuItem("&Integer...");
             var miInsertString = new ToolStripMenuItem("&String...");
             var miInsertByteArray = new ToolStripMenuItem("Byte &array...");
@@ -136,13 +155,20 @@ namespace EsotericIDE.Languages
             {
                 var attr = instr.GetCustomAttributes<instructionAttribute>().First();
                 var ch = attr.Character;
-                groupMenuItems[attr.Group].DropDownItems.Add(
-                    new ToolStripMenuItem(ch + " &" + attr.Engrish + " — " + attr.Description + (attr.Type == nodeType.BlockHead ? " █" : ""), null, (_, __) => { insertText(ch.ToString()); })
-                );
+                groupMenuItems[attr.Group].DropDownItems.Add(new ToolStripMenuItem(
+                    "{0} &{1} — {2}{3}".Fmt(ch, attr.Engrish, attr.Description, attr.Type == nodeType.BlockHead ? " █" : ""),
+                    null, (_, __) => { insertText(ch.ToString()); }
+                ));
             }
 
             groupMenuItems[instructionGroup.StackManipulation].DropDownItems.Add("-");
-            groupMenuItems[instructionGroup.StackManipulation].DropDownItems.AddRange(new ToolStripItem[] { miInsertStackInstructionCopyFromBottom, miInsertStackInstructionMoveFromBottom, miInsertStackInstructionSwapFromBottom, miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop });
+            groupMenuItems[instructionGroup.StackManipulation].DropDownItems.AddRange(Ut.NewArray<ToolStripItem>(
+                miInsertStackInstructionCopyFromBottom, miInsertStackInstructionMoveFromBottom, miInsertStackInstructionSwapFromBottom,
+                miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop));
+
+            groupMenuItems[instructionGroup.ListStringManipulation].DropDownItems.Add("-");
+            groupMenuItems[instructionGroup.ListStringManipulation].DropDownItems.AddRange(Ut.NewArray<ToolStripItem>(
+                miListStringRetrieveForwardPop, miListStringRetrieveForwardNoPop, miListStringRetrieveBackwardPop, miListStringRetrieveBackwardNoPop));
 
             for (var ch = '①'; ch <= '⑳'; ch++)
                 miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '①' + 1, insertText));
@@ -161,6 +187,15 @@ namespace EsotericIDE.Languages
             for (var ch = '⒈'; ch <= '⒛'; ch++)
                 miInsertStackInstructionSwapFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⒈' + 1, insertText));
 
+            for (int i = 0; i < listStringElementNode.ForwardPop.Length; i++)
+                miListStringRetrieveForwardPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.ForwardPop[i], listStringElementNode.ForwardPopEngrish[i], false, true, i, insertText));
+            for (int i = 0; i < listStringElementNode.ForwardNoPop.Length; i++)
+                miListStringRetrieveForwardNoPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.ForwardNoPop[i], listStringElementNode.ForwardNoPopEngrish[i], false, false, i, insertText));
+            for (int i = 0; i < listStringElementNode.BackwardPop.Length; i++)
+                miListStringRetrieveBackwardPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.BackwardPop[i], listStringElementNode.BackwardPopEngrish[i], true, true, i, insertText));
+            for (int i = 0; i < listStringElementNode.BackwardNoPop.Length; i++)
+                miListStringRetrieveBackwardNoPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.BackwardNoPop[i], listStringElementNode.BackwardNoPopEngrish[i], true, false, i, insertText));
+
             groupMenuItems[instructionGroup.Regex].DropDownItems.Add("-");
             for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
                 groupMenuItems[instructionGroup.Regex].DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
@@ -170,7 +205,14 @@ namespace EsotericIDE.Languages
 
         private static ToolStripItem stackOrRegexMenuItem(char ch, int num, Action<string> insertText)
         {
-            return new ToolStripMenuItem(ch + " — &" + num, null, (_, __) => { insertText(ch.ToString()); });
+            return new ToolStripMenuItem("{0} — &{1}".Fmt(ch, num), null, (_, __) => { insertText(ch.ToString()); });
+        }
+
+        private static ToolStripItem listStringRetrieveItem(char ch, string engrish, bool backward, bool pop, int index, Action<string> insertText)
+        {
+            return new ToolStripMenuItem(
+                "{0} &{1} — Retrieve {2}th{3} item/character from list/string ({4}).".Fmt(ch, engrish, index + 1, backward ? "-last" : null, pop ? "pop" : "no pop"),
+                null, (_, __) => { insertText(ch.ToString()); });
         }
 
         private void insertInteger(Func<string> getSelectedText, Action<string> insertText)
@@ -278,6 +320,8 @@ namespace EsotericIDE.Languages
                     ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.SwapFromBottom, Value = ch - '⒈' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ch >= 'Ⓐ' && ch <= 'Ⓩ')
                     ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.RegexCapture, Value = ch - 'Ⓐ' + 1, Index = index++ + addIndex, Count = 1 });
+                else if (listStringElementNode.Characters.Contains(ch))
+                    ret.Add(new listStringElementNode(ch, index++ + addIndex));
                 else if (getInstructionInfo(ch, out instruction, out type))
                 {
                     switch (type)
@@ -338,7 +382,9 @@ namespace EsotericIDE.Languages
                 {
                     var attr = field.GetCustomAttributes<instructionAttribute>().First();
                     if (_instructions.ContainsKey(attr.Character))
-                        throw new duplicateCharacterException(attr.Character, "The character “{0}” is used for more than one instruction.".Fmt(attr.Character));
+                        throw new duplicateCharacterException(attr.Character, "The character U+{0:X4} is used for more than one instruction ({1} and {2}).".Fmt((int) attr.Character, _instructions[attr.Character], field.GetValue(null)));
+                    if (listStringElementNode.Characters.Contains(attr.Character))
+                        throw new duplicateCharacterException(attr.Character, "The character U+{0:X4} is used for an instruction ({1}) and a list/string element retrieval instruction.".Fmt((int) attr.Character, field.GetValue(null)));
                     _instructions[attr.Character] = (instruction) field.GetValue(null);
                     _instructionTypes[attr.Character] = attr.Type;
                 }
@@ -436,7 +482,7 @@ namespace EsotericIDE.Languages
             try { initInstructionsDictionary(); }
             catch (duplicateCharacterException e)
             {
-                rep.Error(@"Same character is used for multiple instructions. (First use here.)", "enum instruction", e.Character.ToString());
+                rep.Error(e.Message, "enum instruction", e.Character.ToString());
                 return;
             }
             foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == nodeType.BlockHead).Select(kvp => _instructions[kvp.Key]))

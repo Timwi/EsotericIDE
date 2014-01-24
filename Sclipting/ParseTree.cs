@@ -140,13 +140,8 @@ namespace EsotericIDE.Languages
                     case instruction.Both: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) & Sclipting.ToInt(e.Pop())); };
                     case instruction.Other: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) | Sclipting.ToInt(e.Pop())); };
                     case instruction.Clever: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) ^ Sclipting.ToInt(e.Pop())); };
-                    case instruction.Gnaw: return e =>
-                    {
-                        var b = (int) Sclipting.ToInt(e.Pop());
-                        var a = Sclipting.ToInt(e.Pop());
-                        e.CurrentStack.Add(a & ((BigInteger.One << b) - BigInteger.One));
-                        e.CurrentStack.Add(a >> b);
-                    };
+                    case instruction.Gnaw: return gnaw(false);
+                    case instruction.Bite: return gnaw(true);
 
 
                     // LOGIC
@@ -187,6 +182,18 @@ namespace EsotericIDE.Languages
                     default:
                         throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instr));
                 }
+            }
+
+            private static Action<scliptingExecutionEnvironment> gnaw(bool reversed)
+            {
+                return e =>
+                {
+                    var b = (int) Sclipting.ToInt(e.Pop());
+                    var a = Sclipting.ToInt(e.Pop());
+                    Sclipting.FlipIf(reversed,
+                        () => e.CurrentStack.Add(a & ((BigInteger.One << b) - BigInteger.One)),
+                        () => e.CurrentStack.Add(a >> b));
+                };
             }
 
             private static Func<string, string> sortString(StringComparer comparer)

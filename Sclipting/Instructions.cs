@@ -72,8 +72,10 @@ namespace EsotericIDE.Languages
             Other,
             [instruction('倆', "clever", "Bitwise xor.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Clever,
-            [instruction('啃', "gnaw", "Split nibbles.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            [instruction('啃', "gnaw", "Split numbers into bits.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Gnaw,
+            [instruction('嚙', "bite", "Split numbers into bits.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Bite,
 
             // Logic
             [instruction('小', "small", "Less than.", nodeType.SingularNode, instructionGroup.Logic)]

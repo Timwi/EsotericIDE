@@ -18,10 +18,26 @@ namespace EsotericIDE.Languages
             Discard,
 
             // Loops and conditionals
-            [instruction('是', "yes", "If (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            [instruction('是', "yes", "If true (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             Yes,
-            [instruction('倘', "if", "If (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            [instruction('倘', "if", "If true (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             If,
+            [instruction('夠', "enough", "If non-empty (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Enough,
+            [instruction('含', "contain", "If non-empty (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Contain,
+            [instruction('套', "loop", "While true (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Loop,
+            [instruction('要', "necessity", "While true (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Necessity,
+            [instruction('迄', "until", "While false (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Until,
+            [instruction('到', "arrive", "While false (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Arrive,
+            [instruction('滿', "full", "While non-empty (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            Full,
+            [instruction('充', "be full", "While non-empty (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            BeFull,
             [instruction('上', "up", "Integer for loop.", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             Up,
             [instruction('下', "down", "Integer for loop (backwards).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
@@ -30,20 +46,14 @@ namespace EsotericIDE.Languages
             Each,
             [instruction('每', "every", "Foreach loop (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             Every,
-            [instruction('套', "loop", "While loop (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
-            Loop,
-            [instruction('要', "necessity", "While loop (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
-            Necessity,
-            [instruction('迄', "until", "Until loop (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
-            Until,
-            [instruction('到', "arrive", "Until loop (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
-            Arrive,
 
             // Arithmetic
             [instruction('加', "add", "Adds two numbers.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Add,
             [instruction('減', "subtract", "Subtracts two numbers.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Subtract,
+            [instruction('縮', "reduce", "Subtracts two numbers (reverse order).", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Reduce,
             [instruction('乘', "multiply", "Multiplies two numbers.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Multiply,
             [instruction('除', "divide", "Divides two numbers as floats.", nodeType.SingularNode, instructionGroup.Arithmetic)]
@@ -120,12 +130,18 @@ namespace EsotericIDE.Languages
             Perform,
 
             // List/string manipulation
+            [instruction('乾', "dry", "Pushes the empty list.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Dry,
+            [instruction('虛', "empty", "Pushes the empty string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Empty,
             [instruction('長', "length", "Returns length of list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Length,
             [instruction('梴', "long", "Returns length of list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Long,
             [instruction('復', "repeat", "Repeats a list, string, or byte array.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Repeat,
+            [instruction('疊', "repeat", "Creates a list of repetitions of an item.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            RepeatIntoList,
             [instruction('標', "mark", "Pushes a mark.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Mark,
             [instruction('併', "combine", "Concatenates everything above the last mark into a string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
@@ -134,6 +150,8 @@ namespace EsotericIDE.Languages
             CombineList,
             [instruction('合', "combine", "Concatenates two lists or strings.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Combine,
+            [instruction('融', "blend", "Concatenates two lists or strings (reverse order).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Blend,
             [instruction('掘', "excavate", "Retrieves the nth item/character in a list/string (pop list/string).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Excavate,
             [instruction('挖', "dig out", "Retrieves the nth item/character in a list/string (keep list/string).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
@@ -148,6 +166,10 @@ namespace EsotericIDE.Languages
             Cultivate,
             [instruction('殲', "annihilate", "Deletes the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Annihilate,
+            [instruction('附', "append", "Appends an item/character to a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Append,
+            [instruction('前', "in front", "Prepends an item/character to a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            InFront,
             [instruction('反', "reverse", "Reverses a list or string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Reverse,
             [instruction('捃', "sort", "Sort a list/string by string value.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
@@ -166,6 +188,8 @@ namespace EsotericIDE.Languages
             Explain,
             [instruction('字', "character", "Character from Unicode codepoint.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Character,
+            [instruction('變', "change", "Replace all occurrences of a substring.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Change,
 
             // Regular expressions
             [instruction('現', "appear", "Current regular expression match.", nodeType.SingularNode, instructionGroup.Regex)]

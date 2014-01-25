@@ -412,7 +412,27 @@ namespace EsotericIDE.Languages
             {
                 case instruction.Yes:
                 case instruction.If:
-                    return new ifBlock { PrimaryBlockPops = instr == instruction.Yes };
+                case instruction.Enough:
+                case instruction.Contain:
+                    return new ifBlock
+                    {
+                        PrimaryBlockPops = instr == instruction.Yes || instr == instruction.Enough,
+                        NonEmpty = instr == instruction.Enough || instr == instruction.Contain
+                    };
+
+                case instruction.Loop:
+                case instruction.Necessity:
+                case instruction.Until:
+                case instruction.Arrive:
+                case instruction.Full:
+                case instruction.BeFull:
+                    return new whileLoop
+                    {
+                        PrimaryBlockPops = instr == instruction.Loop || instr == instruction.Until,
+                        WhileType =
+                            instr == instruction.Loop || instr == instruction.Necessity ? whileType.WhileTrue :
+                            instr == instruction.Until || instr == instruction.Arrive ? whileType.WhileFalse : whileType.WhileNonEmpty
+                    };
 
                 case instruction.Up:
                 case instruction.Down:
@@ -423,16 +443,6 @@ namespace EsotericIDE.Languages
                 case instruction.Each:
                 case instruction.Every:
                     return new forEachLoop { PrimaryBlockPops = instr == instruction.Each };
-
-                case instruction.Loop:
-                case instruction.Necessity:
-                case instruction.Until:
-                case instruction.Arrive:
-                    return new whileLoop
-                    {
-                        PrimaryBlockPops = instr == instruction.Loop || instr == instruction.Until,
-                        WhileTrue = instr == instruction.Loop || instr == instruction.Necessity
-                    };
 
                 case instruction.ReplaceFirstPop:
                 case instruction.ReplaceFirstNoPop:
@@ -659,6 +669,20 @@ namespace EsotericIDE.Languages
                 return b.Any(y => y != 0);
 
             return ToInt(item) != 0;
+        }
+
+        public static bool IsNonEmpty(object item)
+        {
+            List<object> list;
+            if ((list = item as List<object>) != null)
+                return list.Count != 0;
+
+            // Shortcut for performance
+            byte[] b;
+            if ((b = item as byte[]) != null)
+                return b.Length != 0;
+
+            return ToString(item).Length != 0;
         }
 
         public static object ToNumeric(object item)

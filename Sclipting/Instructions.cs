@@ -129,9 +129,39 @@ namespace EsotericIDE.Languages
             [instruction('演', "perform", "Executes a function (lambda) without popping it.", nodeType.FunctionExecutionNode, instructionGroup.Functions)]
             Perform,
 
-            // List/string manipulation
-            [instruction('乾', "dry", "Pushes the empty list.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Dry,
+            // List/string manipulation (indexed list/string instruction equivalents)
+            [instruction('掘', "excavate", "Retrieves the nth item/character in a list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.RetrievePop, false)]
+            Excavate,
+            [instruction('掊', "dig", "Retrieves the nth-last item/character in a list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.RetrievePop, true)]
+            Dig,
+            [instruction('挖', "dig out", "Retrieves the nth item/character in a list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.RetrieveNoPop, false)]
+            DigOut,
+            [instruction('采', "collect", "Retrieves the nth-last item/character in a list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.RetrieveNoPop, true)]
+            Collect,
+            [instruction('栽', "cultivate", "Inserts an item/character into a list/string at a specified index.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Insert, false)]
+            Cultivate,
+            [instruction('種', "seed", "Inserts an item/character into a list/string at a specified reverse index.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Insert, true)]
+            Seed,
+            [instruction('殲', "annihilate", "Deletes the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Delete, false)]
+            Annihilate,
+            [instruction('摧', "destroy", "Deletes the nth-last item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Delete, true)]
+            Destroy,
+            [instruction('裒', "take out", "Retrieves and deletes the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.RetrieveDelete, false)]
+            TakeOut,
+            [instruction('抽', "pull out", "Retrieves and deletes the nth-last item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.RetrieveDelete, true)]
+            PullOut,
+            [instruction('插', "insert", "Replaces the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Replace, false)]
+            Insert,
+            [instruction('恢', "restore", "Replaces the nth-last item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Replace, true)]
+            Restore,
+            [instruction('混', "mix", "Exchanges the nth item/character in a list/string with the value on the stack.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Exchange, false)]
+            MixForward,
+            [instruction('拌', "mix", "Exchanges the nth-last item/character in a list/string with the value on the stack.", nodeType.SingularNode, instructionGroup.ListStringManipulation), singularListStringInstruction(ListStringInstruction.Exchange, true)]
+            MixBackward,
+
+            // List/string manipulation (other)
+            [instruction('匱', "lack", "Pushes the empty list.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Lack,
             [instruction('虛', "empty", "Pushes the empty string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Empty,
             [instruction('長', "length", "Returns length of list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
@@ -152,24 +182,6 @@ namespace EsotericIDE.Languages
             Combine,
             [instruction('融', "blend", "Concatenates two lists or strings (reverse order).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Blend,
-            [instruction('掘', "excavate", "Retrieves the nth item/character in a list/string (pop list/string).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Excavate,
-            [instruction('挖', "dig out", "Retrieves the nth item/character in a list/string (keep list/string).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            DigOut,
-            [instruction('掊', "dig", "Retrieves the nth-last item/character in a list/string (pop list/string).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Dig,
-            [instruction('采', "collect", "Retrieves the nth-last item/character in a list/string (keep list/string).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Collect,
-            [instruction('插', "insert", "Replaces the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Insert,
-            [instruction('栽', "cultivate", "Inserts an item/character into a list/string at a specified index.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Cultivate,
-            [instruction('殲', "annihilate", "Deletes the nth item/character in a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Annihilate,
-            [instruction('附', "append", "Appends an item/character to a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Append,
-            [instruction('前', "in front", "Prepends an item/character to a list/string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            InFront,
             [instruction('反', "reverse", "Reverses a list or string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Reverse,
             [instruction('捃', "sort", "Sort a list/string by string value.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]

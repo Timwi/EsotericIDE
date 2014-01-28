@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using RT.Util;
-using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages
@@ -71,7 +70,7 @@ namespace EsotericIDE.Languages
 
                     // STRING/LIST MANIPULATION
 
-                    case instruction.Dry: return e => { e.CurrentStack.Add(new List<object>()); };
+                    case instruction.Lack: return e => { e.CurrentStack.Add(new List<object>()); };
                     case instruction.Empty: return e => { e.CurrentStack.Add(""); };
                     case instruction.Length: return stringListOperation(true, str => (BigInteger) str.Length, list => (BigInteger) list.Count);
                     case instruction.Long: return stringListOperation(false, str => (BigInteger) str.Length, list => (BigInteger) list.Count);
@@ -79,11 +78,6 @@ namespace EsotericIDE.Languages
                     case instruction.RepeatIntoList: return repeatIntoList;
                     case instruction.CombineString: return combineOperation(true);
                     case instruction.CombineList: return combineOperation(false);
-                    case instruction.Cultivate: return insert(false);
-                    case instruction.Insert: return insert(true);
-                    case instruction.Append: return append(false);
-                    case instruction.InFront: return append(true);
-                    case instruction.Annihilate: return annihilate;
                     case instruction.Combine: return combine(false);
                     case instruction.Blend: return combine(true);
                     case instruction.Reverse: return stringListOperation(true, reverseString,
@@ -92,17 +86,6 @@ namespace EsotericIDE.Languages
                         list => { var newList = new List<object>(list); newList.Sort((a, b) => Sclipting.ToString(a).CompareTo(Sclipting.ToString(b))); return newList; });
                     case instruction.Arrange: return stringListOperation(true, sortString(StringComparer.Ordinal),
                         list => { var newList = new List<object>(list); newList.Sort((a, b) => Sclipting.ToInt(a).CompareTo(Sclipting.ToInt(b))); return newList; });
-
-                    case instruction.Excavate:
-                    case instruction.DigOut:
-                        return stringListOperation(instr == instruction.Excavate,
-                            (s, i) => i < 0 || i >= s.Length ? (object) "" : s[(int) i].ToString(),
-                            (l, i) => i < 0 || i >= l.Count ? (object) "" : l[(int) i]);
-                    case instruction.Dig:
-                    case instruction.Collect:
-                        return stringListOperation(instr == instruction.Dig,
-                            (s, i) => i < 0 || i >= s.Length ? (object) "" : s[s.Length - 1 - (int) i].ToString(),
-                            (l, i) => i < 0 || i >= l.Count ? (object) "" : l[l.Count - 1 - (int) i]);
 
                     // String manipulation (no lists)
 
@@ -371,38 +354,6 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> append(bool prepend)
-            {
-                return e =>
-                {
-                    var item = e.Pop();
-                    var listOrString = e.Pop();
-
-                    var list = listOrString as List<object>;
-                    if (list != null)
-                    {
-                        var newList = new List<object>(list);
-                        if (prepend)
-                            newList.Insert(0, item);
-                        else
-                            newList.Add(item);
-                        e.CurrentStack.Add(newList);
-                    }
-                    else
-                    {
-                        // assume string
-                        var itemAsStr = Sclipting.ToString(item);
-                        var itemAsChar = itemAsStr == "" ? ' ' : itemAsStr[0];
-                        var input = Sclipting.ToString(listOrString);
-                        if (prepend)
-                            input = itemAsChar + input;
-                        else
-                            input += itemAsChar;
-                        e.CurrentStack.Add(input);
-                    }
-                };
-            }
-
             private static void annihilate(scliptingExecutionEnvironment e)
             {
                 var bigInteger = Sclipting.ToInt(e.Pop());
@@ -458,7 +409,7 @@ namespace EsotericIDE.Languages
                 {
                     var attr = field.GetCustomAttributes<instructionAttribute>().First();
                     var instr = (instruction) field.GetValue(null);
-                    if (attr.Type == nodeType.SingularNode)
+                    if (attr.Type == nodeType.SingularNode && !field.IsDefined<singularListStringInstructionAttribute>())
                     {
                         try { getMethod(instr); }
                         catch { rep.Error(@"Instruction ""{0}"" has no method.".Fmt(instr), "singularNode", "getMethod", "default"); }
@@ -519,68 +470,289 @@ namespace EsotericIDE.Languages
             }
         }
 
+        public enum ListStringInstruction
+        {
+            [listStringInstruction("Retrieve item/character from list/string (pop)")]
+            RetrievePop,
+            [listStringInstruction("Retrieve item/character from list/string (no pop)")]
+            RetrieveNoPop,
+            [listStringInstruction("Insert item/character in list/string")]
+            Insert,
+            [listStringInstruction("Delete item/character from list/string")]
+            Delete,
+            [listStringInstruction("Retrieve and delete item/character from list/string")]
+            RetrieveDelete,
+            [listStringInstruction("Replace item/character in list/string")]
+            Replace,
+            [listStringInstruction("Exchange item/character in list/string")]
+            Exchange
+        }
+
         private sealed class listStringElementNode : node
         {
-            public bool Backward { get; private set; }
+            public ListStringInstruction Instruction { get; private set; }
             public int ListStringIndex { get; private set; }
-            public bool Pop { get; private set; }
+            public bool GetIndexFromStack { get; private set; }
+            public bool Backwards { get; private set; }
 
-            public const string ForwardPop = @"氫氦鋰鈹硼碳氮氧氟氖鈉鎂鋁矽磷硫氯氬鉀鈣鈧鈦釩鉻錳鐵鈷鎳銅鋅鎵鍺砷硒溴氪銣鍶釔鋯鈮鉬鎝釕銠鈀銀鎘銦錫";
-            public const string ForwardNoPop = @"銻碲碘氙銫鋇鑭鈰鐠釹鉕釤銪釓鋱鏑鈥鉺銩鐿鎦鉿鉭鎢錸鋨銥鉑金汞鉈鉛鉍釙砈氡鍅鐳錒釷鏷鈾錼鈽鋂鋦鉳鉲鑀鐨";
-            public const string BackwardPop = @"一二三四五六七八九十";
-            public const string BackwardNoPop = @"首跟副矩手蟜週蛛貓指";
+            public const string Characters =
+                @"一二三四五六七八九十乾兌離震巽坎艮坤陰陽" +   // RetrievePop
+                @"壹貳叁肆伍陸柒捌玖拾首跟副矩手蟜週蛛貓指" +   // RetrieveNoPop
+                @"氫氦鋰鈹硼碳氮氧氟氖鈉鎂鋁矽磷硫氯氬鉀鈣" +   // Insert
+                @"鈧鈦釩鉻錳鐵鈷鎳銅鋅鎵鍺砷硒溴氪銣鍶釔鋯" +   // Delete
+                @"鈮鉬鎝釕銠鈀銀鎘銦錫銻碲碘氙銫鋇鑭鈰鐠釹" +   // RetrieveDelete
+                @"鉕釤銪釓鋱鏑鈥鉺銩鐿鎦鉿鉭鎢錸鋨銥鉑金汞" +   // Replace
+                @"鉈鉛鉍釙砈氡鍅鐳錒釷鏷鈾錼鈽鋂鋦鉳鉲鑀鐨";     // Exchange
 
-            public static readonly string[] ForwardPopEngrish = new[] { "hydrogen", "helium", "lithium", "beryllium", "boron", "carbon", "nitrogen", "oxygen", "fluorine",
-                "neon", "sodium", "magnesium", "aluminium", "silicon", "phosphorus", "sulfur", "chlorine", "argon", "potassium", "calcium", "scandium", "titanium", "vanadium",
-                "chromium", "manganese", "iron", "cobalt", "nickel", "copper", "zinc", "gallium", "germanium", "arsenic", "selenium", "bromine", "krypton", "rubidium",
-                "strontium", "yttrium", "zirconium", "niobium", "molybdenum", "technetium", "ruthenium", "rhodium", "palladium", "silver", "cadmium", "indium", "tin" };
-            public static readonly string[] ForwardNoPopEngrish = new[] { "antimony", "tellurium", "iodine", "xenon", "caesium", "barium", "lanthanum", "cerium",
-                "praseodymium", "neodymium", "promethium", "samarium", "europium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "thulium", "ytterbium",
-                "lutetium", "hafnium", "tantalum", "tungsten", "rhenium", "osmium", "iridium", "platinum", "gold", "mercury", "thallium", "lead", "bismuth", "polonium",
-                "astatine", "radon", "francium", "radium", "actinium", "thorium", "protactinium", "uranium", "neptunium", "plutonium", "americium", "curium", "berkelium",
-                "californium", "einsteinium", "fermium" };
-            public static readonly string[] BackwardPopEngrish = new[] { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" };
-            public static readonly string[] BackwardNoPopEngrish = new[] { "head", "follow", "supplement", "square", "hand", "insect", "week", "spider", "cat", "finger" };
+            public static readonly string[] Engrish = Ut.NewArray(
+                "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+                "sky", "lake", "fire", "thunder", "wind", "water", "mountain", "earth", "yin", "yang",
+                "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+                "head", "follow", "supplement", "square", "hand", "insect", "week", "spider", "cat", "finger",
+                "hydrogen", "helium", "lithium", "beryllium", "boron", "carbon", "nitrogen", "oxygen", "fluorine", "neon",
+                "sodium", "magnesium", "aluminium", "silicon", "phosphorus", "sulfur", "chlorine", "argon", "potassium", "calcium",
+                "scandium", "titanium", "vanadium", "chromium", "manganese", "iron", "cobalt", "nickel", "copper", "zinc",
+                "gallium", "germanium", "arsenic", "selenium", "bromine", "krypton", "rubidium", "strontium", "yttrium", "zirconium",
+                "niobium", "molybdenum", "technetium", "ruthenium", "rhodium", "palladium", "silver", "cadmium", "indium", "tin",
+                "antimony", "tellurium", "iodine", "xenon", "caesium", "barium", "lanthanum", "cerium", "praseodymium", "neodymium",
+                "promethium", "samarium", "europium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "thulium", "ytterbium",
+                "lutetium", "hafnium", "tantalum", "tungsten", "rhenium", "osmium", "iridium", "platinum", "gold", "mercury",
+                "thallium", "lead", "bismuth", "polonium", "astatine", "radon", "francium", "radium", "actinium", "thorium",
+                "protactinium", "uranium", "neptunium", "plutonium", "americium", "curium", "berkelium", "californium", "einsteinium", "fermium");
 
-            public const string Characters = ForwardPop + ForwardNoPop + BackwardPop + BackwardNoPop;
+#if DEBUG
+            private static void PostBuildCheck(IPostBuildReporter rep)
+            {
+                if (Characters.Length != Engrish.Length)
+                    rep.Error("listStringElementNode: Number of characters ({0}) does not equal number of Engrish terms ({1}).".Fmt(Characters.Length, Engrish.Length), "class listStringElementNode", "Characters");
+                var numInstr = EnumStrong.GetValues<ListStringInstruction>().Length;
+                if (Characters.Length != 20 * numInstr)
+                    rep.Error("listStringElementNode: Number of characters ({0}) does not equal 20 times the number of list/string instructions ({1}).".Fmt(Characters.Length, numInstr), "class listStringElementNode", "Engrish");
+            }
+#endif
 
             public listStringElementNode(char ch, int sourceIndex)
             {
-                if (
-                    !examine(ch, ForwardPop, false, true) &&
-                    !examine(ch, ForwardNoPop, false, false) &&
-                    !examine(ch, BackwardPop, true, true) &&
-                    !examine(ch, BackwardNoPop, true, false))
+                ListStringIndex = Characters.IndexOf(ch);
+                if (ListStringIndex == -1)
                     throw new ArgumentException("The specified character is not a valid list/string element retrieval instruction.", "ch");
+                Instruction = (ListStringInstruction) (ListStringIndex / 20);
+                ListStringIndex %= 20;
+                Backwards = ListStringIndex >= 10;
+                if (Backwards)
+                    ListStringIndex -= 10;
+                GetIndexFromStack = false;
                 Index = sourceIndex;
                 Count = 1;
             }
 
-            private bool examine(char ch, string str, bool backward, bool pop)
+            public listStringElementNode(ListStringInstruction instruction, bool backwards, int sourceIndex)
             {
-                var p = str.IndexOf(ch);
-                if (p == -1)
-                    return false;
-                Backward = backward;
-                Pop = pop;
-                ListStringIndex = p;
-                return true;
+                Instruction = instruction;
+                Backwards = backwards;
+                GetIndexFromStack = true;
+                Index = sourceIndex;
+                Count = 1;
             }
 
             public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
             {
                 yield return new Position(Index, Count);
-                List<object> list;
-                var item = Pop ? environment.Pop() : environment.CurrentStack.Last();
-                if ((list = item as List<object>) != null)
+
+                switch (Instruction)
                 {
-                    environment.CurrentStack.Add(ListStringIndex < 0 || ListStringIndex >= list.Count ? (object) "" : list[Backward ? list.Count - 1 - ListStringIndex : ListStringIndex]);
+                    case ListStringInstruction.RetrievePop:
+                    case ListStringInstruction.RetrieveNoPop:
+                        {
+                            if (GetIndexFromStack)
+                                ListStringIndex = (int) Sclipting.ToInt(environment.Pop());
+                            var listOrString = Instruction == ListStringInstruction.RetrievePop ? environment.Pop() : environment.CurrentStack.Last();
+                            operation(listOrString, false, false,
+                                (s, i) => { environment.CurrentStack.Add(i >= 0 && i < s.Length ? s[i].ToString() : ""); },
+                                (l, i) => { environment.CurrentStack.Add(i >= 0 && i < l.Count ? l[i] : ""); });
+                        }
+                        break;
+                    case ListStringInstruction.Insert:
+                        {
+                            var item = environment.Pop();
+                            if (GetIndexFromStack)
+                                ListStringIndex = (int) Sclipting.ToInt(environment.Pop());
+                            var listOrString = environment.Pop();
+                            operation(listOrString, true, false,
+                                (s, i) =>
+                                {
+                                    var j = Backwards ? i + 1 : i;
+                                    var itemAsString = Sclipting.ToString(item);
+                                    var itemAsChar = itemAsString.Length == 0 ? ' ' : itemAsString[0];
+                                    environment.CurrentStack.Add(s.Substring(0, j) + itemAsChar + s.Substring(j));
+                                },
+                                (l, i) =>
+                                {
+                                    l.Insert(Backwards ? i + 1 : i, item);
+                                    environment.CurrentStack.Add(l);
+                                });
+                        }
+                        break;
+                    case ListStringInstruction.Delete:
+                        {
+                            if (GetIndexFromStack)
+                                ListStringIndex = (int) Sclipting.ToInt(environment.Pop());
+                            var listOrString = environment.Pop();
+                            operation(listOrString, false, false,
+                                (s, i) =>
+                                {
+                                    // make sure we push the original object (not convert to string) if out of range
+                                    environment.CurrentStack.Add(i >= 0 && i < s.Length ? s.Remove(i, 1) : listOrString);
+                                },
+                                (l, i) =>
+                                {
+                                    if (i >= 0 && i < l.Count)
+                                        l.RemoveAt(i);
+                                    environment.CurrentStack.Add(l);
+                                });
+                        }
+                        break;
+                    case ListStringInstruction.RetrieveDelete:
+                        {
+                            if (GetIndexFromStack)
+                                ListStringIndex = (int) Sclipting.ToInt(environment.Pop());
+                            var listOrString = environment.Pop();
+                            operation(listOrString, false, false,
+                                (s, i) =>
+                                {
+                                    var ch = (i >= 0 && i < s.Length ? s[i].ToString() : "");
+                                    // make sure we push the original object (not convert to string) if out of range
+                                    environment.CurrentStack.Add(i >= 0 && i < s.Length ? s.Remove(i, 1) : listOrString);
+                                    environment.CurrentStack.Add(ch);
+                                },
+                                (l, i) =>
+                                {
+                                    var item = i >= 0 && i < l.Count ? l[i] : "";
+                                    if (i >= 0 && i < l.Count)
+                                        l.RemoveAt(i);
+                                    environment.CurrentStack.Add(l);
+                                    environment.CurrentStack.Add(item);
+                                });
+                        }
+                        break;
+                    case ListStringInstruction.Replace:
+                        {
+                            var item = environment.Pop();
+                            if (GetIndexFromStack)
+                                ListStringIndex = (int) Sclipting.ToInt(environment.Pop());
+                            var listOrString = environment.Pop();
+                            operation(listOrString, false, true,
+                                (s, i) =>
+                                {
+                                    var itemAsString = Sclipting.ToString(item);
+                                    var itemAsChar = itemAsString.Length == 0 ? ' ' : itemAsString[0];
+                                    environment.CurrentStack.Add(s.Substring(0, i) + itemAsChar + s.Substring(i + 1));
+                                },
+                                (l, i) =>
+                                {
+                                    l[i] = item;
+                                    environment.CurrentStack.Add(l);
+                                });
+                        }
+                        break;
+                    case ListStringInstruction.Exchange:
+                        {
+                            var item = environment.Pop();
+                            if (GetIndexFromStack)
+                                ListStringIndex = (int) Sclipting.ToInt(environment.Pop());
+                            var listOrString = environment.Pop();
+                            operation(listOrString, false, true,
+                                (s, i) =>
+                                {
+                                    var itemAsString = Sclipting.ToString(item);
+                                    var itemAsChar = itemAsString.Length == 0 ? ' ' : itemAsString[0];
+                                    var prevChar = s[i].ToString();
+                                    environment.CurrentStack.Add(s.Substring(0, i) + itemAsChar + s.Substring(i + 1));
+                                    environment.CurrentStack.Add(prevChar);
+                                },
+                                (l, i) =>
+                                {
+                                    environment.CurrentStack.Add(l);
+                                    environment.CurrentStack.Add(l[i]);
+                                    l[i] = item;    // sneaky: modify list after putting it on the stack...
+                                });
+                        }
+                        break;
+
+                    default:
+                        throw new InvalidOperationException("Invalid list/string manipulation instruction encountered.");
+                }
+            }
+
+            private void operation(object listOrString, bool padExcl, bool padIncl, Action<string, int> stringOperation, Action<List<object>, int> listOperation)
+            {
+                var list = listOrString as List<object>;
+                if (list != null)
+                {
+                    var index = Backwards ? list.Count - 1 - ListStringIndex : ListStringIndex;
+                    var newList = new List<object>(list);
+                    if (Backwards && (padExcl || padIncl))
+                    {
+                        while (index < (padExcl ? -1 : 0))
+                        {
+                            newList.Insert(0, "");
+                            index++;
+                        }
+                    }
+                    else if (!Backwards)
+                    {
+                        while (padExcl ? index > newList.Count : padIncl ? index >= newList.Count : false)
+                            newList.Add("");
+                    }
+                    listOperation(newList, index);
                 }
                 else
                 {
-                    var str = Sclipting.ToString(item);
-                    environment.CurrentStack.Add(ListStringIndex < 0 || ListStringIndex >= str.Length ? (object) "" : str[Backward ? str.Length - 1 - ListStringIndex : ListStringIndex].ToString());
+                    var str = Sclipting.ToString(listOrString);
+                    var index = Backwards ? str.Length - 1 - ListStringIndex : ListStringIndex;
+                    var padding =
+                        !Backwards && padExcl && index > str.Length ? new string(' ', index - str.Length) :
+                        !Backwards && padIncl && index >= str.Length ? new string(' ', index + 1 - str.Length) :
+                        index < 0 && (padExcl || padIncl) ? new string(' ', -index) : null;
+                    stringOperation(Backwards ? padding + str : str + padding, index < 0 && (padExcl || padIncl) ? 0 : index);
                 }
+            }
+
+            public string Explain()
+            {
+                string ordinal;
+                switch (ListStringIndex)
+                {
+                    case 0: ordinal = Backwards ? "last" : "first"; break;
+                    case 1: ordinal = Backwards ? "second-last" : "second"; break;
+                    case 2: ordinal = Backwards ? "third-last" : "third"; break;
+                    default: ordinal = (ListStringIndex + 1) + (Backwards ? "th-last" : "th"); break;
+                }
+
+                return (
+                    Instruction == ListStringInstruction.RetrievePop ? "Retrieve {0} item/character from list/string (pop)." :
+                    Instruction == ListStringInstruction.RetrieveNoPop ? "Retrieve {0} item/character from list/string (no pop)." :
+                    Instruction == ListStringInstruction.Insert ? "Insert item/character at {0} position in list/string." :
+                    Instruction == ListStringInstruction.Delete ? "Delete {0} item/character from list/string." :
+                    Instruction == ListStringInstruction.RetrieveDelete ? "Retrieve and delete {0} item/character from list/string." :
+                    Instruction == ListStringInstruction.Replace ? "Replace {0} item/character in list/string." :
+                    Instruction == ListStringInstruction.Exchange ? "Exchange {0} item/character in list/string." : null)
+                    .Fmt(ordinal);
+            }
+
+            public static ToolStripItem[] GetMenuItems(Action<string> insertText)
+            {
+                return typeof(ListStringInstruction).GetFields(BindingFlags.Static | BindingFlags.Public)
+                    .Select((field, fi) =>
+                    {
+                        var item = new ToolStripMenuItem(field.GetCustomAttributes<listStringInstructionAttribute>().First().MenuLabel);
+                        item.DropDownItems.AddRange(Enumerable.Range(0, 20)
+                            .Select(i => new { Ch = Characters[fi * 20 + i], Engrish = Engrish[fi * 20 + i] })
+                            .Select(inf => new ToolStripMenuItem("{0} &{1} — {2}".Fmt(inf.Ch, inf.Engrish, new listStringElementNode(inf.Ch, 0).Explain()), null, (_, __) => { insertText(inf.Ch.ToString()); }))
+                            .ToArray());
+                        return item;
+                    })
+                    .ToArray();
             }
         }
 

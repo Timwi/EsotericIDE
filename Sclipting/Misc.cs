@@ -7,7 +7,7 @@ namespace EsotericIDE.Languages
         private sealed class mark { }
 
         [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-        private sealed class instructionAttribute : Attribute
+        sealed class instructionAttribute : Attribute
         {
             public char Character { get; private set; }
             public string Engrish { get; private set; }
@@ -29,6 +29,25 @@ namespace EsotericIDE.Languages
         {
             public string Label { get; private set; }
             public instructionGroupAttribute(string label) { Label = label; }
+        }
+
+        [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+        sealed class listStringInstructionAttribute : Attribute
+        {
+            public string MenuLabel { get; private set; }
+            public listStringInstructionAttribute(string menuLabel) { MenuLabel = menuLabel; }
+        }
+
+        [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+        sealed class singularListStringInstructionAttribute : Attribute
+        {
+            public ListStringInstruction Instruction { get; private set; }
+            public bool Backwards { get; private set; }
+            public singularListStringInstructionAttribute(ListStringInstruction instruction, bool backwards)
+            {
+                Instruction = instruction;
+                Backwards = backwards;
+            }
         }
     }
 }

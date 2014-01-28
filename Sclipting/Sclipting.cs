@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using RT.Util;
 using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
-using RT.Util.Lingo;
 
 namespace EsotericIDE.Languages
 {
@@ -19,6 +18,7 @@ namespace EsotericIDE.Languages
 
         private static Dictionary<char, instruction> _instructions;
         private static Dictionary<char, nodeType> _instructionTypes;
+        private static Dictionary<char, singularListStringInstructionAttribute> _instructionListStringTypes;
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
@@ -109,12 +109,7 @@ namespace EsotericIDE.Languages
             else if (listStringElementNode.Characters.Contains(source[cursorPos]))
             {
                 instructionType = "List/string manipulation:";
-                var instr = new listStringElementNode(source[cursorPos], cursorPos);
-                description = "Retrieve the {0}th{1} item from a list/string ({2}).".Fmt(
-                    instr.ListStringIndex + 1,
-                    instr.Backward ? "-last" : null,
-                    instr.Pop ? "pop" : "no pop"
-                );
+                description = new listStringElementNode(source[cursorPos], cursorPos).Explain();
             }
             else
                 return "";
@@ -133,12 +128,6 @@ namespace EsotericIDE.Languages
             var miInsertStackInstructionSwapFromBottom = new ToolStripMenuItem("&Swap from bottom");
             var miInsertStackInstructionCopyFromTop = new ToolStripMenuItem("C&opy from top");
             var miInsertStackInstructionMoveFromTop = new ToolStripMenuItem("Mo&ve from top");
-
-            // List/string element retrieval instructions
-            var miListStringRetrieveForwardPop = new ToolStripMenuItem("&Retrieve nth item/character from list/string (pop)");
-            var miListStringRetrieveForwardNoPop = new ToolStripMenuItem("&Retrieve nth item/character from list/string (no pop)");
-            var miListStringRetrieveBackwardPop = new ToolStripMenuItem("&Retrieve nth-last item/character from list/string (pop)");
-            var miListStringRetrieveBackwardNoPop = new ToolStripMenuItem("&Retrieve nth-last item/character from list/string (no pop)");
 
             var miInsertInteger = new ToolStripMenuItem("&Integer...");
             var miInsertString = new ToolStripMenuItem("&String...");
@@ -167,8 +156,7 @@ namespace EsotericIDE.Languages
                 miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop));
 
             groupMenuItems[instructionGroup.ListStringManipulation].DropDownItems.Add("-");
-            groupMenuItems[instructionGroup.ListStringManipulation].DropDownItems.AddRange(Ut.NewArray<ToolStripItem>(
-                miListStringRetrieveForwardPop, miListStringRetrieveForwardNoPop, miListStringRetrieveBackwardPop, miListStringRetrieveBackwardNoPop));
+            groupMenuItems[instructionGroup.ListStringManipulation].DropDownItems.AddRange(listStringElementNode.GetMenuItems(insertText));
 
             for (var ch = '①'; ch <= '⑳'; ch++)
                 miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '①' + 1, insertText));
@@ -187,15 +175,6 @@ namespace EsotericIDE.Languages
             for (var ch = '⒈'; ch <= '⒛'; ch++)
                 miInsertStackInstructionSwapFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⒈' + 1, insertText));
 
-            for (int i = 0; i < listStringElementNode.ForwardPop.Length; i++)
-                miListStringRetrieveForwardPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.ForwardPop[i], listStringElementNode.ForwardPopEngrish[i], false, true, i, insertText));
-            for (int i = 0; i < listStringElementNode.ForwardNoPop.Length; i++)
-                miListStringRetrieveForwardNoPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.ForwardNoPop[i], listStringElementNode.ForwardNoPopEngrish[i], false, false, i, insertText));
-            for (int i = 0; i < listStringElementNode.BackwardPop.Length; i++)
-                miListStringRetrieveBackwardPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.BackwardPop[i], listStringElementNode.BackwardPopEngrish[i], true, true, i, insertText));
-            for (int i = 0; i < listStringElementNode.BackwardNoPop.Length; i++)
-                miListStringRetrieveBackwardNoPop.DropDownItems.Add(listStringRetrieveItem(listStringElementNode.BackwardNoPop[i], listStringElementNode.BackwardNoPopEngrish[i], true, false, i, insertText));
-
             groupMenuItems[instructionGroup.Regex].DropDownItems.Add("-");
             for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
                 groupMenuItems[instructionGroup.Regex].DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
@@ -206,13 +185,6 @@ namespace EsotericIDE.Languages
         private static ToolStripItem stackOrRegexMenuItem(char ch, int num, Action<string> insertText)
         {
             return new ToolStripMenuItem("{0} — &{1}".Fmt(ch, num), null, (_, __) => { insertText(ch.ToString()); });
-        }
-
-        private static ToolStripItem listStringRetrieveItem(char ch, string engrish, bool backward, bool pop, int index, Action<string> insertText)
-        {
-            return new ToolStripMenuItem(
-                "{0} &{1} — Retrieve {2}th{3} item/character from list/string ({4}).".Fmt(ch, engrish, index + 1, backward ? "-last" : null, pop ? "pop" : "no pop"),
-                null, (_, __) => { insertText(ch.ToString()); });
         }
 
         private void insertInteger(Func<string> getSelectedText, Action<string> insertText)
@@ -274,6 +246,8 @@ namespace EsotericIDE.Languages
         {
             instruction instruction;
             nodeType type;
+            ListStringInstruction listStringType;
+            bool backwards;
 
             var ret = new List<node>();
             int index = 0;
@@ -322,6 +296,8 @@ namespace EsotericIDE.Languages
                     ret.Add(new stackOrRegexNode { Type = stackOrRegexNodeType.RegexCapture, Value = ch - 'Ⓐ' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (listStringElementNode.Characters.Contains(ch))
                     ret.Add(new listStringElementNode(ch, index++ + addIndex));
+                else if (getInstructionInfo(ch, out listStringType, out backwards))
+                    ret.Add(new listStringElementNode(listStringType, backwards, index++ + addIndex));
                 else if (getInstructionInfo(ch, out instruction, out type))
                 {
                     switch (type)
@@ -378,6 +354,7 @@ namespace EsotericIDE.Languages
             {
                 _instructions = new Dictionary<char, instruction>();
                 _instructionTypes = new Dictionary<char, nodeType>();
+                _instructionListStringTypes = new Dictionary<char, singularListStringInstructionAttribute>();
                 foreach (var field in typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public))
                 {
                     var attr = field.GetCustomAttributes<instructionAttribute>().First();
@@ -387,7 +364,28 @@ namespace EsotericIDE.Languages
                         throw new duplicateCharacterException(attr.Character, "The character U+{0:X4} is used for an instruction ({1}) and a list/string element retrieval instruction.".Fmt((int) attr.Character, field.GetValue(null)));
                     _instructions[attr.Character] = (instruction) field.GetValue(null);
                     _instructionTypes[attr.Character] = attr.Type;
+                    var lsAttr = field.GetCustomAttributes<singularListStringInstructionAttribute>().FirstOrDefault();
+                    if (lsAttr != null)
+                        _instructionListStringTypes[attr.Character] = lsAttr;
                 }
+            }
+        }
+
+        private static bool getInstructionInfo(char character, out ListStringInstruction listStringType, out bool backwards)
+        {
+            initInstructionsDictionary();
+            singularListStringInstructionAttribute attr;
+            if (_instructionListStringTypes.TryGetValue(character, out attr))
+            {
+                listStringType = attr.Instruction;
+                backwards = attr.Backwards;
+                return true;
+            }
+            else
+            {
+                listStringType = default(ListStringInstruction);
+                backwards = default(bool);
+                return false;
             }
         }
 

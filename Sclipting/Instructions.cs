@@ -196,28 +196,54 @@ namespace EsotericIDE.Languages
             Break,
             [instruction('断', "sever", "Splits list/string after last matching item/character (keep list/string).", nodeType.BlockHead, instructionGroup.ListStringManipulation)]
             Sever,
-            [instruction('講', "explain", "Unicode codepoint for first character in a string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Explain,
-            [instruction('字', "character", "Character from Unicode codepoint.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Character,
-            [instruction('變', "change", "Replace all occurrences of a substring.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
-            Change,
 
-            // Regular expressions
-            [instruction('現', "appear", "Current regular expression match.", nodeType.SingularNode, instructionGroup.Regex)]
+            // String-only manipulation
+            [instruction('換', "substitute", "Replace first regular expression match (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceRegexFirstPop,
+            [instruction('代', "replace", "Replace first regular expression match (no pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceRegexFirstNoPop,
+            [instruction('替', "replace", "Replace all regular expression matches (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceRegexAllPop,
+            [instruction('更', "replace", "Replace all regular expression matches (no pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceRegexAllNoPop,
+            [instruction('取', "take", "Replace first case-sensitive substring match (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCsSubstrFirstPop,
+            [instruction('挐', "hold", "Replace first case-sensitive substring match (no pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCsSubstrFirstNoPop,
+            [instruction('拿', "take", "Replace all case-sensitive substring matches (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCsSubstrAllPop,
+            [instruction('拏', "hold", "Replace all case-sensitive substring matches (no pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCsSubstrAllNoPop,
+            [instruction('用', "use", "Replace first case-insensitive substring match (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCiSubstrFirstPop,
+            [instruction('喫', "eat", "Replace first case-insensitive substring match (no pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCiSubstrFirstNoPop,
+            [instruction('買', "buy", "Replace all case-insensitive substring matches (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCiSubstrAllPop,
+            [instruction('進', "advance", "Replace all case-insensitive substring matches (no pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
+            ReplaceCiSubstrAllNoPop,
+            [instruction('現', "appear", "Current regular expression match.", nodeType.SingularNode, instructionGroup.StringManipulation)]
             Appear,
-            [instruction('坼', "split", "Split string using regular expression (pop).", nodeType.SingularNode, instructionGroup.Regex)]
+            [instruction('坼', "split", "Split string using regular expression (pop).", nodeType.SingularNode, instructionGroup.StringManipulation)]
             SplitPop,
-            [instruction('裂', "split", "Split string using regular expression (no pop).", nodeType.SingularNode, instructionGroup.Regex)]
+            [instruction('裂', "split", "Split string using regular expression (no pop).", nodeType.SingularNode, instructionGroup.StringManipulation)]
             SplitNoPop,
-            [instruction('換', "substitute", "Regular expression replace first (pop).", nodeType.BlockHead, instructionGroup.Regex)]
-            ReplaceFirstPop,
-            [instruction('代', "replace", "Regular expression replace first (no pop).", nodeType.BlockHead, instructionGroup.Regex)]
-            ReplaceFirstNoPop,
-            [instruction('替', "replace", "Regular expression replace all (pop).", nodeType.BlockHead, instructionGroup.Regex)]
-            ReplaceAllPop,
-            [instruction('更', "replace", "Regular expression replace all (no pop).", nodeType.BlockHead, instructionGroup.Regex)]
-            ReplaceAllNoPop,
+            [instruction('講', "explain", "Unicode codepoint for first character in a string.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Explain,
+            [instruction('字', "character", "Character from Unicode codepoint.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Character,
+            [instruction('移', "change", "Replace all matches of a regular expression.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            ChangeRegex,
+            [instruction('變', "change", "Replace all occurrences of a substring (case-sensitive).", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            ChangeCs,
+            [instruction('改', "change", "Replace all occurrences of a substring (case-insensitive).", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            ChangeCi,
+            [instruction('壯', "big", "Upper-case.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Big,
+            [instruction('微', "tiny", "Lower-case.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Tiny,
+            [instruction('題', "title", "Title-case.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Title,
         }
 
         private enum nodeType
@@ -243,10 +269,10 @@ namespace EsotericIDE.Languages
             Logic,
             [instructionGroup("&Functions")]
             Functions,
-            [instructionGroup("List/String &manipulation")]
-            ListStringManipulation,
-            [instructionGroup("Regular e&xpressions")]
-            Regex
+            [instructionGroup("String &manipulation")]
+            StringManipulation,
+            [instructionGroup("List/String mani&pulation")]
+            ListStringManipulation
         }
 
         private enum stackOrRegexNodeType

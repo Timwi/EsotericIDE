@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -87,7 +88,8 @@ namespace EsotericIDE.Languages
                     case instruction.Arrange: return stringListOperation(true, sortString(StringComparer.Ordinal),
                         list => { var newList = new List<object>(list); newList.Sort((a, b) => Sclipting.ToInt(a).CompareTo(Sclipting.ToInt(b))); return newList; });
 
-                    // String manipulation (no lists)
+
+                    // STRING MANIPULATION
 
                     case instruction.Explain: return e =>
                     {
@@ -99,20 +101,27 @@ namespace EsotericIDE.Languages
                         var codepoint = Sclipting.ToInt(e.Pop());
                         e.CurrentStack.Add(codepoint < 0 || codepoint > 0x10ffff ? "" : char.ConvertFromUtf32((int) codepoint));
                     };
-                    case instruction.Change: return e =>
+                    case instruction.ChangeRegex:
+                    case instruction.ChangeCs:
+                    case instruction.ChangeCi: return e =>
                     {
                         var replacement = Sclipting.ToString(e.Pop());
                         var needle = Sclipting.ToString(e.Pop());
                         var haystack = Sclipting.ToString(e.Pop());
-                        e.CurrentStack.Add(haystack.Replace(needle, replacement));
+                        e.CurrentStack.Add(
+                            instr == instruction.ChangeRegex
+                                ? Regex.Replace(haystack, needle, replacement)
+                                : instr == instruction.ChangeCs
+                                    ? haystack.Replace(needle, replacement)
+                                    : haystack.Replace(needle, replacement, StringComparison.InvariantCultureIgnoreCase)
+                        );
                     };
-
-
-                    // REGULAR EXPRESSIONS
-
                     case instruction.Appear: return e => { e.CurrentStack.Add(e.RegexObjects.Count == 0 ? "" : e.RegexObjects.Last().Match.Value); };
                     case instruction.SplitPop: return regexSplit(true);
                     case instruction.SplitNoPop: return regexSplit(false);
+                    case instruction.Big: return recursiveStringOperation(s => s.ToUpperInvariant());
+                    case instruction.Tiny: return recursiveStringOperation(s => s.ToLowerInvariant());
+                    case instruction.Title: return recursiveStringOperation(CultureInfo.InvariantCulture.TextInfo.ToTitleCase);
 
 
                     // ARITHMETIC
@@ -128,8 +137,8 @@ namespace EsotericIDE.Languages
                     case instruction.Correct: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) Math.Abs((double) item) : BigInteger.Abs(Sclipting.ToInt(item))); };
                     case instruction.Increase: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) + 1); };
                     case instruction.Decrease: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) - 1); };
-                    case instruction.Left: return e => { var item2 = Sclipting.ToInt(e.Pop()); var item1 = Sclipting.ToInt(e.Pop()); if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) item1 *= 2; e.CurrentStack.Add(item1); } };
-                    case instruction.Right: return e => { var item2 = Sclipting.ToInt(e.Pop()); var item1 = Sclipting.ToInt(e.Pop()); var negative = item1 < 0; if (item2 < 0) e.CurrentStack.Add(double.NaN); else { for (; item2 > 0; item2--) { item1 /= 2; if (negative) item1--; } e.CurrentStack.Add(item1); } };
+                    case instruction.Left: return e => { var b = Sclipting.ToInt(e.Pop()); var a = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(b < 0 ? (object) double.NaN : a << (int) b); };
+                    case instruction.Right: return e => { var b = Sclipting.ToInt(e.Pop()); var a = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(b < 0 ? (object) double.NaN : a >> (int) b); };
                     case instruction.Both: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) & Sclipting.ToInt(e.Pop())); };
                     case instruction.Other: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) | Sclipting.ToInt(e.Pop())); };
                     case instruction.Clever: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) ^ Sclipting.ToInt(e.Pop())); };
@@ -175,6 +184,23 @@ namespace EsotericIDE.Languages
                     default:
                         throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instr));
                 }
+            }
+
+            private static Action<scliptingExecutionEnvironment> recursiveStringOperation(Func<string, string> func)
+            {
+                Func<object, object> recurse = null;
+                recurse = (object item) =>
+                {
+                    var list = item as List<object>;
+                    if (list != null)
+                        return list.Select(recurse).ToList();
+                    return func(Sclipting.ToString(item));
+                };
+                return e =>
+                {
+                    var item = e.Pop();
+                    e.CurrentStack.Add(recurse(item));
+                };
             }
 
             private static Action<scliptingExecutionEnvironment> gnaw(bool reversed)
@@ -1021,23 +1047,62 @@ namespace EsotericIDE.Languages
 
         private sealed class regexSubstitute : blockNode
         {
-            public bool FirstMatchOnly;
+            private bool _firstMatchOnly;
+            private enum matchType { Regex, CaseSensitiveSubstring, CaseInsensitiveSubstring };
+            private matchType _matchType;
+
+            public regexSubstitute(instruction instr)
+            {
+                PrimaryBlockPops =
+                    instr == instruction.ReplaceRegexFirstPop ||
+                    instr == instruction.ReplaceRegexAllPop ||
+                    instr == instruction.ReplaceCsSubstrFirstPop ||
+                    instr == instruction.ReplaceCsSubstrAllPop ||
+                    instr == instruction.ReplaceCiSubstrFirstPop ||
+                    instr == instruction.ReplaceCiSubstrAllPop;
+
+                _firstMatchOnly =
+                    instr == instruction.ReplaceRegexFirstPop ||
+                    instr == instruction.ReplaceRegexFirstNoPop ||
+                    instr == instruction.ReplaceCsSubstrFirstPop ||
+                    instr == instruction.ReplaceCsSubstrFirstNoPop ||
+                    instr == instruction.ReplaceCiSubstrFirstPop ||
+                    instr == instruction.ReplaceCiSubstrFirstNoPop;
+
+                _matchType =
+                    instr == instruction.ReplaceRegexFirstPop ||
+                    instr == instruction.ReplaceRegexFirstNoPop ||
+                    instr == instruction.ReplaceRegexAllPop ||
+                    instr == instruction.ReplaceRegexAllNoPop ? matchType.Regex :
+                    instr == instruction.ReplaceCsSubstrFirstPop ||
+                    instr == instruction.ReplaceCsSubstrFirstNoPop ||
+                    instr == instruction.ReplaceCsSubstrAllPop ||
+                    instr == instruction.ReplaceCsSubstrAllNoPop ? matchType.CaseSensitiveSubstring : matchType.CaseInsensitiveSubstring;
+            }
 
             public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
             {
                 yield return new Position(Index, 1);
+
                 var regex = Sclipting.ToString(environment.Pop());
+                switch (_matchType)
+                {
+                    case matchType.Regex: break;
+                    case matchType.CaseSensitiveSubstring: regex = Regex.Escape(regex); break;
+                    case matchType.CaseInsensitiveSubstring: regex = "(?i:{0})".Fmt(Regex.Escape(regex)); break;
+                }
+
                 var input = Sclipting.ToString(environment.CurrentStack.Last());
                 List<Match> matches = null;
                 Match match = null;
 
-                if (FirstMatchOnly)
+                if (_firstMatchOnly)
                     match = Regex.Match(input, regex, RegexOptions.Singleline);
                 else
                     matches = Regex.Matches(input, regex, RegexOptions.Singleline).Cast<Match>().ToList();
                 var pushResult = true;
 
-                if (((FirstMatchOnly && !match.Success) || (!FirstMatchOnly && matches.Count == 0)) && ElseBlock != null)
+                if (((_firstMatchOnly && !match.Success) || (!_firstMatchOnly && matches.Count == 0)) && ElseBlock != null)
                 {
                     // Jump to the “else” instruction
                     yield return new Position(ElseIndex, 1);
@@ -1054,9 +1119,9 @@ namespace EsotericIDE.Languages
                     if (PrimaryBlockPops)
                         environment.Pop();
                     var offset = 0;
-                    for (int i = 0; i < (FirstMatchOnly ? match.Success ? 1 : 0 : matches.Count); i++)
+                    for (int i = 0; i < (_firstMatchOnly ? match.Success ? 1 : 0 : matches.Count); i++)
                     {
-                        var m = FirstMatchOnly ? match : matches[i];
+                        var m = _firstMatchOnly ? match : matches[i];
                         environment.RegexObjects.Add(new regexMatch(input, regex, offset, m));
                         if (i > 0)
                             yield return new Position(Index, 1);

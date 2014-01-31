@@ -128,6 +128,7 @@ namespace EsotericIDE.Languages
             var miInsertStackInstructionSwapFromBottom = new ToolStripMenuItem("&Swap from bottom");
             var miInsertStackInstructionCopyFromTop = new ToolStripMenuItem("C&opy from top");
             var miInsertStackInstructionMoveFromTop = new ToolStripMenuItem("Mo&ve from top");
+            var miInsertRegexGroupInstruction = new ToolStripMenuItem("Rege&x captured group");
 
             var miInsertInteger = new ToolStripMenuItem("&Integer...");
             var miInsertString = new ToolStripMenuItem("&String...");
@@ -175,9 +176,10 @@ namespace EsotericIDE.Languages
             for (var ch = '⒈'; ch <= '⒛'; ch++)
                 miInsertStackInstructionSwapFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⒈' + 1, insertText));
 
-            groupMenuItems[instructionGroup.Regex].DropDownItems.Add("-");
+            groupMenuItems[instructionGroup.StringManipulation].DropDownItems.Add("-");
+            groupMenuItems[instructionGroup.StringManipulation].DropDownItems.Add(miInsertRegexGroupInstruction);
             for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
-                groupMenuItems[instructionGroup.Regex].DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
+                miInsertRegexGroupInstruction.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
 
             return Ut.NewArray<ToolStripMenuItem>(mnuInsert);
         }
@@ -442,15 +444,19 @@ namespace EsotericIDE.Languages
                 case instruction.Every:
                     return new forEachLoop { PrimaryBlockPops = instr == instruction.Each };
 
-                case instruction.ReplaceFirstPop:
-                case instruction.ReplaceFirstNoPop:
-                case instruction.ReplaceAllPop:
-                case instruction.ReplaceAllNoPop:
-                    return new regexSubstitute
-                    {
-                        PrimaryBlockPops = instr == instruction.ReplaceFirstPop || instr == instruction.ReplaceAllPop,
-                        FirstMatchOnly = instr == instruction.ReplaceFirstPop || instr == instruction.ReplaceFirstNoPop
-                    };
+                case instruction.ReplaceRegexFirstPop:
+                case instruction.ReplaceRegexFirstNoPop:
+                case instruction.ReplaceRegexAllPop:
+                case instruction.ReplaceRegexAllNoPop:
+                case instruction.ReplaceCsSubstrFirstPop:
+                case instruction.ReplaceCsSubstrFirstNoPop:
+                case instruction.ReplaceCsSubstrAllPop:
+                case instruction.ReplaceCsSubstrAllNoPop:
+                case instruction.ReplaceCiSubstrFirstPop:
+                case instruction.ReplaceCiSubstrFirstNoPop:
+                case instruction.ReplaceCiSubstrAllPop:
+                case instruction.ReplaceCiSubstrAllNoPop:
+                    return new regexSubstitute(instr);
 
                 case instruction.Block:
                 case instruction.Capture:

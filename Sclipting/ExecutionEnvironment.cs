@@ -24,6 +24,16 @@ namespace EsotericIDE.Languages
                 Input = input;
             }
 
+            public void NumericOperation(Func<BigInteger, object> fromInt, Func<double, object> fromDouble)
+            {
+                var item = Sclipting.ToNumeric(Pop());
+
+                if (item is double)
+                    CurrentStack.Add(fromDouble((double) item));
+                else
+                    CurrentStack.Add(fromInt((BigInteger) item));
+            }
+
             public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
             {
                 var item2 = Sclipting.ToNumeric(Pop());

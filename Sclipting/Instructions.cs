@@ -22,6 +22,10 @@ namespace EsotericIDE.Languages
             Yes,
             [instruction('倘', "if", "If true (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             If,
+            [instruction('沒', "not", "If false (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            NotPop,
+            [instruction('毋', "not", "If false (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
+            NotNoPop,
             [instruction('夠', "enough", "If non-empty (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
             Enough,
             [instruction('含', "contain", "If non-empty (no pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]
@@ -62,6 +66,12 @@ namespace EsotericIDE.Languages
             DivideInt,
             [instruction('剩', "leftovers", "Remainder (modulo).", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Leftovers,
+            [instruction('重', "double", "Doubles a number.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Double,
+            [instruction('半', "half", "Halves a number (result is float).", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Half,
+            [instruction('隔', "separate", "Halves an integer (equivalent to shift-right 1).", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Separate,
             [instruction('方', "power", "Exponentiation.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Power,
             [instruction('負', "negative", "Negative (unary minus).", nodeType.SingularNode, instructionGroup.Arithmetic)]
@@ -82,6 +92,8 @@ namespace EsotericIDE.Languages
             Other,
             [instruction('倆', "clever", "Bitwise xor.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Clever,
+            [instruction('無', "not", "Bitwise not.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            BitwiseNot,
             [instruction('啃', "gnaw", "Split numbers into bits.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Gnaw,
             [instruction('嚙', "bite", "Split numbers into bits.", nodeType.SingularNode, instructionGroup.Arithmetic)]
@@ -115,7 +127,7 @@ namespace EsotericIDE.Languages
             [instruction('隻', "one of pair", "Logical (boolean) xor.", nodeType.SingularNode, instructionGroup.Logic)]
             OneOfPair,
             [instruction('非', "not", "Logical (boolean) not.", nodeType.SingularNode, instructionGroup.Logic)]
-            Not, 
+            Not,
             [instruction('嗎', "is it?", "Conditional operator.", nodeType.SingularNode, instructionGroup.Logic)]
             IsIt,
 
@@ -202,6 +214,8 @@ namespace EsotericIDE.Languages
             Break,
             [instruction('断', "sever", "Splits list/string after last matching item/character (keep list/string).", nodeType.BlockHead, instructionGroup.ListStringManipulation)]
             Sever,
+            [instruction('會', "assemble", "Join a list of strings into a single string with a separator.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Assemble,
 
             // String-only manipulation
             [instruction('換', "substitute", "Replace first regular expression match (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]

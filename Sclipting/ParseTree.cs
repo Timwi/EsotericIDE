@@ -89,6 +89,7 @@ namespace EsotericIDE.Languages
                         list => { var newList = new List<object>(list); newList.Sort((a, b) => Sclipting.ToString(a).CompareTo(Sclipting.ToString(b))); return newList; });
                     case instruction.Arrange: return stringListOperation(true, sortString(StringComparer.Ordinal),
                         list => { var newList = new List<object>(list); newList.Sort((a, b) => Sclipting.ToInt(a).CompareTo(Sclipting.ToInt(b))); return newList; });
+                    case instruction.Assemble: return assemble;
 
 
                     // STRING MANIPULATION
@@ -135,15 +136,19 @@ namespace EsotericIDE.Languages
                     case instruction.DivideFloat: return e => { e.NumericOperation((i1, i2) => i2 == 0 ? double.NaN : (double) i1 / (double) i2, (i1, i2) => i2 == 0 ? double.NaN : i1 / i2); };
                     case instruction.DivideInt: return e => { var item2 = Sclipting.ToInt(e.Pop()); var item1 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 / item2); };
                     case instruction.Leftovers: return e => { var item2 = Sclipting.ToInt(e.Pop()); var item1 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(item2 == 0 ? (object) double.NaN : item1 % item2); };
-                    case instruction.Negative: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) -(double) item : -Sclipting.ToInt(item)); };
-                    case instruction.Correct: return e => { var item = e.Pop(); e.CurrentStack.Add(item is double ? (object) Math.Abs((double) item) : BigInteger.Abs(Sclipting.ToInt(item))); };
+                    case instruction.Double: return e => { e.NumericOperation(i => 2 * i, i => 2 * i); };
+                    case instruction.Half: return e => { e.NumericOperation(i => (double) i / 2, i => i / 2); };
+                    case instruction.Separate: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) >> 1); };
+                    case instruction.Negative: return e => { e.NumericOperation(i => -i, i => -i); };
+                    case instruction.Correct: return e => { e.NumericOperation(i => BigInteger.Abs(i), i => Math.Abs(i)); };
                     case instruction.Increase: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) + 1); };
                     case instruction.Decrease: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) - 1); };
-                    case instruction.Left: return e => { var b = Sclipting.ToInt(e.Pop()); var a = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(b < 0 ? (object) double.NaN : a << (int) b); };
-                    case instruction.Right: return e => { var b = Sclipting.ToInt(e.Pop()); var a = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(b < 0 ? (object) double.NaN : a >> (int) b); };
+                    case instruction.Left: return e => { var b = Sclipting.ToInt(e.Pop()); var a = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(b < 0 ? a >> (int) -b : a << (int) b); };
+                    case instruction.Right: return e => { var b = Sclipting.ToInt(e.Pop()); var a = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(b < 0 ? a << (int) -b : a >> (int) b); };
                     case instruction.Both: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) & Sclipting.ToInt(e.Pop())); };
                     case instruction.Other: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) | Sclipting.ToInt(e.Pop())); };
                     case instruction.Clever: return e => { e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) ^ Sclipting.ToInt(e.Pop())); };
+                    case instruction.BitwiseNot: return e => { e.CurrentStack.Add(~Sclipting.ToInt(e.Pop())); };
                     case instruction.Gnaw: return gnaw(false);
                     case instruction.Bite: return gnaw(true);
 
@@ -365,6 +370,14 @@ namespace EsotericIDE.Languages
                     else
                         e.CurrentStack.Add(Sclipting.ToString(item1) + Sclipting.ToString(item2));
                 };
+            }
+
+            private static void assemble(scliptingExecutionEnvironment e)
+            {
+                var separator = Sclipting.ToString(e.Pop());
+                var item = e.Pop();
+                var list = item is List<object> ? ((List<object>) item).Select(obj => Sclipting.ToString(obj)) : Sclipting.ToString(item).Select(ch => (object) ch.ToString());
+                e.CurrentStack.Add(list.JoinString(separator));
             }
 
             private static Action<scliptingExecutionEnvironment> insert(bool replace)
@@ -941,15 +954,36 @@ namespace EsotericIDE.Languages
             }
         }
 
-        private sealed class ifBlock : blockNode
+        private enum condition
         {
-            public bool NonEmpty;
+            True,
+            False,
+            NonEmpty
+        }
 
+        private abstract class conditionalBlockNode : blockNode
+        {
+            public condition Condition;
+
+            protected bool SatisfiesCondition(object item)
+            {
+                switch (Condition)
+                {
+                    case condition.True: return Sclipting.IsTrue(item);
+                    case condition.False: return !Sclipting.IsTrue(item);
+                    case condition.NonEmpty: return Sclipting.IsNonEmpty(item);
+                    default: return false;
+                }
+            }
+        }
+
+        private sealed class ifBlock : conditionalBlockNode
+        {
             public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
             {
                 yield return new Position(Index, 1);
                 var item = environment.CurrentStack.Last();
-                if (NonEmpty ? Sclipting.IsNonEmpty(item) : Sclipting.IsTrue(item))
+                if (SatisfiesCondition(item))
                 {
                     if (PrimaryBlockPops)
                         environment.Pop();
@@ -975,25 +1009,13 @@ namespace EsotericIDE.Languages
             }
         }
 
-        private enum whileType
+        private sealed class whileLoop : conditionalBlockNode
         {
-            WhileTrue,
-            WhileFalse,
-            WhileNonEmpty
-        }
-
-        private sealed class whileLoop : blockNode
-        {
-            public whileType WhileType;
-
             public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
             {
                 yield return new Position(Index, 1);
                 var item = environment.CurrentStack.Last();
-                var condition = Ut.Lambda((object itm) =>
-                    WhileType == whileType.WhileTrue ? Sclipting.IsTrue(itm) :
-                    WhileType == whileType.WhileFalse ? !Sclipting.IsTrue(itm) : Sclipting.IsNonEmpty(itm));
-                if (!condition(item))
+                if (!SatisfiesCondition(item))
                 {
                     if (ElseBlock != null)
                     {
@@ -1020,7 +1042,7 @@ namespace EsotericIDE.Languages
                         yield return new Position(Index, 1);
                         item = environment.CurrentStack.Last();
                     }
-                    while (condition(item));
+                    while (SatisfiesCondition(item));
                     if (PrimaryBlockPops)
                         environment.Pop();
                 }

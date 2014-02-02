@@ -72,6 +72,12 @@ namespace EsotericIDE.Languages
             if (source[cursorPos] >= 0xbc00 && source[cursorPos] <= 0xd7a3)
                 return "Negative number: {0}".Fmt(0xbbff - source[cursorPos]);
 
+            if (listStringElementNode.Characters.Contains(source[cursorPos]))
+                return "List/string manipulation: {0} ({1}) — {2}".Fmt(
+                    source[cursorPos],
+                    listStringElementNode.Engrish[listStringElementNode.Characters.IndexOf(source[cursorPos])],
+                    new listStringElementNode(source[cursorPos], cursorPos).Explain());
+
             var attribute = typeof(instruction).GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(f => f.GetCustomAttributes<instructionAttribute>().FirstOrDefault())
                 .Where(attr => attr != null && attr.Character == source[cursorPos])
@@ -105,11 +111,6 @@ namespace EsotericIDE.Languages
             {
                 instructionType = "Regex instruction:";
                 description = "Push content of the {0}th regex capturing parenthesis.".Fmt(source[cursorPos] - 'Ⓐ' + 1);
-            }
-            else if (listStringElementNode.Characters.Contains(source[cursorPos]))
-            {
-                instructionType = "List/string manipulation:";
-                description = new listStringElementNode(source[cursorPos], cursorPos).Explain();
             }
             else
                 return "";
@@ -410,29 +411,19 @@ namespace EsotericIDE.Languages
         {
             switch (instr)
             {
-                case instruction.Yes:
-                case instruction.If:
-                case instruction.Enough:
-                case instruction.Contain:
-                    return new ifBlock
-                    {
-                        PrimaryBlockPops = instr == instruction.Yes || instr == instruction.Enough,
-                        NonEmpty = instr == instruction.Enough || instr == instruction.Contain
-                    };
+                case instruction.Yes: return new ifBlock { PrimaryBlockPops = true, Condition = condition.True };
+                case instruction.If: return new ifBlock { PrimaryBlockPops = false, Condition = condition.True };
+                case instruction.NotPop: return new ifBlock { PrimaryBlockPops = true, Condition = condition.False };
+                case instruction.NotNoPop: return new ifBlock { PrimaryBlockPops = false, Condition = condition.False };
+                case instruction.Enough: return new ifBlock { PrimaryBlockPops = true, Condition = condition.NonEmpty };
+                case instruction.Contain: return new ifBlock { PrimaryBlockPops = false, Condition = condition.NonEmpty };
 
-                case instruction.Loop:
-                case instruction.Necessity:
-                case instruction.Until:
-                case instruction.Arrive:
-                case instruction.Full:
-                case instruction.BeFull:
-                    return new whileLoop
-                    {
-                        PrimaryBlockPops = instr == instruction.Loop || instr == instruction.Until,
-                        WhileType =
-                            instr == instruction.Loop || instr == instruction.Necessity ? whileType.WhileTrue :
-                            instr == instruction.Until || instr == instruction.Arrive ? whileType.WhileFalse : whileType.WhileNonEmpty
-                    };
+                case instruction.Loop: return new whileLoop { PrimaryBlockPops = true, Condition = condition.True };
+                case instruction.Necessity: return new whileLoop { PrimaryBlockPops = false, Condition = condition.True };
+                case instruction.Until: return new whileLoop { PrimaryBlockPops = true, Condition = condition.False };
+                case instruction.Arrive: return new whileLoop { PrimaryBlockPops = false, Condition = condition.False };
+                case instruction.Full: return new whileLoop { PrimaryBlockPops = true, Condition = condition.NonEmpty };
+                case instruction.BeFull: return new whileLoop { PrimaryBlockPops = false, Condition = condition.NonEmpty };
 
                 case instruction.Up:
                 case instruction.Down:
@@ -440,9 +431,8 @@ namespace EsotericIDE.Languages
                         throw new CompileException("The block else instruction “逆” cannot be used with the block head instruction “數”.", index + addIndex, elseIndex.Value - index + 1);
                     return new forLoop { Backwards = instr == instruction.Down };
 
-                case instruction.Each:
-                case instruction.Every:
-                    return new forEachLoop { PrimaryBlockPops = instr == instruction.Each };
+                case instruction.Each: return new forEachLoop { PrimaryBlockPops = true };
+                case instruction.Every: return new forEachLoop { PrimaryBlockPops = false };
 
                 case instruction.ReplaceRegexFirstPop:
                 case instruction.ReplaceRegexFirstNoPop:
@@ -459,33 +449,35 @@ namespace EsotericIDE.Languages
                     return new regexSubstitute(instr);
 
                 case instruction.Block:
-                case instruction.Capture:
                     if (elseIndex != null)
                         throw new CompileException("The block instruction “塊” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
-                    return new functionNode { Capture = instr == instruction.Capture };
+                    return new functionNode { Capture = false };
+                case instruction.Capture:
+                    if (elseIndex != null)
+                        throw new CompileException("The block instruction “掳” cannot have a “不” or “逆” block.", index + addIndex, elseIndex.Value - index + 1);
+                    return new functionNode { Capture = true };
 
-                case instruction.Snap:
-                case instruction.Break:
-                case instruction.Rupture:
-                case instruction.Sever:
-                    return new splitLoop { Backward = instr == instruction.Break || instr == instruction.Sever, PrimaryBlockPops = instr == instruction.Snap || instr == instruction.Break };
+                case instruction.Snap: return new splitLoop { Backward = false, PrimaryBlockPops = true };
+                case instruction.Break: return new splitLoop { Backward = true, PrimaryBlockPops = true };
+                case instruction.Rupture: return new splitLoop { Backward = false, PrimaryBlockPops = false };
+                case instruction.Sever: return new splitLoop { Backward = true, PrimaryBlockPops = false };
 
                 default:
                     throw new CompileException("Instruction “{0}” missing.".Fmt(instr), index + addIndex, 1);
             }
         }
 
-        private static executeFunction createFunctionExecutionNode(instruction instruction, int index, int addIndex)
+        private static executeFunction createFunctionExecutionNode(instruction instr, int index, int addIndex)
         {
-            switch (instruction)
+            switch (instr)
             {
                 case instruction.Initiate:
                 case instruction.Handle:
                 case instruction.Perform:
-                    return new executeFunction { Instruction = instruction };
+                    return new executeFunction { Instruction = instr };
 
                 default:
-                    throw new CompileException("Instruction “{0}” missing.".Fmt(instruction), index + addIndex, 1);
+                    throw new CompileException("Instruction “{0}” missing.".Fmt(instr), index + addIndex, 1);
             }
         }
 

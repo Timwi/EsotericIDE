@@ -65,8 +65,8 @@ namespace EsotericIDE.Languages
 
                     // GENERAL
 
-                    case instruction.Mark: return e => { e.CurrentStack.Add(new mark()); };
                     case instruction.Discard: return e => { e.Pop(); };
+                    case instruction.Abandon: return e => { e.Pop(); e.Pop(); };
 
 
                     // STRING/LIST MANIPULATION
@@ -79,6 +79,7 @@ namespace EsotericIDE.Languages
                     case instruction.Extend: return repeat(true);
                     case instruction.RepeatIntoList: return repeatIntoList(false);
                     case instruction.Stretch: return repeatIntoList(true);
+                    case instruction.Mark: return e => { e.CurrentStack.Add(new mark()); };
                     case instruction.CombineString: return combineOperation(true);
                     case instruction.CombineList: return combineOperation(false);
                     case instruction.Combine: return combine(false);

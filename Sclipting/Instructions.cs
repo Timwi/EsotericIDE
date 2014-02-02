@@ -18,6 +18,8 @@ namespace EsotericIDE.Languages
             // Stack manipulation
             [instruction('丟', "discard", "Pops an item.", nodeType.SingularNode, instructionGroup.StackManipulation)]
             Discard,
+            [instruction('棄', "abandon", "Pops two items.", nodeType.SingularNode, instructionGroup.StackManipulation)]
+            Abandon,
 
             // Loops and conditionals
             [instruction('是', "yes", "If true (pop).", nodeType.BlockHead, instructionGroup.LoopsConditionals)]

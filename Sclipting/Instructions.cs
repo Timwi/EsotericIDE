@@ -168,10 +168,14 @@ namespace EsotericIDE.Languages
             Length,
             [instruction('梴', "long", "Returns length of list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Long,
-            [instruction('復', "repeat", "Repeats a list, string, or byte array.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            [instruction('復', "repeat", "Repeats a list, string, or byte array (list/string expected first).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Repeat,
-            [instruction('疊', "repeat", "Creates a list of repetitions of an item.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            [instruction('伸', "extend", "Repeats a list, string, or byte array (amount expected first).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Extend,
+            [instruction('疊', "repeat", "Creates a list of repetitions of an item (item expected first).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             RepeatIntoList,
+            [instruction('張', "stretch", "Creates a list of repetitions of an item (amount expected first).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Stretch,
             [instruction('標', "mark", "Pushes a mark.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Mark,
             [instruction('併', "combine", "Concatenates everything above the last mark into a string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]

@@ -75,8 +75,10 @@ namespace EsotericIDE.Languages
                     case instruction.Empty: return e => { e.CurrentStack.Add(""); };
                     case instruction.Length: return stringListOperation(true, str => (BigInteger) str.Length, list => (BigInteger) list.Count);
                     case instruction.Long: return stringListOperation(false, str => (BigInteger) str.Length, list => (BigInteger) list.Count);
-                    case instruction.Repeat: return repeat;
-                    case instruction.RepeatIntoList: return repeatIntoList;
+                    case instruction.Repeat: return repeat(false);
+                    case instruction.Extend: return repeat(true);
+                    case instruction.RepeatIntoList: return repeatIntoList(false);
+                    case instruction.Stretch: return repeatIntoList(true);
                     case instruction.CombineString: return combineOperation(true);
                     case instruction.CombineList: return combineOperation(false);
                     case instruction.Combine: return combine(false);
@@ -246,31 +248,47 @@ namespace EsotericIDE.Languages
                 return new string(newArr);
             }
 
-            private static void repeat(scliptingExecutionEnvironment e)
+            private static Action<scliptingExecutionEnvironment> repeat(bool reversedArguments)
             {
-                List<object> list;
-                byte[] b;
+                return e =>
+                {
+                    List<object> list;
+                    byte[] b;
 
-                var numTimes = (int) Sclipting.ToInt(e.Pop());
-                var item = e.Pop();
-                if (numTimes < 1)
-                    e.CurrentStack.Add("");
-                else if ((list = item as List<object>) != null)
-                {
-                    var newList = new List<object>(list.Count * numTimes);
-                    while (numTimes-- > 0)
-                        newList.AddRange(list);
-                    e.CurrentStack.Add(newList);
-                }
-                else if ((b = item as byte[]) != null)
-                {
-                    var newByteArray = new byte[b.Length * numTimes];
-                    while (--numTimes >= 0)
-                        Array.Copy(b, 0, newByteArray, numTimes * b.Length, b.Length);
-                    e.CurrentStack.Add(newByteArray);
-                }
-                else
-                    e.CurrentStack.Add(Sclipting.ToString(item).Repeat(numTimes));
+                    var item1 = e.Pop();
+                    var item2 = e.Pop();
+                    int numTimes;
+                    object item;
+
+                    if (reversedArguments)
+                    {
+                        numTimes = (int) Sclipting.ToInt(item2);
+                        item = item1;
+                    }
+                    else
+                    {
+                        numTimes = (int) Sclipting.ToInt(item1);
+                        item = item2;
+                    }
+                    if (numTimes < 1)
+                        e.CurrentStack.Add("");
+                    else if ((list = item as List<object>) != null)
+                    {
+                        var newList = new List<object>(list.Count * numTimes);
+                        while (numTimes-- > 0)
+                            newList.AddRange(list);
+                        e.CurrentStack.Add(newList);
+                    }
+                    else if ((b = item as byte[]) != null)
+                    {
+                        var newByteArray = new byte[b.Length * numTimes];
+                        while (--numTimes >= 0)
+                            Array.Copy(b, 0, newByteArray, numTimes * b.Length, b.Length);
+                        e.CurrentStack.Add(newByteArray);
+                    }
+                    else
+                        e.CurrentStack.Add(Sclipting.ToString(item).Repeat(numTimes));
+                };
             }
 
             private static void repeatIntoList(scliptingExecutionEnvironment e)

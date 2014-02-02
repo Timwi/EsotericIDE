@@ -209,7 +209,7 @@ namespace EsotericIDE.Languages
                     if (i < 0)
                         insertText(((char) (0xbbff - i)).ToString());
                     else
-                        insertText(EncodeByteArray(i.ToByteArray().Reverse().ToArray()));
+                        insertText(EncodeByteArray(i.ToByteArray().Reverse().SkipWhile(b => b == 0).DefaultIfEmpty().ToArray()));
                 }
                 else
                     DlgMessage.Show("The integer you typed is not a valid literal integer for Sclipting. Literal integers must be greater than −7077.", "Esoteric IDE", DlgType.Error, "&OK");

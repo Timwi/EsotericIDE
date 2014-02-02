@@ -834,9 +834,11 @@ namespace EsotericIDE.Languages
         private abstract class blockNode : node
         {
             public List<node> PrimaryBlock;
+            public List<node> ConditionBlock;
             public List<node> ElseBlock;
             public bool PrimaryBlockPops, ElseBlockPops;
             public int ElseIndex;
+            public int ConditionEndIndex;
         }
 
         private sealed class functionNode : blockNode
@@ -1014,6 +1016,15 @@ namespace EsotericIDE.Languages
             public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
             {
                 yield return new Position(Index, 1);
+
+                if (ConditionBlock != null)
+                {
+                    foreach (var instruction in ConditionBlock)
+                        foreach (var position in instruction.Execute(environment))
+                            yield return position;
+                    yield return new Position(ConditionEndIndex, 1);
+                }
+
                 var item = environment.CurrentStack.Last();
                 if (!SatisfiesCondition(item))
                 {
@@ -1040,6 +1051,13 @@ namespace EsotericIDE.Languages
                             foreach (var position in instruction.Execute(environment))
                                 yield return position;
                         yield return new Position(Index, 1);
+                        if (ConditionBlock != null)
+                        {
+                            foreach (var instruction in ConditionBlock)
+                                foreach (var position in instruction.Execute(environment))
+                                    yield return position;
+                            yield return new Position(ConditionEndIndex, 1);
+                        }
                         item = environment.CurrentStack.Last();
                     }
                     while (SatisfiesCondition(item));

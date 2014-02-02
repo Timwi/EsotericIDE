@@ -6,6 +6,8 @@ namespace EsotericIDE.Languages
         private enum instruction
         {
             // Block structure
+            [instruction('況', "condition", "End of condition block.", nodeType.BlockConditionEnd, instructionGroup.BlockStructure)]
+            Condition,
             [instruction('不', "no", "Else (pop).", nodeType.BlockElse, instructionGroup.BlockStructure)]
             No,
             [instruction('逆', "opposite", "Else (no pop).", nodeType.BlockElse, instructionGroup.BlockStructure)]
@@ -271,6 +273,7 @@ namespace EsotericIDE.Languages
             SingularNode,
             FunctionExecutionNode,
             BlockHead,
+            BlockConditionEnd,
             BlockElse,
             BlockEnd
         }

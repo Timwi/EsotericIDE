@@ -314,14 +314,23 @@ namespace EsotericIDE.Languages
                             break;
 
                         case nodeType.BlockHead:
-                            int endIndex;
+                            int? conditionEndIndex;
                             int? elseIndex;
                             bool elsePops;
-                            FindMatchingEnd(source, index, addIndex, out endIndex, out elseIndex, out elsePops);
-                            var primaryBlock = parse(source.Substring(index + 1, (elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
+                            int endIndex;
+                            FindMatchingEnd(source, index, addIndex, out conditionEndIndex, out elseIndex, out elsePops, out endIndex);
+                            var primaryBlock = parse(source.Substring(index + 1, (conditionEndIndex ?? elseIndex ?? endIndex) - index - 1), index + 1 + addIndex);
+                            List<node> conditionBlock = null;
+                            if (conditionEndIndex != null)
+                            {
+                                conditionBlock = primaryBlock;
+                                primaryBlock = parse(source.Substring(conditionEndIndex.Value + 1, (elseIndex ?? endIndex) - conditionEndIndex.Value - 1), conditionEndIndex.Value + 1 + addIndex);
+                            }
                             var elseBlock = elseIndex == null ? null : parse(source.Substring(elseIndex.Value + 1, endIndex - elseIndex.Value - 1), elseIndex.Value + 1 + addIndex);
-                            var blockInstr = createBlockNode(instruction, index, addIndex, elseIndex, elsePops);
+                            var blockInstr = createBlockNode(ch, instruction, index, addIndex, conditionEndIndex, elseIndex, elsePops);
                             blockInstr.PrimaryBlock = primaryBlock;
+                            blockInstr.ConditionBlock = conditionBlock;
+                            blockInstr.ConditionEndIndex = (conditionEndIndex ?? 0) + addIndex;
                             blockInstr.ElseBlock = elseBlock;
                             blockInstr.ElseBlockPops = elsePops;
                             blockInstr.Index = index + addIndex;
@@ -407,8 +416,25 @@ namespace EsotericIDE.Languages
             }
         }
 
-        private static blockNode createBlockNode(instruction instr, int index, int addIndex, int? elseIndex, bool elsePops)
+        private static blockNode createBlockNode(char instrCh, instruction instr, int index, int addIndex, int? conditionEndIndex, int? elseIndex, bool elsePops)
         {
+            // Only few instructions allow a conditionEndIndex, so check that first.
+            switch (instr)
+            {
+                case instruction.Loop:
+                case instruction.Necessity:
+                case instruction.Until:
+                case instruction.Arrive:
+                case instruction.Full:
+                case instruction.BeFull:
+                    break;
+
+                default:
+                    if (conditionEndIndex != null)
+                        throw new CompileException("The condition-block instruction “況” cannot be used with the block head instruction “{0}”.".Fmt(instrCh), index + addIndex, conditionEndIndex.Value - index + 1);
+                    break;
+            }
+
             switch (instr)
             {
                 case instruction.Yes: return new ifBlock { PrimaryBlockPops = true, Condition = condition.True };
@@ -491,15 +517,18 @@ namespace EsotericIDE.Languages
                 rep.Error(e.Message, "enum instruction", e.Character.ToString());
                 return;
             }
-            foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == nodeType.BlockHead).Select(kvp => _instructions[kvp.Key]))
+            foreach (var instrKvp in _instructionTypes)
             {
-                try { createBlockNode(instr, 0, 0, null, false); }
-                catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instr), "blockNode createBlockNode", "default"); }
-            }
-            foreach (var instr in _instructionTypes.Where(kvp => kvp.Value == nodeType.FunctionExecutionNode).Select(kvp => _instructions[kvp.Key]))
-            {
-                try { createFunctionExecutionNode(instr, 0, 0); }
-                catch { rep.Error(@"Function execution instruction ""{0}"" is not processed.".Fmt(instr), "executeFunction createFunctionExecutionNode", "default"); }
+                if (instrKvp.Value == nodeType.BlockHead)
+                {
+                    try { createBlockNode(instrKvp.Key, _instructions[instrKvp.Key], 0, 0, null, null, false); }
+                    catch { rep.Error(@"Block instruction ""{0}"" is not processed.".Fmt(instrKvp), "blockNode createBlockNode", "default"); }
+                }
+                else if (instrKvp.Value == nodeType.FunctionExecutionNode)
+                {
+                    try { createFunctionExecutionNode(_instructions[instrKvp.Key], 0, 0); }
+                    catch { rep.Error(@"Function execution instruction ""{0}"" is not processed.".Fmt(instrKvp), "executeFunction createFunctionExecutionNode", "default"); }
+                }
             }
         }
 #endif
@@ -524,8 +553,9 @@ namespace EsotericIDE.Languages
             return source.Substring(origIndex, index - origIndex);
         }
 
-        public void FindMatchingEnd(string source, int start, int addIndex, out int endIndex, out int? elseIndex, out bool elsePops)
+        public void FindMatchingEnd(string source, int start, int addIndex, out int? conditionEndIndex, out int? elseIndex, out bool elsePops, out int endIndex)
         {
+            conditionEndIndex = null;
             elseIndex = null;
             elsePops = false;
             var depth = 0;
@@ -537,8 +567,16 @@ namespace EsotericIDE.Languages
                 {
                     if (type == nodeType.BlockHead)
                         depth++;
+                    else if (type == nodeType.BlockConditionEnd && depth == 1)
+                    {
+                        if (conditionEndIndex != null)
+                            throw new CompileException("“{0}” block cannot have multiple condition-block instructions.".Fmt(source[start]), start + addIndex, i - start + addIndex + 1);
+                        conditionEndIndex = i;
+                    }
                     else if (type == nodeType.BlockElse && depth == 1)
                     {
+                        if (elseIndex != null)
+                            throw new CompileException("“{0}” block cannot have multiple else-block instructions.".Fmt(source[start]), start + addIndex, i - start + addIndex + 1);
                         elseIndex = i;
                         elsePops = source[i] == '不';
                     }

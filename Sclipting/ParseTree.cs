@@ -157,6 +157,7 @@ namespace EsotericIDE.Languages
                     case instruction.And: return e => { var item2 = Sclipting.ToInt(e.Pop()); var item1 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(item1 != 0 && item2 != 0 ? BigInteger.One : BigInteger.Zero); };
                     case instruction.Or: return e => { var item2 = Sclipting.ToInt(e.Pop()); var item1 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(item1 != 0 || item2 != 0 ? BigInteger.One : BigInteger.Zero); };
                     case instruction.OneOfPair: return e => { var item2 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) != 0 ^ item2 != 0 ? BigInteger.One : BigInteger.Zero); };
+                    case instruction.Not: return e => { var item = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(item == 0 ? BigInteger.One : BigInteger.Zero); };
                     case instruction.Same: return e => { var item2 = e.Pop(); e.CurrentStack.Add(e.Pop().Equals(item2) ? BigInteger.One : BigInteger.Zero); };
                     case instruction.Equal: return e => { var item2 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
                     case instruction.Resemble: return e => { var item2 = Sclipting.ToString(e.Pop()); e.CurrentStack.Add(Sclipting.ToString(e.Pop()) == item2 ? BigInteger.One : BigInteger.Zero); };
@@ -254,11 +255,11 @@ namespace EsotericIDE.Languages
                 {
                     List<object> list;
                     byte[] b;
+                    int numTimes;
+                    object item;
 
                     var item1 = e.Pop();
                     var item2 = e.Pop();
-                    int numTimes;
-                    object item;
 
                     if (reversedArguments)
                     {
@@ -291,19 +292,36 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static void repeatIntoList(scliptingExecutionEnvironment e)
+            private static Action<scliptingExecutionEnvironment> repeatIntoList(bool reversedArguments)
             {
-                var numTimes = (int) Sclipting.ToInt(e.Pop());
-                var item = e.Pop();
-                if (numTimes < 1)
-                    e.CurrentStack.Add(new List<object>());
-                else
+                return e =>
                 {
-                    var newList = new List<object>(numTimes);
-                    while (numTimes-- > 0)
-                        newList.Add(item);
-                    e.CurrentStack.Add(newList);
-                }
+                    int numTimes;
+                    object item;
+
+                    var item1 = e.Pop();
+                    var item2 = e.Pop();
+
+                    if (reversedArguments)
+                    {
+                        numTimes = (int) Sclipting.ToInt(item2);
+                        item = item1;
+                    }
+                    else
+                    {
+                        numTimes = (int) Sclipting.ToInt(item1);
+                        item = item2;
+                    }
+                    if (numTimes < 1)
+                        e.CurrentStack.Add(new List<object>());
+                    else
+                    {
+                        var newList = new List<object>(numTimes);
+                        while (numTimes-- > 0)
+                            newList.Add(item);
+                        e.CurrentStack.Add(newList);
+                    }
+                };
             }
 
             private static Action<scliptingExecutionEnvironment> stringListOperation(bool pop, Func<string, object> stringOperation, Func<List<object>, object> listOperation)

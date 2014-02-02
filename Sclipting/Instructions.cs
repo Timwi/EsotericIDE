@@ -114,6 +114,8 @@ namespace EsotericIDE.Languages
             Or,
             [instruction('隻', "one of pair", "Logical (boolean) xor.", nodeType.SingularNode, instructionGroup.Logic)]
             OneOfPair,
+            [instruction('非', "not", "Logical (boolean) not.", nodeType.SingularNode, instructionGroup.Logic)]
+            Not, 
             [instruction('嗎', "is it?", "Conditional operator.", nodeType.SingularNode, instructionGroup.Logic)]
             IsIt,
 

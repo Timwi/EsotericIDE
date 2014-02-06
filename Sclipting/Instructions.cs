@@ -78,6 +78,10 @@ namespace EsotericIDE.Languages
             Separate,
             [instruction('方', "power", "Exponentiation.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Power,
+            [instruction('平', "flat", "Square.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Flat,
+            [instruction('根', "root", "Square root.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Root,
             [instruction('負', "negative", "Negative (unary minus).", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Negative,
             [instruction('對', "correct", "Absolute value.", nodeType.SingularNode, instructionGroup.Arithmetic)]
@@ -86,6 +90,13 @@ namespace EsotericIDE.Languages
             Increase,
             [instruction('貶', "decrease", "Decrement by one.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Decrease,
+            [instruction('數', "number", "Logarithm to base e.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Number,
+            [instruction('位', "position", "Logarithm to base 10.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Position,
+            [instruction('級', "level", "Logarithm to base 2.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Level,
+            // Arithmetic (bitwise)
             [instruction('左', "left", "Shift left.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Left,
             [instruction('右', "right", "Shift right.", nodeType.SingularNode, instructionGroup.Arithmetic)]
@@ -102,6 +113,7 @@ namespace EsotericIDE.Languages
             Gnaw,
             [instruction('嚙', "bite", "Split numbers into bits.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Bite,
+            // Arithmetic (random)
             [instruction('沌', "chaotic", "Random integer between 0 and 2³².", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Chaotic,
             [instruction('紛', "disarray", "Random integer between 0 and specified maximum.", nodeType.SingularNode, instructionGroup.Arithmetic)]

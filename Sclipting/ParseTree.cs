@@ -163,6 +163,9 @@ namespace EsotericIDE.Languages
                     case instruction.Chaos: return e => { e.CurrentStack.Add(Rnd.NextDouble()); };
                     case instruction.Wild2: return e => { e.CurrentStack.Add(Rnd.NextDouble(0, Sclipting.ToFloat(e.Pop()))); };
                     case instruction.Wild3: return e => { var max = Sclipting.ToFloat(e.Pop()); e.CurrentStack.Add(Rnd.NextDouble(Sclipting.ToFloat(e.Pop()), max)); };
+                    case instruction.Number: return e => { e.CurrentStack.Add(Math.Log(Sclipting.ToFloat(e.Pop()))); };
+                    case instruction.Position: return e => { e.CurrentStack.Add(Math.Log10(Sclipting.ToFloat(e.Pop()))); };
+                    case instruction.Level: return e => { e.CurrentStack.Add(Math.Log(Sclipting.ToFloat(e.Pop())) / Math.Log(2)); };
 
 
                     // LOGIC
@@ -182,23 +185,9 @@ namespace EsotericIDE.Languages
                     case instruction.Different2: return e => { var item2 = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(Sclipting.ToInt(e.Pop()) == item2 ? BigInteger.Zero : BigInteger.One); };
                     case instruction.Different3: return e => { var item2 = Sclipting.ToString(e.Pop()); e.CurrentStack.Add(Sclipting.ToString(e.Pop()) == item2 ? BigInteger.Zero : BigInteger.One); };
                     case instruction.IsIt: return e => { var no = e.Pop(); var yes = e.Pop(); e.CurrentStack.Add(Sclipting.IsTrue(e.Pop()) ? yes : no); };
-                    case instruction.Power: return e =>
-                    {
-                        e.NumericOperation((i1, i2) =>
-                        {
-                            if (i2 < 0)
-                                return Math.Pow((double) i1, (double) i2);
-                            if (i2 == 0)
-                                return BigInteger.One;
-                            var bi = BigInteger.One;
-                            while (i2 > int.MaxValue)
-                            {
-                                bi *= BigInteger.Pow(i1, int.MaxValue);
-                                i2 -= int.MaxValue;
-                            }
-                            return bi * BigInteger.Pow(i1, (int) i2);
-                        }, (i1, i2) => Math.Pow(i1, i2));
-                    };
+                    case instruction.Power: return e => { e.NumericOperation((i1, i2) => i2 < 0 ? (object) Math.Pow((double) i1, (double) i2) : BigInteger.Pow(i1, (int) i2), (i1, i2) => Math.Pow(i1, i2)); };
+                    case instruction.Flat: return e => { e.NumericOperation(i => i * i, d => d * d); };
+                    case instruction.Root: return e => { e.NumericOperation(i => Math.Sqrt((double) i), d => Math.Sqrt(d)); };
 
 
                     default:

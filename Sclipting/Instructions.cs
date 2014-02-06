@@ -96,6 +96,19 @@ namespace EsotericIDE.Languages
             Position,
             [instruction('級', "level", "Logarithm to base 2.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Level,
+            [instruction('圜', "circle", "Rounds towards 0.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Circle1,
+            [instruction('圍', "circle", "Rounds away from 0.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Circle2,
+            [instruction('團', "sphere", "Rounds down.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Sphere,
+            [instruction('圓', "surround", "Rounds up.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Surround1,
+            [instruction('繞', "surround", "Rounds to the nearest integer (halves away from zero).", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Surround2,
+            [instruction('輪', "wheel", "Rounds to the nearest integer (halves to even).", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Wheel,
+
             // Arithmetic (bitwise)
             [instruction('左', "left", "Shift left.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Left,

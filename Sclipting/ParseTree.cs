@@ -166,6 +166,12 @@ namespace EsotericIDE.Languages
                     case instruction.Number: return e => { e.CurrentStack.Add(Math.Log(Sclipting.ToFloat(e.Pop()))); };
                     case instruction.Position: return e => { e.CurrentStack.Add(Math.Log10(Sclipting.ToFloat(e.Pop()))); };
                     case instruction.Level: return e => { e.CurrentStack.Add(Math.Log(Sclipting.ToFloat(e.Pop())) / Math.Log(2)); };
+                    case instruction.Circle1: return e => { e.CurrentStack.Add(Math.Truncate(Sclipting.ToFloat(e.Pop()))); };
+                    case instruction.Circle2: return e => { var item = Sclipting.ToFloat(e.Pop()); e.CurrentStack.Add(item < 0 ? Math.Floor(item) : Math.Ceiling(item)); };
+                    case instruction.Sphere: return e => { e.CurrentStack.Add(Math.Floor(Sclipting.ToFloat(e.Pop()))); };
+                    case instruction.Surround1: return e => { e.CurrentStack.Add(Math.Ceiling(Sclipting.ToFloat(e.Pop()))); };
+                    case instruction.Surround2: return e => { e.CurrentStack.Add(Math.Round(Sclipting.ToFloat(e.Pop()), MidpointRounding.AwayFromZero)); };
+                    case instruction.Wheel: return e => { e.CurrentStack.Add(Math.Round(Sclipting.ToFloat(e.Pop()), MidpointRounding.ToEven)); };
 
 
                     // LOGIC

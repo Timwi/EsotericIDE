@@ -764,6 +764,16 @@ namespace EsotericIDE.Languages
             throw new ArgumentException("Unrecognised item type for conversion to int: " + item.GetType().Name, "item");
         }
 
+        public static double ToFloat(object item)
+        {
+            if (item is double)
+                return (double) item;
+            double result;
+            if (item is string && double.TryParse((string) item, out result))
+                return result;
+            return (double) ToInt(item);
+        }
+
         public static object recursiveListSum(List<object> list)
         {
             BigInteger bigInt = 0;

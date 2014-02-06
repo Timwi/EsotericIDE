@@ -91,6 +91,9 @@ namespace EsotericIDE.Languages
                     case instruction.Arrange: return stringListOperation(true, sortString(StringComparer.Ordinal),
                         list => { var newList = new List<object>(list); newList.Sort((a, b) => Sclipting.ToInt(a).CompareTo(Sclipting.ToInt(b))); return newList; });
                     case instruction.Assemble: return assemble;
+                    case instruction.Mad: return e => { var listOrString = e.Pop(); e.CurrentStack.Add(randomListOrString(Sclipting.ToInt(e.Pop()), listOrString)); };
+                    case instruction.Silly: return e => { var length = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(randomListOrString(length, e.Pop())); };
+                    case instruction.Shuffle: return stringListOperation(true, s => s.ToList().Shuffle().JoinString(), list => list.ToList().Shuffle().ToList());
 
 
                     // STRING MANIPULATION
@@ -126,6 +129,8 @@ namespace EsotericIDE.Languages
                     case instruction.Big: return recursiveStringOperation(s => s.ToUpperInvariant());
                     case instruction.Tiny: return recursiveStringOperation(s => s.ToLowerInvariant());
                     case instruction.Title: return recursiveStringOperation(CultureInfo.InvariantCulture.TextInfo.ToTitleCase);
+                    case instruction.Crazy: return e => { e.CurrentStack.Add(Rnd.GenerateString((int) Sclipting.ToInt(e.Pop()), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")); };
+                    case instruction.Insane: return e => { e.CurrentStack.Add(Rnd.GenerateString((int) Sclipting.ToInt(e.Pop()))); };
 
 
                     // ARITHMETIC
@@ -152,6 +157,12 @@ namespace EsotericIDE.Languages
                     case instruction.BitwiseNot: return e => { e.CurrentStack.Add(~Sclipting.ToInt(e.Pop())); };
                     case instruction.Gnaw: return gnaw(false);
                     case instruction.Bite: return gnaw(true);
+                    case instruction.Chaotic: return e => { e.CurrentStack.Add(generateRandomInteger(0, BigInteger.One << 32)); };
+                    case instruction.Disarray: return e => { e.CurrentStack.Add(generateRandomInteger(0, Sclipting.ToInt(e.Pop()))); };
+                    case instruction.Wild1: return e => { var max = Sclipting.ToInt(e.Pop()); e.CurrentStack.Add(generateRandomInteger(Sclipting.ToInt(e.Pop()), max)); };
+                    case instruction.Chaos: return e => { e.CurrentStack.Add(Rnd.NextDouble()); };
+                    case instruction.Wild2: return e => { e.CurrentStack.Add(Rnd.NextDouble(0, Sclipting.ToFloat(e.Pop()))); };
+                    case instruction.Wild3: return e => { var max = Sclipting.ToFloat(e.Pop()); e.CurrentStack.Add(Rnd.NextDouble(Sclipting.ToFloat(e.Pop()), max)); };
 
 
                     // LOGIC
@@ -193,6 +204,33 @@ namespace EsotericIDE.Languages
                     default:
                         throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instr));
                 }
+            }
+
+            private static object randomListOrString(BigInteger length, object listOrString)
+            {
+                var list = (listOrString as List<object>) ?? (Sclipting.ToString(listOrString).Select(ch => (object) ch.ToString()).ToList());
+                var result = new List<object>();
+                var intLength = (int) length;
+                while (intLength-- > 0)
+                    result.Add(list[Rnd.Next(list.Count)]);
+                return listOrString is List<object> ? (object) result : result.JoinString();
+            }
+
+            private static BigInteger generateRandomInteger(BigInteger min, BigInteger max)
+            {
+                if (max < min)
+                    return min;
+                tryAgain:
+                var range = max - min;
+                var bits = 0;
+                while (range > BigInteger.One << bits)
+                    bits++;
+                var randomBits = Rnd.NextBytes(bits / 8 + 1);
+                randomBits[randomBits.Length - 1] &= (byte) ((1 << (bits % 8)) - 1);
+                var randomInteger = new BigInteger(randomBits);
+                if (randomInteger >= range)
+                    goto tryAgain;
+                return randomInteger + min;
             }
 
             private static Action<scliptingExecutionEnvironment> recursiveStringOperation(Func<string, string> func)

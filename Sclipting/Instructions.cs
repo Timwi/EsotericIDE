@@ -102,6 +102,18 @@ namespace EsotericIDE.Languages
             Gnaw,
             [instruction('嚙', "bite", "Split numbers into bits.", nodeType.SingularNode, instructionGroup.Arithmetic)]
             Bite,
+            [instruction('沌', "chaotic", "Random integer between 0 and 2³².", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Chaotic,
+            [instruction('紛', "disarray", "Random integer between 0 and specified maximum.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Disarray,
+            [instruction('胡', "wild", "Random integer within specified bounds.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Wild1,
+            [instruction('亂', "chaos", "Random float between 0 and 1.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Chaos,
+            [instruction('野', "wild", "Random float between 0 and specified maximum.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Wild2,
+            [instruction('猖', "wild", "Random float within specified bounds.", nodeType.SingularNode, instructionGroup.Arithmetic)]
+            Wild3,
 
             // Logic
             [instruction('小', "small", "Less than.", nodeType.SingularNode, instructionGroup.Logic)]
@@ -220,6 +232,12 @@ namespace EsotericIDE.Languages
             Sever,
             [instruction('會', "assemble", "Join a list of strings into a single string with a separator.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Assemble,
+            [instruction('癲', "mad", "Random list/string (length expected first).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Mad,
+            [instruction('癡', "silly", "Random list/string (length expected last).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Silly,
+            [instruction('繓', "shuffle", "Shuffles a list or string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Shuffle,
 
             // String-only manipulation
             [instruction('換', "substitute", "Replace first regular expression match (pop).", nodeType.BlockHead, instructionGroup.StringManipulation)]
@@ -268,6 +286,10 @@ namespace EsotericIDE.Languages
             Tiny,
             [instruction('題', "title", "Title-case.", nodeType.SingularNode, instructionGroup.StringManipulation)]
             Title,
+            [instruction('瘋', "crazy", "Random string from a-z, A-Z.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Crazy,
+            [instruction('狂', "insane", "Random string from a-z, A-Z, 0-9.", nodeType.SingularNode, instructionGroup.StringManipulation)]
+            Insane,
         }
 
         private enum nodeType

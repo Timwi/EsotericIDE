@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using RT.Util;
@@ -84,6 +85,16 @@ namespace EsotericIDE.Languages
                     case instruction.CombineList: return combineOperation(false);
                     case instruction.Combine: return combine(false);
                     case instruction.Blend: return combine(true);
+                    case instruction.Child: return sublist(true);
+                    case instruction.Part: return sublist(false);
+                    case instruction.Start1: return beginningOrEnd(false, false, true);
+                    case instruction.Start2: return beginningOrEnd(false, false, false);
+                    case instruction.Begin: return beginningOrEnd(false, true, true);
+                    case instruction.Beginning: return beginningOrEnd(false, true, false);
+                    case instruction.Final: return beginningOrEnd(true, false, true);
+                    case instruction.Tail: return beginningOrEnd(true, false, false);
+                    case instruction.EndStr: return beginningOrEnd(true, true, true);
+                    case instruction.Stop: return beginningOrEnd(true, true, false);
                     case instruction.Reverse: return stringListOperation(true, reverseString,
                         list => { var newList = new List<object>(list); newList.Reverse(); return newList; });
                     case instruction.Sort: return stringListOperation(true, sortString(StringComparer.InvariantCultureIgnoreCase),
@@ -199,6 +210,21 @@ namespace EsotericIDE.Languages
                     default:
                         throw new InternalErrorException("Unknown instruction: “{0}”".Fmt(instr));
                 }
+            }
+
+            private static Action<scliptingExecutionEnvironment> beginningOrEnd(bool end, bool countingBackwards, bool pop)
+            {
+                return e =>
+                {
+                    var index = (int) Sclipting.ToInt(e.Pop());
+                    var item = pop ? e.Pop() : e.CurrentStack.Last();
+                    var list = (item as List<object>) ?? (Sclipting.ToString(item).Select(ch => (object) ch.ToString()).ToList());
+                    var result = new List<object>();
+                    result.AddRange(end
+                        ? list.Skip(countingBackwards ? index : list.Count - 1 - index)
+                        : list.Take(countingBackwards ? list.Count - 1 - index : index));
+                    e.CurrentStack.Add(item is List<object> ? (object) result : result.JoinString());
+                };
             }
 
             private static object randomListOrString(BigInteger length, object listOrString)
@@ -403,6 +429,32 @@ namespace EsotericIDE.Languages
                         e.CurrentStack.Add(new List<object>(((List<object>) item1).Concat((List<object>) item2)));
                     else
                         e.CurrentStack.Add(Sclipting.ToString(item1) + Sclipting.ToString(item2));
+                };
+            }
+
+            private static Action<scliptingExecutionEnvironment> sublist(bool pop)
+            {
+                return e =>
+                {
+                    var length = (int) Sclipting.ToInt(e.Pop());
+                    var index = (int) Sclipting.ToInt(e.Pop());
+                    var item = pop ? e.Pop() : e.CurrentStack.Last();
+                    var list = item as List<object>;
+                    if (list != null)
+                    {
+                        var result = new List<object>();
+                        for (var i = (int) index; i < (int) length; i++)
+                            result.Add(i >= 0 && i < list.Count ? list[i] : "");
+                        e.CurrentStack.Add(result);
+                    }
+                    else
+                    {
+                        var str = Sclipting.ToString(item);
+                        var result = new StringBuilder();
+                        for (var i = index; i < index + length; i++)
+                            result.Append(i >= 0 && i < str.Length ? str[i] : ' ');
+                        e.CurrentStack.Add(result.ToString());
+                    }
                 };
             }
 

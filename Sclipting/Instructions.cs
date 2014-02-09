@@ -241,6 +241,26 @@ namespace EsotericIDE.Languages
             Combine,
             [instruction('融', "blend", "Concatenates two lists or strings (reverse order).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Blend,
+            [instruction('子', "child", "Sublist/substring (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Child,
+            [instruction('部', "part", "Sublist/substring (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Part,
+            [instruction('昉', "start", "Beginning of list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Start1,
+            [instruction('俶', "start", "Beginning of list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Start2,
+            [instruction('始', "begin", "Beginning of list/string (counting from end) (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Begin,
+            [instruction('初', "beginning", "Beginning of list/string (counting from end) (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Beginning,
+            [instruction('末', "final", "End of list/string (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Final,
+            [instruction('尾', "tail", "End of list/string (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Tail,
+            [instruction('端', "end", "End of list/string (counting from start) (pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            EndStr,
+            [instruction('止', "stop", "End of list/string (counting from start) (no pop).", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
+            Stop,
             [instruction('反', "reverse", "Reverses a list or string.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]
             Reverse,
             [instruction('捃', "sort", "Sort a list/string by string value.", nodeType.SingularNode, instructionGroup.ListStringManipulation)]

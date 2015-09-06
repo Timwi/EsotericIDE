@@ -19,6 +19,7 @@ namespace EsotericIDE
         public double SplitterPercent;
         public string DebugInput;
         public bool SaveWhenRun = true;
+        public bool WordWrap = true;
 
         public Dictionary<string, LanguageSettings> LanguageSettings;
 

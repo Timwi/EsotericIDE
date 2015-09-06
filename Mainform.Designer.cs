@@ -51,6 +51,7 @@
             this.miExit = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuView = new System.Windows.Forms.ToolStripMenuItem();
             this.miSourceFont = new System.Windows.Forms.ToolStripMenuItem();
+            this.miWordwrap = new System.Windows.Forms.ToolStripMenuItem();
             this.miSep3 = new System.Windows.Forms.ToolStripSeparator();
             this.miExecutionState = new System.Windows.Forms.ToolStripMenuItem();
             this.miExecutionStateFont = new System.Windows.Forms.ToolStripMenuItem();
@@ -303,6 +304,7 @@
             // 
             this.mnuView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miSourceFont,
+            this.miWordwrap,
             this.miSep3,
             this.miExecutionState,
             this.miExecutionStateFont,
@@ -321,6 +323,15 @@
             this.miSourceFont.Size = new System.Drawing.Size(217, 22);
             this.miSourceFont.Text = "&Source Font...";
             this.miSourceFont.Click += new System.EventHandler(this.font);
+            // 
+            // miWordwrap
+            // 
+            this.miWordwrap.Checked = true;
+            this.miWordwrap.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miWordwrap.Name = "miWordwrap";
+            this.miWordwrap.Size = new System.Drawing.Size(217, 22);
+            this.miWordwrap.Text = "&Wordwrap source";
+            this.miWordwrap.Click += new System.EventHandler(this.toggleWordwrap);
             // 
             // miSep3
             // 
@@ -603,6 +614,7 @@
         private System.Windows.Forms.ToolStripMenuItem miToggleBreakpoint;
         private System.Windows.Forms.ToolStripComboBox cmbLanguage;
         private System.Windows.Forms.ToolStripMenuItem miSelectProgrammingLanguage;
+        private System.Windows.Forms.ToolStripMenuItem miWordwrap;
     }
 }
 

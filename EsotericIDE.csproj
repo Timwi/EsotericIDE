@@ -73,7 +73,6 @@
     <Compile Include="Quipu\ExecutionEnvironment.cs" />
     <Compile Include="Quipu\Program.cs" />
     <Compile Include="Quipu\Quipu.cs" />
-    <Compile Include="Quipu\Settings.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -34,6 +34,8 @@ namespace EsotericIDE
             if (EsotericIDEProgram.Settings.OutputFontName != null)
                 txtOutput.Font = new Font(EsotericIDEProgram.Settings.OutputFontName, EsotericIDEProgram.Settings.OutputFontSize);
 
+            miWordwrap.Checked = txtSource.WordWrap = EsotericIDEProgram.Settings.WordWrap;
+
             txtExecutionState.Text = "(not running)";
 
             updateUi();
@@ -99,6 +101,16 @@ namespace EsotericIDE
             }
         }
 
+        private bool _wordWrap
+        {
+            get { return EsotericIDEProgram.Settings.WordWrap; }
+            set
+            {
+                EsotericIDEProgram.Settings.WordWrap = value;
+                updateUi();
+            }
+        }
+
         private string _currentFilePathBacking;
         private string _currentFilePath
         {
@@ -150,6 +162,9 @@ namespace EsotericIDE
             miStopDebugging.Visible = _currentEnvironment != null;
             miClearInput.Visible = _input != null;
             miSaveWhenRun.Checked = _saveWhenRun;
+            txtSource.WordWrap = _wordWrap;
+            miWordwrap.Checked = _wordWrap;
+            txtSource.ScrollBars = _wordWrap ? ScrollBars.Vertical : ScrollBars.Both;
         }
 
         private bool canDestroy()
@@ -515,7 +530,7 @@ namespace EsotericIDE
             lstBreakpoints.Focus();
         }
 
-        private void breakpointsKeyDown(object sender, KeyEventArgs e)
+        private void breakpointsKeyDown(object _, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete && !e.Shift && !e.Alt && !e.Control)
             {
@@ -571,13 +586,18 @@ namespace EsotericIDE
             cmbLanguage.Focus();
         }
 
-        private void sourceKeyDown(object sender, KeyEventArgs e)
+        private void sourceKeyDown(object _, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.A && e.Control && !e.Alt && !e.Shift)
             {
                 txtSource.SelectionStart = 0;
                 txtSource.SelectionLength = txtSource.TextLength;
             }
+        }
+
+        private void toggleWordwrap(object sender, EventArgs e)
+        {
+            _wordWrap = !_wordWrap;
         }
     }
 }

@@ -75,11 +75,7 @@ namespace EsotericIDE.Languages
 
             public void Get()
             {
-                var variable = popNotNull("Void is not a valid variable identifier.");
-                //if (!_variables.ContainsKey(variable))
-                //    throw new Exception("Variable #{0} has not been assigned.".Fmt(variable));
-                //_stack.Push(_variables[variable]);
-                _stack.Push(_variables.Get(variable, 0));
+                _stack.Push(_variables.Get(popNotNull("Void is not a valid variable identifier."), 0));
             }
 
             public void Read()

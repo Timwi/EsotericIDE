@@ -59,6 +59,9 @@
     <Compile Include="Brainfuck\ExecutionEnvironment.cs" />
     <Compile Include="Brainfuck\Program.cs" />
     <Compile Include="Brainfuck\Settings.cs" />
+    <Compile Include="Unreadable\Unreadable.cs" />
+    <Compile Include="Unreadable\Environment.cs" />
+    <Compile Include="Unreadable\Program.cs" />
     <Compile Include="ExecutionEnvironment.cs" />
     <Compile Include="CompileException.cs" />
     <Compile Include="EsotericIDEProgram.cs" />

@@ -141,7 +141,7 @@ namespace EsotericIDE.Languages
                             break;
 
                         default:
-                            error = new RuntimeError(new Position(activeThread.CurrentInstruction.Index, 1), "Unrecognised instruction encountered. (This indicates a bug in the parser, which should have caught this at compile-time.)");
+                            error = new RuntimeError(new Position(activeThread.CurrentInstruction.Index, 1), "Unrecognized instruction encountered. (This indicates a bug in the parser, which should have caught this at compile-time.)");
                             goto finished;
                     }
                 }

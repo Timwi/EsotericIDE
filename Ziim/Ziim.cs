@@ -156,10 +156,5 @@ namespace EsotericIDE.Languages
         {
             return null;
         }
-
-        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText)
-        {
-            return new ToolStripMenuItem[0];
-        }
     }
 }

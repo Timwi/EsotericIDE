@@ -50,50 +50,9 @@ namespace EsotericIDE.Languages
                 return (raw is BigInteger ? (BigInteger) raw : BigInteger.TryParse((string) raw, out result) ? result : Ut.Throw<BigInteger>(new InvalidOperationException("Value is not a valid integer.")));
             }
 
-            protected override void Run()
+            protected override IEnumerable<Position> GetProgram()
             {
-                using (var instructionPointer = _program.Execute(this).GetEnumerator())
-                {
-                    bool canceled = false;
-                    RuntimeError error = null;
-                    try
-                    {
-                        while (instructionPointer.MoveNext())
-                        {
-                            lock (_locker)
-                                if (_breakpoints.Any(bp => bp >= instructionPointer.Current.Index && bp < instructionPointer.Current.Index + Math.Max(instructionPointer.Current.Length, 1)))
-                                    State = ExecutionState.Debugging;
-
-                            switch (State)
-                            {
-                                case ExecutionState.Debugging:
-                                    fireDebuggerBreak(instructionPointer.Current);
-                                    _resetEvent.Reset();
-                                    _resetEvent.WaitOne();
-                                    continue;
-                                case ExecutionState.Running:
-                                    continue;
-                                case ExecutionState.Stop:
-                                    canceled = true;
-                                    goto finished;
-                                case ExecutionState.Finished:
-                                    goto finished;
-                                default:
-                                    throw new InvalidOperationException("Execution state has invalid value: " + State);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        var type = e.GetType();
-                        error = new RuntimeError(instructionPointer.Current, e.Message + (type != typeof(Exception) ? " (" + type.Name + ")" : ""));
-                    }
-
-                    finished:
-                    fireExecutionFinished(canceled, error);
-                    State = ExecutionState.Finished;
-                    _resetEvent.Reset();
-                }
+                return _program.Execute(this);
             }
         }
     }

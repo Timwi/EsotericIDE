@@ -12,7 +12,7 @@ namespace EsotericIDE
         public abstract string DefaultFileExtension { get; }
         public abstract ExecutionEnvironment Compile(string source, string input);
         public abstract string GetInfo(string source, int cursorPosition);
-        public abstract ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText);
+        public virtual ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText) { return new ToolStripMenuItem[0]; }
         public virtual LanguageSettings GetSettings() { return null; }
         public virtual void SetSettings(LanguageSettings settings) { }
 

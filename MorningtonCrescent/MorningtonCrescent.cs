@@ -39,6 +39,7 @@ namespace EsotericIDE.Languages
             private string _currentStation = "Mornington Crescent";
             private Dictionary<string, object> _values = new Dictionary<string, object>();
             private object _accumulator;
+            private Stack<int> _jumpstack = new Stack<int>();
 
             protected override void Run()
             {
@@ -91,9 +92,9 @@ namespace EsotericIDE.Languages
                         var station = m.Groups[2].Value;
 
                         if (!_dic.ContainsKey(_currentStation))
-                            error = new RuntimeError(position, "Cannot find “{0}” station in data.".Fmt(_currentStation));
+                            error = new RuntimeError(position, "“{0}” station does not exist.".Fmt(_currentStation));
                         else if (!_dic.ContainsKey(station))
-                            error = new RuntimeError(position, "Cannot find “{0}” station in data.".Fmt(station));
+                            error = new RuntimeError(position, "“{0}” station does not exist.".Fmt(station));
                         else if (!(_dic[_currentStation].Contains(line) && _dic[station].Contains(line)))
                             error = new RuntimeError(position, "{0} Line doesn’t service both {1} and {2}.".Fmt(line, _currentStation, station));
 
@@ -203,6 +204,20 @@ namespace EsotericIDE.Languages
                                 break;
                             case "Hammersmith":
                                 _accumulator = stationValue;
+                                break;
+
+                            case "Temple":
+                                _jumpstack.Push(i);
+                                break;
+                            case "Angel":
+                                if (!_accumulator.Equals(BigInteger.Zero))
+                                {
+                                    i = _jumpstack.Peek();
+                                    station = "Temple";
+                                }
+                                break;
+                            case "Marble Arch":
+                                _jumpstack.Pop();
                                 break;
 
                             case "Mornington Crescent":

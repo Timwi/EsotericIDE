@@ -271,7 +271,7 @@ namespace EsotericIDE
                     return;
                 EsotericIDEProgram.Settings.LastDirectory = Path.GetDirectoryName(open.FileName);
 
-                txtSource.Text = File.ReadAllText(_currentFilePath = open.FileName);
+                txtSource.Text = File.ReadAllText(_currentFilePath = open.FileName).UnifyLineEndings();
                 txtExecutionState.Text = "";
                 txtOutput.Text = "";
                 _timerPreviousSource = txtSource.Text;

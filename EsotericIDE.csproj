@@ -59,6 +59,7 @@
     <Compile Include="Brainfuck\ExecutionEnvironment.cs" />
     <Compile Include="Brainfuck\Program.cs" />
     <Compile Include="Brainfuck\Settings.cs" />
+    <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Unreadable\Unreadable.cs" />
     <Compile Include="Unreadable\Environment.cs" />
     <Compile Include="Unreadable\Program.cs" />

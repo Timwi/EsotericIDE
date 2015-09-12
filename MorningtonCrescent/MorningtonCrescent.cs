@@ -28,7 +28,7 @@ namespace EsotericIDE.Languages
                 source = source.Substring(m.Index + m.Length);
             }
             sourceLines.Add(new Tuple<string, int>(source, index));
-            return new morningtonCrescentExecutionEnvironment { Program = sourceLines.ToArray() };
+            return new morningtonCrescentExecutionEnvironment(input) { Program = sourceLines.ToArray() };
         }
 
         private sealed class morningtonCrescentExecutionEnvironment : ExecutionEnvironment
@@ -47,7 +47,6 @@ namespace EsotericIDE.Languages
                 bool canceled = false;
                 RuntimeError error = null;
                 var position = new Position(0, 0);
-                _accumulator = _currentStation;
 
                 try
                 {
@@ -138,6 +137,15 @@ namespace EsotericIDE.Languages
                                     goto default;
                                 _values[station] = _accumulator;
                                 _accumulator = ~(BigInteger) stationValue;
+                                break;
+
+                            case "Parsons Green":
+                                var str = _accumulator as string;
+                                if (str == null)
+                                    goto default;
+                                var match = Regex.Match(str, @"-?\d+");
+                                _accumulator = match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero;
+                                _values[station] = match.Success ? str.Substring(match.Index + match.Length) : "";
                                 break;
 
                             case "Seven Sisters":
@@ -245,10 +253,11 @@ namespace EsotericIDE.Languages
                 _resetEvent.Reset();
             }
 
-            public morningtonCrescentExecutionEnvironment()
+            public morningtonCrescentExecutionEnvironment(string input)
             {
-                var data = @"Abbey Road
-Acton Town [Piccadilly] [District]
+                _accumulator = input;
+
+                var data = @"Acton Town [Piccadilly] [District]
 Aldgate [Metropolitan] [Circle]
 Aldgate East [Hammersmith & City] [District]
 Alperton [Piccadilly]

@@ -11,7 +11,7 @@ namespace EsotericIDE.Languages
 {
     sealed class MorningtonCrescent : ProgrammingLanguage
     {
-        public override string LanguageName { get { return "Mornington Crescent (incomplete)"; } }
+        public override string LanguageName { get { return "Mornington Crescent"; } }
         public override string DefaultFileExtension { get { return "mcresc"; } }
         public override string GetInfo(string source, int cursorPosition) { return ""; }
         public override System.Windows.Forms.ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText) { return new System.Windows.Forms.ToolStripMenuItem[0]; }
@@ -27,234 +27,189 @@ namespace EsotericIDE.Languages
                 index += m.Index + m.Length;
                 source = source.Substring(m.Index + m.Length);
             }
-            sourceLines.Add(new Tuple<string, int>(source, index));
-            return new morningtonCrescentExecutionEnvironment(input) { Program = sourceLines.ToArray() };
+            if (source.Length > 0)
+                sourceLines.Add(new Tuple<string, int>(source, index));
+            return new morningtonCrescentExecutionEnvironment(sourceLines.ToArray(), input);
         }
 
         private sealed class morningtonCrescentExecutionEnvironment : ExecutionEnvironment
         {
-            public Tuple<string, int>[] Program;
-
+            private Tuple<string, int>[] _program;
             private Dictionary<string, List<string>> _dic = new Dictionary<string, List<string>>();
             private string _currentStation = "Mornington Crescent";
             private Dictionary<string, object> _values = new Dictionary<string, object>();
             private object _accumulator;
             private Stack<int> _jumpstack = new Stack<int>();
 
-            protected override void Run()
+            protected override IEnumerable<Position> GetProgram()
             {
-                int i = 0;
-                bool canceled = false;
-                RuntimeError error = null;
-                var position = new Position(0, 0);
+                int instructionIndex = 0;
 
-                try
+                while (true)
                 {
-                    while (true)
+                    if (instructionIndex >= _program.Length)
+                        throw new Exception("The program ends before reaching Mornington Crescent. That is not allowed.");
+
+                    var instruction = _program[instructionIndex++];
+                    yield return new Position(instruction.Item2, instruction.Item1.Length);
+
+                    var m = Regex.Match(instruction.Item1, @"^Take (.*) Line to (.*)$");
+                    if (!m.Success)
+                        throw new Exception("Invalid instruction.");
+
+                    var line = m.Groups[1].Value;
+                    var station = m.Groups[2].Value;
+
+                    if (!_dic.ContainsKey(_currentStation))
+                        throw new Exception("“{0}” station does not exist.".Fmt(_currentStation));
+                    else if (!_dic.ContainsKey(station))
+                        throw new Exception("“{0}” station does not exist.".Fmt(station));
+                    else if (!(_dic[_currentStation].Contains(line) && _dic[station].Contains(line)))
+                        throw new Exception("{0} Line doesn’t service both {1} and {2}.".Fmt(line, _currentStation, station));
+
+                    var stationValue = _values.Get(station, station);
+                    Func<BigInteger, BigInteger, object> arithmetic = null;
+
+                    switch (station)
                     {
-                        var instruction = Program[i];
-                        i++;
-                        position = new Position(instruction.Item2, instruction.Item1.Length);
+                        case "Upminster": arithmetic = (a, b) => a + b; goto case "(arithmetic)";
+                        case "Chalfont & Latimer": arithmetic = (a, b) => a * b; goto case "(arithmetic)";
+                        case "Cannon Street": arithmetic = (a, b) => b == 0 ? "" : (object) (a / b); goto case "(arithmetic)";
+                        case "Preston Road": arithmetic = (a, b) => b == 0 ? "" : (object) (a % b); goto case "(arithmetic)";
+                        case "Manor House": arithmetic = (a, b) => ~(a | b); goto case "(arithmetic)";
+                        case "Holland Park": arithmetic = (a, b) => a & b; goto case "(arithmetic)";
+                        case "Turnham Green": arithmetic = (a, b) => b > 0 ? a >> (int) b : a; goto case "(arithmetic)";
+                        case "Stepney Green": arithmetic = (a, b) => b > 0 ? a << (int) b : a; goto case "(arithmetic)";
+                        case "Bounds Green": arithmetic = (a, b) => BigInteger.Max(a, b); goto case "(arithmetic)";
 
-                        lock (_locker)
-                            if (_breakpoints.Any(bp => bp >= position.Index && bp < position.Index + Math.Max(position.Length, 1)))
-                                State = ExecutionState.Debugging;
+                        case "(arithmetic)":
+                            if (!(_accumulator is BigInteger) || !(stationValue is BigInteger))
+                                goto default;
+                            _values[station] = _accumulator;
+                            _accumulator = arithmetic((BigInteger) stationValue, (BigInteger) _accumulator);
+                            break;
 
-                        switch (State)
-                        {
-                            case ExecutionState.Debugging:
-                                fireDebuggerBreak(position);
-                                _resetEvent.Reset();
-                                _resetEvent.WaitOne();
-                                if (State == ExecutionState.Stop)
-                                    goto case ExecutionState.Stop;
-                                break;
-                            case ExecutionState.Running:
-                                break;
-                            case ExecutionState.Stop:
-                                canceled = true;
-                                goto finished;
-                            case ExecutionState.Finished:
-                                goto finished;
-                            default:
-                                throw new InvalidOperationException("Execution state has invalid value: " + State);
-                        }
+                        case "Russell Square":
+                            if (!(stationValue is BigInteger))
+                                goto default;
+                            _values[station] = _accumulator;
+                            var stationValueBigInt = (BigInteger) stationValue;
+                            _accumulator = stationValueBigInt * stationValueBigInt;
+                            break;
 
-                        var m = Regex.Match(instruction.Item1, @"^Take (.*) Line to (.*)$");
-                        if (!m.Success)
-                        {
-                            error = new RuntimeError(position, "Invalid instruction.");
-                            goto finished;
-                        }
+                        case "Notting Hill Gate":
+                            if (!(stationValue is BigInteger))
+                                goto default;
+                            _values[station] = _accumulator;
+                            _accumulator = ~(BigInteger) stationValue;
+                            break;
 
-                        var line = m.Groups[1].Value;
-                        var station = m.Groups[2].Value;
+                        case "Parsons Green":
+                            var str = _accumulator as string;
+                            if (str == null)
+                                goto default;
+                            var match = Regex.Match(str, @"-?\d+");
+                            _accumulator = match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero;
+                            _values[station] = match.Success ? str.Substring(match.Index + match.Length) : "";
+                            break;
 
-                        if (!_dic.ContainsKey(_currentStation))
-                            error = new RuntimeError(position, "“{0}” station does not exist.".Fmt(_currentStation));
-                        else if (!_dic.ContainsKey(station))
-                            error = new RuntimeError(position, "“{0}” station does not exist.".Fmt(station));
-                        else if (!(_dic[_currentStation].Contains(line) && _dic[station].Contains(line)))
-                            error = new RuntimeError(position, "{0} Line doesn’t service both {1} and {2}.".Fmt(line, _currentStation, station));
+                        case "Seven Sisters":
+                            _accumulator = (BigInteger) 7;
+                            break;
 
-                        if (error != null)
-                            goto finished;
+                        case "Charing Cross":
+                            _values[station] = _accumulator;
+                            if (stationValue is string)
+                                _accumulator = ((string) stationValue).Length > 0 ? (BigInteger) (int) (((string) stationValue)[0]) : BigInteger.Zero;
+                            else
+                                _accumulator = char.ConvertFromUtf32((int) (BigInteger) stationValue);
+                            break;
 
-                        object stationValue;
-                        if (!_values.TryGetValue(station, out stationValue))
-                            stationValue = station;
-                        Func<BigInteger, BigInteger, object> arithmetic = null;
+                        case "Paddington":
+                            if (!(_accumulator is string) || !(stationValue is string))
+                                goto default;
+                            _values[station] = _accumulator;
+                            _accumulator = (string) stationValue + (string) _accumulator;
+                            break;
 
-                        switch (station)
-                        {
-                            case "Upminster": arithmetic = (a, b) => a + b; goto case "Bounds Green";
-                            case "Chalfont & Latimer": arithmetic = (a, b) => a * b; goto case "Bounds Green";
-                            case "Cannon Street": arithmetic = (a, b) => b == 0 ? "" : (object) (a / b); goto case "Bounds Green";
-                            case "Preston Road": arithmetic = (a, b) => b == 0 ? "" : (object) (a % b); goto case "Bounds Green";
-                            case "Manor House": arithmetic = (a, b) => ~(a | b); goto case "Bounds Green";
-                            case "Holland Park": arithmetic = (a, b) => a & b; goto case "Bounds Green";
-                            case "Turnham Green": arithmetic = (a, b) => b > 0 ? a >> (int) b : a; goto case "Bounds Green";
-                            case "Stepney Green": arithmetic = (a, b) => b > 0 ? a << (int) b : a; goto case "Bounds Green";
-                            case "Bounds Green":
-                                if (!(_accumulator is BigInteger) || !(stationValue is BigInteger))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                if (arithmetic == null)
-                                    arithmetic = (a, b) => BigInteger.Max(a, b);
-                                _accumulator = arithmetic((BigInteger) stationValue, (BigInteger) _accumulator);
-                                break;
+                        case "Gunnersbury":
+                            _values[station] = _accumulator;
+                            if (_accumulator is string && stationValue is BigInteger)
+                                _accumulator = ((string) _accumulator).Substring(0, (int) (BigInteger) stationValue);
+                            else if (_accumulator is BigInteger && stationValue is string)
+                                _accumulator = ((string) stationValue).Substring(0, (int) (BigInteger) _accumulator);
+                            else
+                                goto default;
+                            break;
 
-                            case "Russell Square":
-                                if (!(stationValue is BigInteger))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                var stationValueBigInt = (BigInteger) stationValue;
-                                _accumulator = stationValueBigInt * stationValueBigInt;
-                                break;
+                        case "Mile End":
+                            _values[station] = _accumulator;
+                            if (_accumulator is string && stationValue is BigInteger)
+                                _accumulator = ((string) _accumulator).Substring(((string) _accumulator).Length - (int) (BigInteger) stationValue);
+                            else if (_accumulator is BigInteger && stationValue is string)
+                                _accumulator = ((string) stationValue).Substring(((string) stationValue).Length - (int) (BigInteger) _accumulator);
+                            else
+                                goto default;
+                            break;
 
-                            case "Notting Hill Gate":
-                                if (!(stationValue is BigInteger))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                _accumulator = ~(BigInteger) stationValue;
-                                break;
+                        case "Upney":
+                            if (!(stationValue is string))
+                                goto default;
+                            _values[station] = _accumulator;
+                            _accumulator = ((string) stationValue).ToUpperInvariant();
+                            break;
+                        case "Hounslow Central":
+                            if (!(stationValue is string))
+                                goto default;
+                            _values[station] = _accumulator;
+                            _accumulator = ((string) stationValue).ToLowerInvariant();
+                            break;
+                        case "Turnpike Lane":
+                            if (!(stationValue is string))
+                                goto default;
+                            _values[station] = _accumulator;
+                            _accumulator = ((string) stationValue).Reverse().JoinString();
+                            break;
+                        case "Bank":
+                            _values["Hammersmith"] = _accumulator;
+                            _values[station] = _accumulator;
+                            _accumulator = stationValue;
+                            break;
+                        case "Hammersmith":
+                            _accumulator = stationValue;
+                            break;
 
-                            case "Parsons Green":
-                                var str = _accumulator as string;
-                                if (str == null)
-                                    goto default;
-                                var match = Regex.Match(str, @"-?\d+");
-                                _accumulator = match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero;
-                                _values[station] = match.Success ? str.Substring(match.Index + match.Length) : "";
-                                break;
+                        case "Temple":
+                            _jumpstack.Push(instructionIndex);
+                            break;
+                        case "Angel":
+                            if (!_accumulator.Equals(BigInteger.Zero))
+                            {
+                                instructionIndex = _jumpstack.Peek();
+                                station = "Temple";
+                            }
+                            break;
+                        case "Marble Arch":
+                            _jumpstack.Pop();
+                            break;
 
-                            case "Seven Sisters":
-                                _accumulator = (BigInteger) 7;
-                                break;
+                        case "Mornington Crescent":
+                            _output.Append(_accumulator.ToString());
+                            yield break;
 
-                            case "Charing Cross":
-                                _values[station] = _accumulator;
-                                if (stationValue is string)
-                                    _accumulator = ((string) stationValue).Length > 0 ? (BigInteger) (int) (((string) stationValue)[0]) : BigInteger.Zero;
-                                else
-                                    _accumulator = char.ConvertFromUtf32((int) (BigInteger) stationValue);
-                                break;
-
-                            case "Paddington":
-                                if (!(_accumulator is string) || !(stationValue is string))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                _accumulator = (string) stationValue + (string) _accumulator;
-                                break;
-
-                            case "Gunnersbury":
-                                _values[station] = _accumulator;
-                                if (_accumulator is string && stationValue is BigInteger)
-                                    _accumulator = ((string) _accumulator).Substring(0, (int) (BigInteger) stationValue);
-                                else if (_accumulator is BigInteger && stationValue is string)
-                                    _accumulator = ((string) stationValue).Substring(0, (int) (BigInteger) _accumulator);
-                                else
-                                    goto default;
-                                break;
-
-                            case "Mile End":
-                                _values[station] = _accumulator;
-                                if (_accumulator is string && stationValue is BigInteger)
-                                    _accumulator = ((string) _accumulator).Substring(((string) _accumulator).Length - (int) (BigInteger) stationValue);
-                                else if (_accumulator is BigInteger && stationValue is string)
-                                    _accumulator = ((string) stationValue).Substring(((string) stationValue).Length - (int) (BigInteger) _accumulator);
-                                else
-                                    goto default;
-                                break;
-
-                            case "Upney":
-                                if (!(stationValue is string))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                _accumulator = ((string) stationValue).ToUpperInvariant();
-                                break;
-                            case "Hounslow Central":
-                                if (!(stationValue is string))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                _accumulator = ((string) stationValue).ToLowerInvariant();
-                                break;
-                            case "Turnpike Lane":
-                                if (!(stationValue is string))
-                                    goto default;
-                                _values[station] = _accumulator;
-                                _accumulator = ((string) stationValue).Reverse().JoinString();
-                                break;
-                            case "Bank":
-                                _values["Hammersmith"] = _accumulator;
-                                _values[station] = _accumulator;
-                                _accumulator = stationValue;
-                                break;
-                            case "Hammersmith":
-                                _accumulator = stationValue;
-                                break;
-
-                            case "Temple":
-                                _jumpstack.Push(i);
-                                break;
-                            case "Angel":
-                                if (!_accumulator.Equals(BigInteger.Zero))
-                                {
-                                    i = _jumpstack.Peek();
-                                    station = "Temple";
-                                }
-                                break;
-                            case "Marble Arch":
-                                _jumpstack.Pop();
-                                break;
-
-                            case "Mornington Crescent":
-                                _output.Append(_accumulator.ToString());
-                                goto finished;
-
-                            default:
-                                _values[station] = _accumulator;
-                                _accumulator = stationValue;
-                                break;
-                        }
-
-                        _currentStation = station;
+                        default:
+                            _values[station] = _accumulator;
+                            _accumulator = stationValue;
+                            break;
                     }
-                }
-                catch (Exception e)
-                {
-                    var type = e.GetType();
-                    error = new RuntimeError(position, e.Message + (type != typeof(Exception) ? " (" + type.Name + ")" : ""));
-                }
 
-                finished:
-                fireExecutionFinished(canceled, error);
-                State = ExecutionState.Finished;
-                _resetEvent.Reset();
+                    _currentStation = station;
+                }
             }
 
-            public morningtonCrescentExecutionEnvironment(string input)
+            public morningtonCrescentExecutionEnvironment(Tuple<string, int>[] program, string input)
             {
+                _program = program;
                 _accumulator = input;
 
                 var data = @"Acton Town [Piccadilly] [District]
@@ -535,10 +490,11 @@ Woodside Park [Northern]";
 
             public override string DescribeExecutionState()
             {
-                return "Current station: {1}{0}Accumulator: {2}{0}{0}{3}".Fmt(
+                return "Current station: {1}{0}Accumulator: {2}{0}Jumpstack: {3}{0}{0}{4}".Fmt(
                     Environment.NewLine,
                     _currentStation,
                     _accumulator is string ? "\"{0}\"".Fmt(((string) _accumulator).CLiteralEscape()) : _accumulator.ToString(),
+                    _jumpstack.Count > 0 ? _jumpstack.JoinString(", ") : "<empty>",
                     _values.OrderBy(kvp => kvp.Key).Select(kvp => "{0} = {1}".Fmt(kvp.Key, kvp.Value is string ? "\"{0}\"".Fmt(((string) kvp.Value).CLiteralEscape()) : kvp.Value.ToString())).JoinString(Environment.NewLine)
                 );
             }

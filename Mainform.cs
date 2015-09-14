@@ -616,14 +616,20 @@ namespace EsotericIDE
             _wordWrap = !_wordWrap;
         }
 
+        private bool _activatedProcessing = false;
         private void activated(object sender, EventArgs e)
         {
-            // Check if the file on disk has changed.
-            if (_currentFilePath != null && 
-                File.Exists(_currentFilePath) &&
-                File.GetLastWriteTimeUtc(_currentFilePath) > _lastFileTime &&
-                DlgMessage.Show("The file has changed on disk. Reload?", "File has changed", DlgType.Question, "&Reload", "&Cancel") == 0)
-                openCore(_currentFilePath);
+            if (!_activatedProcessing)
+            {
+                _activatedProcessing = true;
+                // Check if the file on disk has changed.
+                if (_currentFilePath != null &&
+                    File.Exists(_currentFilePath) &&
+                    File.GetLastWriteTimeUtc(_currentFilePath) > _lastFileTime &&
+                    DlgMessage.Show("The file has changed on disk. Reload?", "File has changed", DlgType.Question, "&Reload", "&Cancel") == 0)
+                    openCore(_currentFilePath);
+                _activatedProcessing = false;
+            }
         }
 
         private void revert(object sender, EventArgs e)

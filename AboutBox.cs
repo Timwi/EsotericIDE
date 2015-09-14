@@ -20,7 +20,6 @@ namespace EsotericIDE
             lblProductName.Text = AssemblyProduct;
             lblDescription.Text = AssemblyDescription;
             lblVersion.Text = "Version {0}".Fmt(Ut.VersionOfExe());
-            lblCopyright.Text = AssemblyCopyright;
             btnOK.Text = "&OK";
             btnOK.BackColor = Color.FromKnownColor(KnownColor.ButtonFace);
             ctLogo.Image = Resources.EsotericIDELogo;

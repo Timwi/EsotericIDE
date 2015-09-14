@@ -29,7 +29,6 @@ namespace EsotericIDE
         {
             this.components = new System.ComponentModel.Container();
             this.lblVersion = new System.Windows.Forms.Label();
-            this.lblCopyright = new System.Windows.Forms.Label();
             this.btnOK = new System.Windows.Forms.Button();
             this.lblProductName = new System.Windows.Forms.Label();
             this.pnlProduct = new System.Windows.Forms.Panel();
@@ -61,25 +60,12 @@ namespace EsotericIDE
             this.lblVersion.Text = "Version";
             this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // lblCopyright
-            // 
-            this.lblCopyright.AutoSize = true;
-            this.lblCopyright.Font = new System.Drawing.Font("Candara", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCopyright.Location = new System.Drawing.Point(5, 90);
-            this.lblCopyright.Margin = new System.Windows.Forms.Padding(5);
-            this.lblCopyright.Name = "lblCopyright";
-            this.lblCopyright.Size = new System.Drawing.Size(68, 18);
-            this.lblCopyright.TabIndex = 21;
-            this.lblCopyright.Tag = "notranslate";
-            this.lblCopyright.Text = "Copyright";
-            this.lblCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Font = new System.Drawing.Font("Candara", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnOK.Location = new System.Drawing.Point(808, 162);
+            this.btnOK.Location = new System.Drawing.Point(808, 134);
             this.btnOK.Margin = new System.Windows.Forms.Padding(5);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 26);
@@ -129,13 +115,13 @@ namespace EsotericIDE
             this.lblURL.Cursor = System.Windows.Forms.Cursors.Hand;
             this.lblURL.Font = new System.Drawing.Font("Candara", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblURL.ForeColor = System.Drawing.Color.Blue;
-            this.lblURL.Location = new System.Drawing.Point(5, 118);
+            this.lblURL.Location = new System.Drawing.Point(5, 90);
             this.lblURL.Margin = new System.Windows.Forms.Padding(5);
             this.lblURL.Name = "lblURL";
-            this.lblURL.Size = new System.Drawing.Size(240, 18);
+            this.lblURL.Size = new System.Drawing.Size(254, 18);
             this.lblURL.TabIndex = 26;
             this.lblURL.Tag = "notranslate";
-            this.lblURL.Text = "http://www.cutebits.com/EsotericIDE";
+            this.lblURL.Text = "https://bitbucket.org/Timwi/esoteric-ide";
             this.lblURL.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblURL.Click += new System.EventHandler(this.clickUrl);
             // 
@@ -160,7 +146,7 @@ namespace EsotericIDE
             // 
             this.lblCredits.AutoSize = true;
             this.lblCredits.Font = new System.Drawing.Font("Candara", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCredits.Location = new System.Drawing.Point(5, 146);
+            this.lblCredits.Location = new System.Drawing.Point(5, 118);
             this.lblCredits.Margin = new System.Windows.Forms.Padding(5);
             this.lblCredits.Name = "lblCredits";
             this.lblCredits.Size = new System.Drawing.Size(148, 36);
@@ -207,11 +193,11 @@ namespace EsotericIDE
             this.ctLayoutBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.ctLayoutBottom.Controls.Add(this.ctLayoutBottomLeft, 0, 0);
             this.ctLayoutBottom.Controls.Add(this.btnOK, 1, 0);
-            this.ctLayoutBottom.Location = new System.Drawing.Point(3, 359);
+            this.ctLayoutBottom.Location = new System.Drawing.Point(3, 373);
             this.ctLayoutBottom.Name = "ctLayoutBottom";
             this.ctLayoutBottom.RowCount = 1;
             this.ctLayoutBottom.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ctLayoutBottom.Size = new System.Drawing.Size(888, 193);
+            this.ctLayoutBottom.Size = new System.Drawing.Size(888, 165);
             this.ctLayoutBottom.TabIndex = 28;
             // 
             // ctLayoutBottomLeft
@@ -224,14 +210,13 @@ namespace EsotericIDE
             this.ctLayoutBottomLeft.Controls.Add(this.lblProductName);
             this.ctLayoutBottomLeft.Controls.Add(this.lblVersion);
             this.ctLayoutBottomLeft.Controls.Add(this.lblDescription);
-            this.ctLayoutBottomLeft.Controls.Add(this.lblCopyright);
             this.ctLayoutBottomLeft.Controls.Add(this.lblURL);
             this.ctLayoutBottomLeft.Controls.Add(this.lblCredits);
             this.ctLayoutBottomLeft.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.ctLayoutBottomLeft.Font = new System.Drawing.Font("Candara", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ctLayoutBottomLeft.Location = new System.Drawing.Point(3, 3);
             this.ctLayoutBottomLeft.Name = "ctLayoutBottomLeft";
-            this.ctLayoutBottomLeft.Size = new System.Drawing.Size(615, 187);
+            this.ctLayoutBottomLeft.Size = new System.Drawing.Size(615, 159);
             this.ctLayoutBottomLeft.TabIndex = 29;
             // 
             // ctTimer
@@ -273,7 +258,6 @@ namespace EsotericIDE
         #endregion
 
         private System.Windows.Forms.Label lblVersion;
-        private System.Windows.Forms.Label lblCopyright;
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Label lblProductName;
         private System.Windows.Forms.Panel pnlProduct;

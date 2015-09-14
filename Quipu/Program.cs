@@ -61,7 +61,7 @@ namespace EsotericIDE.Languages
 
                         var position = new Position(sourceLines[i].Item2 + threadIndex + indentation, 2);
 
-                        Func<quipuExecutionEnvironment, int?> instruction = null;
+                        Func<quipuEnv, int?> instruction = null;
                         BigInteger? instructionIsThousands = null;
                         BigInteger? instructionIsHundreds = null;
                         BigInteger? instructionIsTens = null;
@@ -283,7 +283,7 @@ namespace EsotericIDE.Languages
             public thread[] Threads { get; private set; }
             public int SourceLength { get; private set; }
 
-            public IEnumerable<Position> Execute(quipuExecutionEnvironment qee)
+            public IEnumerable<Position> Execute(quipuEnv qee)
             {
                 // Empty program: exit immediately
                 if (qee.ThreadValues.Count == 0)
@@ -333,9 +333,9 @@ namespace EsotericIDE.Languages
 
         private sealed class knot
         {
-            public Func<quipuExecutionEnvironment, int?> Instruction { get; private set; }
+            public Func<quipuEnv, int?> Instruction { get; private set; }
             public Position Position { get; private set; }
-            public knot(Func<quipuExecutionEnvironment, int?> instruction, Position position)
+            public knot(Func<quipuEnv, int?> instruction, Position position)
             {
                 if (instruction == null)
                     throw new ArgumentNullException("instruction");

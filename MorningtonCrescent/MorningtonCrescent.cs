@@ -29,10 +29,10 @@ namespace EsotericIDE.Languages
             }
             if (source.Length > 0)
                 sourceLines.Add(new Tuple<string, int>(source, index));
-            return new morningtonCrescentExecutionEnvironment(sourceLines.ToArray(), input);
+            return new morningtonCrescentEnv(sourceLines.ToArray(), input);
         }
 
-        private sealed class morningtonCrescentExecutionEnvironment : ExecutionEnvironment
+        private sealed class morningtonCrescentEnv : ExecutionEnvironment
         {
             private Tuple<string, int>[] _program;
             private Dictionary<string, List<string>> _dic = new Dictionary<string, List<string>>();
@@ -207,7 +207,7 @@ namespace EsotericIDE.Languages
                 }
             }
 
-            public morningtonCrescentExecutionEnvironment(Tuple<string, int>[] program, string input)
+            public morningtonCrescentEnv(Tuple<string, int>[] program, string input)
             {
                 _program = program;
                 _accumulator = input;

@@ -134,7 +134,7 @@ namespace EsotericIDE
         }
 
         private ExecutionEnvironment _currentEnvironmentBacking;
-        private ExecutionEnvironment _currentEnvironment
+        private ExecutionEnvironment _env
         {
             get { return _currentEnvironmentBacking; }
             set
@@ -153,13 +153,13 @@ namespace EsotericIDE
             text += " — Esoteric IDE";
             if (_anyChanges)
                 text += " •";
-            if (_currentEnvironment != null)
+            if (_env != null)
                 text += " (running)";
             Text = text;
 
-            txtSource.ReadOnly = _currentEnvironment != null;
-            miGoToCurrentInstruction.Visible = _currentEnvironment != null;
-            miStopDebugging.Visible = _currentEnvironment != null;
+            txtSource.ReadOnly = _env != null;
+            miGoToCurrentInstruction.Visible = _env != null;
+            miStopDebugging.Visible = _env != null;
             miClearInput.Visible = _input != null;
             miSaveWhenRun.Checked = _saveWhenRun;
             txtSource.WordWrap = _wordWrap;
@@ -171,15 +171,15 @@ namespace EsotericIDE
         {
             int result;
 
-            if (_currentEnvironment != null)
+            if (_env != null)
             {
                 result = DlgMessage.Show("Cancel debugging?", "Esoteric IDE", DlgType.Question, "&Yes", "&No");
                 if (result == 1)
                     return false;
 
                 // Tell the executing program to stop
-                _currentEnvironment.State = ExecutionState.Stop;
-                _currentEnvironment.Continue(true);
+                _env.State = ExecutionState.Stop;
+                _env.Continue(true);
 
                 // The stopped program will have triggered an executionFinished event, which needs to be processed before the form is disposed
                 Application.DoEvents();
@@ -320,9 +320,9 @@ namespace EsotericIDE
         {
             _currentPosition = null;
 
-            if (_currentEnvironment != null)
+            if (_env != null)
             {
-                _currentEnvironment.State = state;
+                _env.State = state;
                 return true;
             }
 
@@ -334,13 +334,13 @@ namespace EsotericIDE
                 var input = _input ?? InputBox.GetLine("Please type the input to the program:", "", "Esoteric IDE", "&OK", "&Cancel");
                 if (input == null)
                     return false;
-                _currentEnvironment = _currentLanguage.Compile(txtSource.Text, input);
-                _currentEnvironment.State = state;
-                _currentEnvironment.DebuggerBreak += p => { this.Invoke(new Action(() => debuggerBreak(p))); };
-                _currentEnvironment.ExecutionFinished += (c, e) => { this.Invoke(new Action(() => executionFinished(c, e))); };
+                _env = _currentLanguage.Compile(txtSource.Text, input);
+                _env.State = state;
+                _env.DebuggerBreak += p => { this.Invoke(new Action(() => debuggerBreak(p))); };
+                _env.ExecutionFinished += (c, e) => { this.Invoke(new Action(() => executionFinished(c, e))); };
                 foreach (int bp in lstBreakpoints.Items)
-                    _currentEnvironment.AddBreakpoint(bp);
-                _currentEnvironment.BreakpointsChanged += () => { this.Invoke(new Action(() => breakpointsChanged())); };
+                    _env.AddBreakpoint(bp);
+                _env.BreakpointsChanged += () => { this.Invoke(new Action(() => breakpointsChanged())); };
                 return true;
             }
             catch (CompileException e)
@@ -366,17 +366,17 @@ namespace EsotericIDE
         {
             if (!compile(ExecutionState.Running))
                 return;
-            _currentEnvironment.Continue();
+            _env.Continue();
         }
 
         private void executionFinished(bool canceled, RuntimeError runtimeError)
         {
             txtExecutionState.Text = "(not running)";
-            txtOutput.Text = _currentEnvironment.Output.UnifyLineEndings();
+            txtOutput.Text = _env.Output.UnifyLineEndings();
             if (canceled && runtimeError == null)
                 txtOutput.Text += Environment.NewLine + Environment.NewLine + "Execution stopped.";
             ctTabs.SelectedTab = tabOutput;
-            _currentEnvironment = null;
+            _env = null;
             _currentPosition = null;
 
             txtSource.Focus();
@@ -402,8 +402,8 @@ namespace EsotericIDE
             try
             {
                 lstBreakpoints.Items.Clear();
-                if (_currentEnvironment != null)
-                    foreach (var bp in _currentEnvironment.Breakpoints)
+                if (_env != null)
+                    foreach (var bp in _env.Breakpoints)
                         lstBreakpoints.Items.Add(bp);
             }
             finally
@@ -416,14 +416,14 @@ namespace EsotericIDE
         {
             if (!compile(ExecutionState.Debugging))
                 return;
-            _currentEnvironment.Continue();
+            _env.Continue();
         }
 
         private void debuggerBreak(Position position)
         {
             _currentPosition = position;
-            txtExecutionState.Text = _currentEnvironment.DescribeExecutionState();
-            txtOutput.Text = _currentEnvironment.Output;
+            txtExecutionState.Text = _env.DescribeExecutionState();
+            txtOutput.Text = _env.Output;
             ctTabs.SelectedTab = tabExecutionState;
             goToCurrentInstruction();
         }
@@ -433,18 +433,18 @@ namespace EsotericIDE
             if (!compile(ExecutionState.Debugging))
                 return;
             var to = txtSource.SelectionStart;
-            if (!_currentEnvironment.Breakpoints.Contains(to))
-                _currentEnvironment.AddBreakpoint(to);
-            _currentEnvironment.State = ExecutionState.Running;
-            _currentEnvironment.Continue();
+            if (!_env.Breakpoints.Contains(to))
+                _env.AddBreakpoint(to);
+            _env.State = ExecutionState.Running;
+            _env.Continue();
         }
 
         private void stopDebugging(object _, EventArgs __)
         {
-            if (_currentEnvironment == null)
+            if (_env == null)
                 return;
-            _currentEnvironment.State = ExecutionState.Stop;
-            _currentEnvironment.Continue();
+            _env.State = ExecutionState.Stop;
+            _env.Continue();
         }
 
         private void exiting(object _, FormClosingEventArgs e)
@@ -477,7 +477,7 @@ namespace EsotericIDE
 
         private void goToCurrentInstruction(object _ = null, EventArgs __ = null)
         {
-            if (_currentEnvironment == null || _currentPosition == null)
+            if (_env == null || _currentPosition == null)
                 return;
             txtSource.Focus();
             txtSource.SelectionStart = _currentPosition.Index;
@@ -539,10 +539,10 @@ namespace EsotericIDE
                 {
                     var toDelete = lstBreakpoints.SelectedItems.Cast<int>().ToArray();
                     foreach (var del in toDelete)
-                        if (_currentEnvironment == null)
+                        if (_env == null)
                             lstBreakpoints.Items.Remove(del);
                         else
-                            _currentEnvironment.RemoveBreakpoint(del);
+                            _env.RemoveBreakpoint(del);
                 }
                 finally
                 {
@@ -553,7 +553,7 @@ namespace EsotericIDE
 
         private void toggleBreakpoint(object _, EventArgs __)
         {
-            if (_currentEnvironment == null)
+            if (_env == null)
             {
                 if (lstBreakpoints.Items.Contains(txtSource.SelectionStart))
                     lstBreakpoints.Items.Remove(txtSource.SelectionStart);
@@ -562,8 +562,8 @@ namespace EsotericIDE
             }
             else
             {
-                if (!_currentEnvironment.RemoveBreakpoint(txtSource.SelectionStart))
-                    _currentEnvironment.AddBreakpoint(txtSource.SelectionStart);
+                if (!_env.RemoveBreakpoint(txtSource.SelectionStart))
+                    _env.AddBreakpoint(txtSource.SelectionStart);
             }
         }
 

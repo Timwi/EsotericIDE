@@ -56,9 +56,15 @@
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
     <Compile Include="Brainfuck\Brainfuck.cs" />
-    <Compile Include="Brainfuck\ExecutionEnvironment.cs" />
+    <Compile Include="Brainfuck\Environment.cs" />
     <Compile Include="Brainfuck\Program.cs" />
     <Compile Include="Brainfuck\Settings.cs" />
+    <Compile Include="Hexagony\Coords.cs" />
+    <Compile Include="Hexagony\Directions.cs" />
+    <Compile Include="Hexagony\Environment.cs" />
+    <Compile Include="Hexagony\Grid.cs" />
+    <Compile Include="Hexagony\Hexagony.cs" />
+    <Compile Include="Hexagony\Memory.cs" />
     <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Unreadable\Unreadable.cs" />
     <Compile Include="Unreadable\Environment.cs" />
@@ -74,7 +80,7 @@
     </Compile>
     <Compile Include="Position.cs" />
     <Compile Include="ProgrammingLanguage.cs" />
-    <Compile Include="Quipu\ExecutionEnvironment.cs" />
+    <Compile Include="Quipu\Environment.cs" />
     <Compile Include="Quipu\Program.cs" />
     <Compile Include="Quipu\Quipu.cs" />
     <Compile Include="Resources.Designer.cs">
@@ -83,7 +89,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RuntimeError.cs" />
-    <Compile Include="Sclipting\ExecutionEnvironment.cs" />
+    <Compile Include="Sclipting\Environment.cs" />
     <Compile Include="Sclipting\Instructions.cs" />
     <Compile Include="Sclipting\Misc.cs" />
     <Compile Include="Sclipting\ParseTree.cs" />
@@ -109,6 +115,7 @@
     <None Include="Resources\EsotericIDEIcon.ico" />
     <None Include="Resources\EsotericIDELogo.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"$(TargetPath)" --post-build-check "$(SolutionDir)."</PostBuildEvent>

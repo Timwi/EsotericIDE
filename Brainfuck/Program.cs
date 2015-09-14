@@ -58,14 +58,14 @@ namespace EsotericIDE.Languages
 
             private abstract class node
             {
-                public abstract IEnumerable<Position> Execute(brainfuckExecutionEnvironment be);
+                public abstract IEnumerable<Position> Execute(brainfuckEnv be);
             }
             private sealed class charNode : node
             {
                 private char _char;
                 private Position _pos;
                 public charNode(char ch, Position pos) { _char = ch; _pos = pos; }
-                public override IEnumerable<Position> Execute(brainfuckExecutionEnvironment be)
+                public override IEnumerable<Position> Execute(brainfuckEnv be)
                 {
                     yield return _pos;
                     switch (_char)
@@ -87,7 +87,7 @@ namespace EsotericIDE.Languages
                 private Position _posStart;
                 private Position _posEnd;
                 public loopNode(node[] inner, Position posStart, Position posEnd) { _inner = inner; _posStart = posStart; _posEnd = posEnd; }
-                public override IEnumerable<Position> Execute(brainfuckExecutionEnvironment be)
+                public override IEnumerable<Position> Execute(brainfuckEnv be)
                 {
                     yield return _posStart;
                     while (be.IsNonZero)
@@ -102,7 +102,7 @@ namespace EsotericIDE.Languages
 
             private node[] _nodes;
             private Position _posEnd;
-            public IEnumerable<Position> Execute(brainfuckExecutionEnvironment be)
+            public IEnumerable<Position> Execute(brainfuckEnv be)
             {
                 foreach (var node in _nodes)
                     foreach (var pos in node.Execute(be))

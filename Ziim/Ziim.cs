@@ -144,7 +144,7 @@ namespace EsotericIDE.Languages
             });
 
             var nodesList = nodes.SelectMany(row => row.Where(n => n != null)).ToList();
-            return new ziimExecutionEnvironment
+            return new ziimEnv
             {
                 Nodes = nodesList,
                 Threads = nodesList.Where(n => n.Instruction == instruction.Zero).Select(n => new thread { CurrentValue = bits.Zero, CurrentInstruction = n, Suspended = false }).ToList(),

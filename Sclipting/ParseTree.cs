@@ -17,13 +17,13 @@ namespace EsotericIDE.Languages
         private abstract class node
         {
             public int Index, Count;
-            public abstract IEnumerable<Position> Execute(scliptingExecutionEnvironment environment);
+            public abstract IEnumerable<Position> Execute(scliptingEnv environment);
         }
 
         private sealed class program : node
         {
             public List<node> Instructions;
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 environment.CurrentStack.Add(environment.Input);
                 foreach (var instruction in Instructions)
@@ -37,7 +37,7 @@ namespace EsotericIDE.Languages
         private sealed class byteArray : node
         {
             public byte[] Array;
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, Count);
                 environment.CurrentStack.Add(Array);
@@ -47,7 +47,7 @@ namespace EsotericIDE.Languages
         private sealed class negativeNumber : node
         {
             public BigInteger Number;
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, Count);
                 environment.CurrentStack.Add(Number);
@@ -59,7 +59,7 @@ namespace EsotericIDE.Languages
             public instruction ThisInstruction;
 
             // This is static and returns a delegate so that the post-build check can test it without needing to execute all the instructions
-            private static Action<scliptingExecutionEnvironment> getMethod(instruction instr)
+            private static Action<scliptingEnv> getMethod(instruction instr)
             {
                 switch (instr)
                 {
@@ -212,7 +212,7 @@ namespace EsotericIDE.Languages
                 }
             }
 
-            private static Action<scliptingExecutionEnvironment> beginningOrEnd(bool end, bool countingBackwards, bool pop)
+            private static Action<scliptingEnv> beginningOrEnd(bool end, bool countingBackwards, bool pop)
             {
                 return e =>
                 {
@@ -254,7 +254,7 @@ namespace EsotericIDE.Languages
                 return randomInteger + min;
             }
 
-            private static Action<scliptingExecutionEnvironment> recursiveStringOperation(Func<string, string> func)
+            private static Action<scliptingEnv> recursiveStringOperation(Func<string, string> func)
             {
                 Func<object, object> recurse = null;
                 recurse = (object item) =>
@@ -271,7 +271,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> gnaw(bool reversed)
+            private static Action<scliptingEnv> gnaw(bool reversed)
             {
                 return e =>
                 {
@@ -293,7 +293,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> regexSplit(bool pop)
+            private static Action<scliptingEnv> regexSplit(bool pop)
             {
                 return e =>
                 {
@@ -314,7 +314,7 @@ namespace EsotericIDE.Languages
                 return new string(newArr);
             }
 
-            private static Action<scliptingExecutionEnvironment> repeat(bool reversedArguments)
+            private static Action<scliptingEnv> repeat(bool reversedArguments)
             {
                 return e =>
                 {
@@ -357,7 +357,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> repeatIntoList(bool reversedArguments)
+            private static Action<scliptingEnv> repeatIntoList(bool reversedArguments)
             {
                 return e =>
                 {
@@ -389,7 +389,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> stringListOperation(bool pop, Func<string, object> stringOperation, Func<List<object>, object> listOperation)
+            private static Action<scliptingEnv> stringListOperation(bool pop, Func<string, object> stringOperation, Func<List<object>, object> listOperation)
             {
                 return e =>
                 {
@@ -403,7 +403,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> stringListOperation(bool pop, Func<string, BigInteger, object> stringOperation, Func<List<object>, BigInteger, object> listOperation)
+            private static Action<scliptingEnv> stringListOperation(bool pop, Func<string, BigInteger, object> stringOperation, Func<List<object>, BigInteger, object> listOperation)
             {
                 return e =>
                 {
@@ -418,7 +418,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> combine(bool reverse)
+            private static Action<scliptingEnv> combine(bool reverse)
             {
                 return e =>
                 {
@@ -432,7 +432,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static Action<scliptingExecutionEnvironment> sublist(bool pop)
+            private static Action<scliptingEnv> sublist(bool pop)
             {
                 return e =>
                 {
@@ -458,7 +458,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static void assemble(scliptingExecutionEnvironment e)
+            private static void assemble(scliptingEnv e)
             {
                 var separator = Sclipting.ToString(e.Pop());
                 var item = e.Pop();
@@ -466,7 +466,7 @@ namespace EsotericIDE.Languages
                 e.CurrentStack.Add(list.JoinString(separator));
             }
 
-            private static Action<scliptingExecutionEnvironment> insert(bool replace)
+            private static Action<scliptingEnv> insert(bool replace)
             {
                 return e =>
                 {
@@ -515,7 +515,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            private static void annihilate(scliptingExecutionEnvironment e)
+            private static void annihilate(scliptingEnv e)
             {
                 var bigInteger = Sclipting.ToInt(e.Pop());
                 if (bigInteger < 0 || bigInteger > int.MaxValue)
@@ -540,7 +540,7 @@ namespace EsotericIDE.Languages
                 }
             }
 
-            private static Action<scliptingExecutionEnvironment> combineOperation(bool stringify)
+            private static Action<scliptingEnv> combineOperation(bool stringify)
             {
                 return e =>
                 {
@@ -557,7 +557,7 @@ namespace EsotericIDE.Languages
                 };
             }
 
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, Count);
                 getMethod(ThisInstruction)(environment);
@@ -585,7 +585,7 @@ namespace EsotericIDE.Languages
             public stackOrRegexNodeType Type;
             public int Value;
 
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, Count);
                 object item;
@@ -716,7 +716,7 @@ namespace EsotericIDE.Languages
                 Count = 1;
             }
 
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, Count);
 
@@ -930,7 +930,7 @@ namespace EsotericIDE.Languages
         private sealed class functionNode : blockNode
         {
             public bool Capture;
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, Count);
                 environment.CurrentStack.Add(new function { FunctionCode = this, CapturedItem = Capture ? environment.Pop() : null });
@@ -941,7 +941,7 @@ namespace EsotericIDE.Languages
         {
             public instruction Instruction;
 
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
                 var item = Instruction == instruction.Perform ? environment.CurrentStack.Last() : environment.Pop();
@@ -967,7 +967,7 @@ namespace EsotericIDE.Languages
         private sealed class forLoop : blockNode
         {
             public bool Backwards;
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
                 var b = Sclipting.ToInt(environment.Pop());
@@ -1003,7 +1003,7 @@ namespace EsotericIDE.Languages
 
         private sealed class forEachLoop : blockNode
         {
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
                 var orig = environment.CurrentStack.Last();
@@ -1067,7 +1067,7 @@ namespace EsotericIDE.Languages
 
         private sealed class ifBlock : conditionalBlockNode
         {
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
                 var item = environment.CurrentStack.Last();
@@ -1099,7 +1099,7 @@ namespace EsotericIDE.Languages
 
         private sealed class whileLoop : conditionalBlockNode
         {
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
 
@@ -1160,7 +1160,7 @@ namespace EsotericIDE.Languages
         {
             public bool Backward;
 
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
                 var item = environment.CurrentStack.Last();
@@ -1242,7 +1242,7 @@ namespace EsotericIDE.Languages
                     instr == instruction.ReplaceCsSubstrAllNoPop ? matchType.CaseSensitiveSubstring : matchType.CaseInsensitiveSubstring;
             }
 
-            public override IEnumerable<Position> Execute(scliptingExecutionEnvironment environment)
+            public override IEnumerable<Position> Execute(scliptingEnv environment)
             {
                 yield return new Position(Index, 1);
 

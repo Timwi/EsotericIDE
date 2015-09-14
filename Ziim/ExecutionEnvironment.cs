@@ -8,7 +8,7 @@ namespace EsotericIDE.Languages
 {
     partial class Ziim
     {
-        private sealed class ziimExecutionEnvironment : ExecutionEnvironment
+        private sealed class ziimEnv : ExecutionEnvironment
         {
             public List<node> Nodes;
             public List<thread> Threads;

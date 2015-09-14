@@ -10,7 +10,7 @@ namespace EsotericIDE.Languages
 {
     partial class Quipu
     {
-        private sealed class quipuExecutionEnvironment : ExecutionEnvironment
+        private sealed class quipuEnv : ExecutionEnvironment
         {
             private program _program;
             public List<object> ThreadValues;
@@ -19,7 +19,7 @@ namespace EsotericIDE.Languages
             public Stack<object> Stack;
             public TextReader Input;
 
-            public quipuExecutionEnvironment(program program, string input)
+            public quipuEnv(program program, string input)
             {
                 _program = program;
                 ThreadValues = program.Threads.Select(t => (object) BigInteger.Zero).ToList();

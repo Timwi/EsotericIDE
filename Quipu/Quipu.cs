@@ -16,7 +16,7 @@ namespace EsotericIDE.Languages
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new quipuExecutionEnvironment(program.Parse(source), input);
+            return new quipuEnv(program.Parse(source), input);
         }
 
         public override string GetInfo(string source, int cursorPosition)

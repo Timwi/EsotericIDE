@@ -51,13 +51,13 @@ namespace EsotericIDE.Languages
             switch (_settings.CellType)
             {
                 case cellType.Bytes:
-                    return new brainfuckEnvironmentBytes(source, inputQ, _settings.OutputType);
+                    return new brainfuckEnvBytes(source, inputQ, _settings.OutputType);
                 case cellType.Int32s:
-                    return new brainfuckEnvironmentInt32(source, inputQ, _settings.OutputType);
+                    return new brainfuckEnvInt32(source, inputQ, _settings.OutputType);
                 case cellType.UInt32s:
-                    return new brainfuckEnvironmentUInt32(source, inputQ, _settings.OutputType);
+                    return new brainfuckEnvUInt32(source, inputQ, _settings.OutputType);
                 case cellType.BigInts:
-                    return new brainfuckEnvironmentBigInt(source, inputQ, _settings.OutputType);
+                    return new brainfuckEnvBigInt(source, inputQ, _settings.OutputType);
                 default:
                     throw new InvalidOperationException();
             }

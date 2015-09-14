@@ -8,10 +8,10 @@ namespace EsotericIDE.Languages
 {
     partial class Brainfuck
     {
-        private abstract class brainfuckExecutionEnvironment : ExecutionEnvironment
+        private abstract class brainfuckEnv : ExecutionEnvironment
         {
             private Queue<BigInteger> _input;
-            public brainfuckExecutionEnvironment(Queue<BigInteger> input) { _input = input; }
+            public brainfuckEnv(Queue<BigInteger> input) { _input = input; }
 
             public abstract void MoveLeft();
             public abstract void MoveRight();
@@ -23,7 +23,7 @@ namespace EsotericIDE.Languages
             public void BfInput() { input(_input.Count == 0 ? 0 : _input.Dequeue()); }
         }
 
-        private abstract class brainfuckExecutionEnvironment<TCell> : brainfuckExecutionEnvironment
+        private abstract class brainfuckEnv<TCell> : brainfuckEnv
         {
             private ioType _outputType;
             private bool _everOutput;
@@ -32,7 +32,7 @@ namespace EsotericIDE.Languages
             protected int _pointer;
             protected TCell[] _cells = new TCell[4];
 
-            public brainfuckExecutionEnvironment(string source, Queue<BigInteger> input, ioType outputType)
+            public brainfuckEnv(string source, Queue<BigInteger> input, ioType outputType)
                 : base(input)
             {
                 _outputType = outputType;
@@ -94,36 +94,36 @@ namespace EsotericIDE.Languages
             protected override IEnumerable<Position> GetProgram() { return _program.Execute(this); }
         }
 
-        private sealed class brainfuckEnvironmentBytes : brainfuckExecutionEnvironment<byte>
+        private sealed class brainfuckEnvBytes : brainfuckEnv<byte>
         {
-            public brainfuckEnvironmentBytes(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
+            public brainfuckEnvBytes(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
             protected override void input(BigInteger input) { _cells[_pointer] = (byte) (input & byte.MaxValue); }
             public override void Inc() { unchecked { _cells[_pointer]++; } }
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32(_cells[_pointer])); }
         }
-        private sealed class brainfuckEnvironmentUInt32 : brainfuckExecutionEnvironment<uint>
+        private sealed class brainfuckEnvUInt32 : brainfuckEnv<uint>
         {
-            public brainfuckEnvironmentUInt32(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
+            public brainfuckEnvUInt32(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
             protected override void input(BigInteger input) { _cells[_pointer] = (uint) (input & uint.MaxValue); }
             public override void Inc() { unchecked { _cells[_pointer]++; } }
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32((int) _cells[_pointer])); }
         }
-        private sealed class brainfuckEnvironmentInt32 : brainfuckExecutionEnvironment<int>
+        private sealed class brainfuckEnvInt32 : brainfuckEnv<int>
         {
-            public brainfuckEnvironmentInt32(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
+            public brainfuckEnvInt32(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
             protected override void input(BigInteger input) { _cells[_pointer] = (int) (((input - int.MinValue) & uint.MaxValue) + int.MinValue); }
             public override void Inc() { unchecked { _cells[_pointer]++; } }
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32(_cells[_pointer])); }
         }
-        private sealed class brainfuckEnvironmentBigInt : brainfuckExecutionEnvironment<BigInteger>
+        private sealed class brainfuckEnvBigInt : brainfuckEnv<BigInteger>
         {
-            public brainfuckEnvironmentBigInt(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
+            public brainfuckEnvBigInt(string source, Queue<BigInteger> input, ioType ot) : base(source, input, ot) { }
             protected override void input(BigInteger input) { _cells[_pointer] = input; }
             public override void Inc() { unchecked { _cells[_pointer]++; } }
             public override void Dec() { unchecked { _cells[_pointer]--; } }

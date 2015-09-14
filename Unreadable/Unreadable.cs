@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Windows.Forms;
-using RT.Util;
-using RT.Util.ExtensionMethods;
+﻿using EsotericIDE.Unreadable;
 
 namespace EsotericIDE.Languages
 {
-    sealed partial class Unreadable : ProgrammingLanguage
+    sealed class Unreadable : ProgrammingLanguage
     {
         public override string LanguageName { get { return "Unreadable"; } }
         public override string DefaultFileExtension { get { return "unr"; } }
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new unreadableEnv(source, input);
+            return new UnreadableEnv(source, input);
         }
 
         public override string GetInfo(string source, int cursorPosition)

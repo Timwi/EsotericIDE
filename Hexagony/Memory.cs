@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Numerics;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using RT.Util;
+using System.Numerics;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Hexagony

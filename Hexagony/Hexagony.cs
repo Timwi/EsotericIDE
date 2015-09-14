@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using EsotericIDE.Hexagony;
-using RT.Util;
+﻿using EsotericIDE.Hexagony;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages

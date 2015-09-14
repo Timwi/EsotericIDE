@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
+using EsotericIDE.Brainfuck;
 using RT.Util;
 using RT.Util.ExtensionMethods;
 
@@ -10,20 +11,6 @@ namespace EsotericIDE.Languages
 {
     sealed partial class Brainfuck : ProgrammingLanguage
     {
-        private enum ioType
-        {
-            Numbers,
-            Characters
-        }
-
-        private enum cellType
-        {
-            Bytes,
-            Int32s,
-            UInt32s,
-            BigInts
-        }
-
         public override string LanguageName { get { return "Brainfuck"; } }
         public override string DefaultFileExtension { get { return "bf"; } }
 
@@ -32,7 +19,7 @@ namespace EsotericIDE.Languages
             var inputQ = new Queue<BigInteger>();
             switch (_settings.InputType)
             {
-                case ioType.Numbers: try
+                case IOType.Numbers: try
                     {
                         inputQ.EnqueueRange(input.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => BigInteger.Parse(s)));
                     }
@@ -41,26 +28,13 @@ namespace EsotericIDE.Languages
                         throw new Exception("Please provide the input as a comma-separated sequence of integers (or change the semantics in the Semantics menu).");
                     }
                     break;
-                case ioType.Characters:
+                case IOType.Characters:
                     inputQ.EnqueueRange(input.Select(ch => (BigInteger) (int) ch));
                     break;
                 default:
                     throw new InvalidOperationException();
             }
-
-            switch (_settings.CellType)
-            {
-                case cellType.Bytes:
-                    return new brainfuckEnvBytes(source, inputQ, _settings.OutputType);
-                case cellType.Int32s:
-                    return new brainfuckEnvInt32(source, inputQ, _settings.OutputType);
-                case cellType.UInt32s:
-                    return new brainfuckEnvUInt32(source, inputQ, _settings.OutputType);
-                case cellType.BigInts:
-                    return new brainfuckEnvBigInt(source, inputQ, _settings.OutputType);
-                default:
-                    throw new InvalidOperationException();
-            }
+            return BrainfuckEnv.GetEnvironment(_settings.CellType, source, inputQ, _settings.OutputType);
         }
 
         public override string GetInfo(string source, int cursorPosition)
@@ -100,20 +74,34 @@ namespace EsotericIDE.Languages
 
             var ret = Ut.NewArray<ToolStripMenuItem>(
                 new ToolStripMenuItem("&Semantics", null,
-                    createItem("Input as &numbers", () => { _settings.InputType = ioType.Numbers; }, () => _settings.InputType == ioType.Numbers),
-                    createItem("Input as &characters", () => { _settings.InputType = ioType.Characters; }, () => _settings.InputType == ioType.Characters),
+                    createItem("Input as &numbers", () => { _settings.InputType = IOType.Numbers; }, () => _settings.InputType == IOType.Numbers),
+                    createItem("Input as &characters", () => { _settings.InputType = IOType.Characters; }, () => _settings.InputType == IOType.Characters),
                     new ToolStripSeparator(),
-                    createItem("Output as nu&mbers", () => { _settings.OutputType = ioType.Numbers; }, () => _settings.OutputType == ioType.Numbers),
-                    createItem("Output as c&haracters", () => { _settings.OutputType = ioType.Characters; }, () => _settings.OutputType == ioType.Characters),
+                    createItem("Output as nu&mbers", () => { _settings.OutputType = IOType.Numbers; }, () => _settings.OutputType == IOType.Numbers),
+                    createItem("Output as c&haracters", () => { _settings.OutputType = IOType.Characters; }, () => _settings.OutputType == IOType.Characters),
                     new ToolStripSeparator(),
-                    createItem("Cells are &bytes", () => { _settings.CellType = cellType.Bytes; }, () => _settings.CellType == cellType.Bytes),
-                    createItem("Cells are &signed 32-bit integers", () => { _settings.CellType = cellType.Int32s; }, () => _settings.CellType == cellType.Int32s),
-                    createItem("Cells are &unsigned 32-bit integers", () => { _settings.CellType = cellType.UInt32s; }, () => _settings.CellType == cellType.UInt32s),
-                    createItem("Cells are &arbitrary-size integers", () => { _settings.CellType = cellType.BigInts; }, () => _settings.CellType == cellType.BigInts)
+                    createItem("Cells are &bytes", () => { _settings.CellType = CellType.Bytes; }, () => _settings.CellType == CellType.Bytes),
+                    createItem("Cells are &signed 32-bit integers", () => { _settings.CellType = CellType.Int32s; }, () => _settings.CellType == CellType.Int32s),
+                    createItem("Cells are &unsigned 32-bit integers", () => { _settings.CellType = CellType.UInt32s; }, () => _settings.CellType == CellType.UInt32s),
+                    createItem("Cells are &arbitrary-size integers", () => { _settings.CellType = CellType.BigInts; }, () => _settings.CellType == CellType.BigInts)
                 )
             );
             update();
             return ret;
+        }
+
+        private BrainfuckSettings _settings = new BrainfuckSettings();
+
+        public override LanguageSettings GetSettings()
+        {
+            return _settings;
+        }
+
+        public override void SetSettings(LanguageSettings settings)
+        {
+            if (!(settings is BrainfuckSettings))
+                throw new InvalidOperationException();
+            _settings = (BrainfuckSettings) settings;
         }
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
+using EsotericIDE.Ziim;
 using RT.Util;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages
 {
-    sealed partial class Ziim : ProgrammingLanguage
+    sealed class Ziim : ProgrammingLanguage
     {
         public override string LanguageName { get { return "Ziim"; } }
         public override string DefaultFileExtension { get { return "ziim"; } }
@@ -101,24 +101,24 @@ namespace EsotericIDE.Languages
             });
 
             // STEP 2: Translate each arrow into a ‘node’ instance with the appropriate ‘instruction’
-            var nodes = Ut.NewArray<node>(height, width);
+            var nodes = Ut.NewArray<Node>(height, width);
             forEachArrow((x, y, i, single, p, ch) =>
             {
                 var pointedToFrom = (pointedToBy.ContainsKey(x) && pointedToBy[x].ContainsKey(y) ? pointedToBy[x][y].Select(tup => tup.Item3) : Enumerable.Empty<int>()).Order().ToList();
-                nodes[y][x] = new node(x, y, i,
+                nodes[y][x] = new Node(x, y, i,
                     single ?
-                        pointedToFrom.SequenceEqual(_zero) ? instruction.Zero :
-                        pointedToFrom.SequenceEqual(_stdin) ? instruction.Stdin :
-                        pointedToFrom.SequenceEqual(_concat) ? instruction.Concat :
-                        pointedToFrom.SequenceEqual(_inverse) ? instruction.Inverse :
-                        pointedToFrom.SequenceEqual(_noop) ? instruction.NoOp :
-                        pointedToFrom.SequenceEqual(_label) ? instruction.Label :
-                        Ut.Throw<instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1))
+                        pointedToFrom.SequenceEqual(_zero) ? Instruction.Zero :
+                        pointedToFrom.SequenceEqual(_stdin) ? Instruction.Stdin :
+                        pointedToFrom.SequenceEqual(_concat) ? Instruction.Concat :
+                        pointedToFrom.SequenceEqual(_inverse) ? Instruction.Inverse :
+                        pointedToFrom.SequenceEqual(_noop) ? Instruction.NoOp :
+                        pointedToFrom.SequenceEqual(_label) ? Instruction.Label :
+                        Ut.Throw<Instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1))
                     : // double arrow
-                        pointedToFrom.SequenceEqual(_splitter[0]) || pointedToFrom.SequenceEqual(_splitter[1]) ? instruction.Splitter :
-                        pointedToFrom.SequenceEqual(_isZero[0]) || pointedToFrom.SequenceEqual(_isZero[1]) ? instruction.IsZero :
-                        pointedToFrom.SequenceEqual(_isEmpty[0]) || pointedToFrom.SequenceEqual(_isEmpty[1]) ? instruction.IsEmpty :
-                        Ut.Throw<instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1)));
+                        pointedToFrom.SequenceEqual(_splitter[0]) || pointedToFrom.SequenceEqual(_splitter[1]) ? Instruction.Splitter :
+                        pointedToFrom.SequenceEqual(_isZero[0]) || pointedToFrom.SequenceEqual(_isZero[1]) ? Instruction.IsZero :
+                        pointedToFrom.SequenceEqual(_isEmpty[0]) || pointedToFrom.SequenceEqual(_isEmpty[1]) ? Instruction.IsEmpty :
+                        Ut.Throw<Instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1)));
             });
 
             // STEP 3: For each node, determine which other nodes it is pointing to and are pointing to it
@@ -144,10 +144,10 @@ namespace EsotericIDE.Languages
             });
 
             var nodesList = nodes.SelectMany(row => row.Where(n => n != null)).ToList();
-            return new ziimEnv
+            return new ZiimEnv
             {
                 Nodes = nodesList,
-                Threads = nodesList.Where(n => n.Instruction == instruction.Zero).Select(n => new thread { CurrentValue = bits.Zero, CurrentInstruction = n, Suspended = false }).ToList(),
+                Threads = nodesList.Where(n => n.Instruction == Instruction.Zero).Select(n => new Thread { CurrentValue = Bits.Zero, CurrentInstruction = n, Suspended = false }).ToList(),
                 Input = input
             };
         }

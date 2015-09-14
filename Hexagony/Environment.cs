@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Text.RegularExpressions;
 using RT.Util;
 using RT.Util.ExtensionMethods;
@@ -143,12 +140,12 @@ namespace EsotericIDE.Hexagony
                         break;
 
                     // Control flow
-                    case '_': _ipDirs[_activeIp] = dir.reflect_hori; break;
-                    case '|': _ipDirs[_activeIp] = dir.reflect_vert; break;
-                    case '/': _ipDirs[_activeIp] = dir.reflect_diag_up; break;
-                    case '\\': _ipDirs[_activeIp] = dir.reflect_diag_down; break;
-                    case '<': _ipDirs[_activeIp] = dir.reflect_branch_left(_memory.Get() > 0); break;
-                    case '>': _ipDirs[_activeIp] = dir.reflect_branch_right(_memory.Get() > 0); break;
+                    case '_': _ipDirs[_activeIp] = dir.ReflectAtUnderscore; break;
+                    case '|': _ipDirs[_activeIp] = dir.ReflectAtPipe; break;
+                    case '/': _ipDirs[_activeIp] = dir.ReflectAtSlash; break;
+                    case '\\': _ipDirs[_activeIp] = dir.ReflectAtBackslash; break;
+                    case '<': _ipDirs[_activeIp] = dir.ReflectAtLessThan(_memory.Get() > 0); break;
+                    case '>': _ipDirs[_activeIp] = dir.ReflectAtGreaterThan(_memory.Get() > 0); break;
                     case ']': newIp = (_activeIp + 1) % 6; break;
                     case '[': newIp = (_activeIp + 5) % 6; break;
                     case '#': newIp = ((int) (_memory.Get() % 6) + 6) % 6; break;
@@ -168,7 +165,7 @@ namespace EsotericIDE.Hexagony
                         break;
                 }
 
-                _ips[_activeIp] += dir.vec;
+                _ips[_activeIp] += dir.Vector;
                 handleEdges();
                 _activeIp = newIp;
             }
@@ -194,7 +191,7 @@ namespace EsotericIDE.Hexagony
             var zBigger = Math.Abs(z) >= _grid.Size;
 
             // Move the pointer back to the hex near the edge
-            _ips[_activeIp] -= dir.vec;
+            _ips[_activeIp] -= dir.Vector;
 
             // If two values are still in range, we are wrapping around an edge (not a corner).
             if (!xBigger && !yBigger)

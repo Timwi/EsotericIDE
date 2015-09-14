@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using RT.Util;
+﻿using System.Text.RegularExpressions;
+using EsotericIDE.Quipu;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages
 {
-    sealed partial class Quipu : ProgrammingLanguage
+    sealed class Quipu : ProgrammingLanguage
     {
         public override string LanguageName { get { return "Quipu"; } }
         public override string DefaultFileExtension { get { return "qp"; } }
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new quipuEnv(program.Parse(source), input);
+            return new QuipuEnv(Program.Parse(source), input);
         }
 
         public override string GetInfo(string source, int cursorPosition)

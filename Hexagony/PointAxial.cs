@@ -1,5 +1,4 @@
-﻿using System;
-using RT.Util.ExtensionMethods;
+﻿using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Hexagony
 {

@@ -41,7 +41,7 @@ namespace EsotericIDE.Hexagony
 
         public override string DescribeExecutionState()
         {
-            return "";
+            return _memory.Describe;
         }
 
         private Direction dir { get { return _ipDirs[_activeIp]; } }

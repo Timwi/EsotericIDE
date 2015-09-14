@@ -77,6 +77,7 @@
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ctMenu = new System.Windows.Forms.MenuStrip();
             this.cmbLanguage = new System.Windows.Forms.ToolStripComboBox();
+            this.miRevert = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.ctSplit)).BeginInit();
             this.ctSplit.Panel1.SuspendLayout();
             this.ctSplit.Panel2.SuspendLayout();
@@ -251,6 +252,7 @@
             this.miOpen,
             this.miSave,
             this.miSaveAs,
+            this.miRevert,
             this.miSep1,
             this.miExit});
             this.mnuFile.Name = "mnuFile";
@@ -535,6 +537,13 @@
             this.cmbLanguage.Name = "cmbLanguage";
             this.cmbLanguage.Size = new System.Drawing.Size(121, 23);
             // 
+            // miRevert
+            // 
+            this.miRevert.Name = "miRevert";
+            this.miRevert.Size = new System.Drawing.Size(155, 22);
+            this.miRevert.Text = "&Revert";
+            this.miRevert.Click += new System.EventHandler(this.revert);
+            // 
             // Mainform
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -545,6 +554,7 @@
             this.MainMenuStrip = this.ctMenu;
             this.Name = "Mainform";
             this.Text = "Esoteric IDE";
+            this.Activated += new System.EventHandler(this.activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.exiting);
             this.ctSplit.Panel1.ResumeLayout(false);
             this.ctSplit.Panel2.ResumeLayout(false);
@@ -615,6 +625,7 @@
         private System.Windows.Forms.ToolStripComboBox cmbLanguage;
         private System.Windows.Forms.ToolStripMenuItem miSelectProgrammingLanguage;
         private System.Windows.Forms.ToolStripMenuItem miWordwrap;
+        private System.Windows.Forms.ToolStripMenuItem miRevert;
     }
 }
 

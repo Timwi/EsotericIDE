@@ -49,8 +49,6 @@ namespace EsotericIDE
                     ctSplit.SplitterDistance = (int) (ctSplit.Height * EsotericIDEProgram.Settings.SplitterPercent);
             };
 
-            if (EsotericIDEProgram.Settings.LanguageSettings == null)
-                EsotericIDEProgram.Settings.LanguageSettings = new Dictionary<string, LanguageSettings>();
             _languages = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => typeof(ProgrammingLanguage).IsAssignableFrom(t) && !t.IsAbstract)
                 .Select(t => (ProgrammingLanguage) Activator.CreateInstance(t))
@@ -145,6 +143,7 @@ namespace EsotericIDE
         }
 
         private Position _currentPosition;
+        private DateTime _lastFileTime;
 
         private void updateUi()
         {
@@ -222,6 +221,7 @@ namespace EsotericIDE
         private void saveCore()
         {
             File.WriteAllText(_currentFilePath, txtSource.Text);
+            _lastFileTime = File.GetLastWriteTimeUtc(_currentFilePath);
             _anyChanges = false;
         }
 
@@ -271,14 +271,26 @@ namespace EsotericIDE
                     return;
                 EsotericIDEProgram.Settings.LastDirectory = Path.GetDirectoryName(open.FileName);
 
-                txtSource.Text = File.ReadAllText(_currentFilePath = open.FileName).UnifyLineEndings();
-                txtExecutionState.Text = "";
-                txtOutput.Text = "";
-                _timerPreviousSource = txtSource.Text;
-                _timerPreviousCursorPosition = -1;
-                sourceTextboxFixHack();
-                _anyChanges = false;
+                openCore(open.FileName);
             }
+        }
+
+        private void openCore(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                DlgMessage.Show("The specified file does not exist.", "Error", DlgType.Error);
+                return;
+            }
+            _currentFilePath = filePath;
+            txtSource.Text = File.ReadAllText(_currentFilePath).UnifyLineEndings();
+            txtExecutionState.Text = "";
+            txtOutput.Text = "";
+            _timerPreviousSource = txtSource.Text;
+            _timerPreviousCursorPosition = -1;
+            sourceTextboxFixHack();
+            _anyChanges = false;
+            _lastFileTime = File.GetLastWriteTimeUtc(_currentFilePath);
         }
 
         private void save(object _, EventArgs __)
@@ -336,11 +348,11 @@ namespace EsotericIDE
                     return false;
                 _env = _currentLanguage.Compile(txtSource.Text, input);
                 _env.State = state;
-                _env.DebuggerBreak += p => { this.Invoke(new Action(() => debuggerBreak(p))); };
-                _env.ExecutionFinished += (c, e) => { this.Invoke(new Action(() => executionFinished(c, e))); };
+                _env.DebuggerBreak += p => { this.BeginInvoke(new Action(() => debuggerBreak(p))); };
+                _env.ExecutionFinished += (c, e) => { this.BeginInvoke(new Action(() => executionFinished(c, e))); };
                 foreach (int bp in lstBreakpoints.Items)
                     _env.AddBreakpoint(bp);
-                _env.BreakpointsChanged += () => { this.Invoke(new Action(() => breakpointsChanged())); };
+                _env.BreakpointsChanged += () => { this.BeginInvoke(new Action(() => breakpointsChanged())); };
                 return true;
             }
             catch (CompileException e)
@@ -449,7 +461,11 @@ namespace EsotericIDE
 
         private void exiting(object _, FormClosingEventArgs e)
         {
-            EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = _currentLanguage.GetSettings();
+            var settings = _currentLanguage.GetSettings();
+            if (settings != null)
+                EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = settings;
+            else
+                EsotericIDEProgram.Settings.LanguageSettings.Remove(_currentLanguage.LanguageName);
             if (!canDestroy())
                 e.Cancel = true;
         }
@@ -598,6 +614,22 @@ namespace EsotericIDE
         private void toggleWordwrap(object sender, EventArgs e)
         {
             _wordWrap = !_wordWrap;
+        }
+
+        private void activated(object sender, EventArgs e)
+        {
+            // Check if the file on disk has changed.
+            if (_currentFilePath != null && 
+                File.Exists(_currentFilePath) &&
+                File.GetLastWriteTimeUtc(_currentFilePath) > _lastFileTime &&
+                DlgMessage.Show("The file has changed on disk. Reload?", "File has changed", DlgType.Question, "&Reload", "&Cancel") == 0)
+                openCore(_currentFilePath);
+        }
+
+        private void revert(object sender, EventArgs e)
+        {
+            if (_currentFilePath != null && DlgMessage.Show("Revert all changes made since last save?", "Revert", DlgType.Question, "&Revert", "&Cancel") == 0)
+                openCore(_currentFilePath);
         }
     }
 }

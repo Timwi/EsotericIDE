@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RT.Util;
 using RT.Util.Forms;
+using RT.Util.Serialization;
 
 namespace EsotericIDE
 {
@@ -21,7 +22,8 @@ namespace EsotericIDE
         public bool SaveWhenRun = true;
         public bool WordWrap = true;
 
-        public Dictionary<string, LanguageSettings> LanguageSettings;
+        [ClassifyNotNull]
+        public Dictionary<string, LanguageSettings> LanguageSettings = new Dictionary<string, LanguageSettings>();
 
 #if DEBUG
         private static void PostBuildCheck(IPostBuildReporter rep)

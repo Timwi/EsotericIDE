@@ -24,18 +24,8 @@ namespace EsotericIDE.Hexagony
         public abstract Direction Reverse { get; }
         public abstract PointAxial Vector { get; }
 
-        public bool Equals(Direction other)
-        {
-            // The hash code of all the directions are unique
-            return GetHashCode() == other.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            // The hash code of all the directions are unique
-            return obj is Direction && GetHashCode() == obj.GetHashCode();
-        }
-
+        public abstract bool Equals(Direction other);
+        public override bool Equals(object obj) { return obj is Direction && Equals((Direction) obj); }
         public static bool operator ==(Direction a, Direction b) { return a.Equals(b); }
         public static bool operator !=(Direction a, Direction b) { return !a.Equals(b); }
         public abstract override int GetHashCode();
@@ -56,6 +46,7 @@ namespace EsotericIDE.Hexagony
         public override Direction Reverse { get { return Direction.SouthWest; } }
         public override PointAxial Vector { get { return new PointAxial(1, -1); } }
         public override int GetHashCode() { return 245; }
+        public override bool Equals(Direction other) { return other is NorthEast; }
     }
 
     sealed class NorthWest : Direction
@@ -73,6 +64,7 @@ namespace EsotericIDE.Hexagony
         public override Direction Reverse { get { return Direction.SouthEast; } }
         public override PointAxial Vector { get { return new PointAxial(0, -1); } }
         public override int GetHashCode() { return 2456; }
+        public override bool Equals(Direction other) { return other is NorthWest; }
     }
 
     sealed class West : Direction
@@ -90,6 +82,7 @@ namespace EsotericIDE.Hexagony
         public override Direction Reverse { get { return Direction.East; } }
         public override PointAxial Vector { get { return new PointAxial(-1, 0); } }
         public override int GetHashCode() { return 24567; }
+        public override bool Equals(Direction other) { return other is West; }
     }
 
     sealed class SouthWest : Direction
@@ -107,6 +100,7 @@ namespace EsotericIDE.Hexagony
         public override Direction Reverse { get { return Direction.NorthEast; } }
         public override PointAxial Vector { get { return new PointAxial(-1, 1); } }
         public override int GetHashCode() { return 245678; }
+        public override bool Equals(Direction other) { return other is SouthWest; }
     }
 
     sealed class SouthEast : Direction
@@ -124,6 +118,7 @@ namespace EsotericIDE.Hexagony
         public override Direction Reverse { get { return Direction.NorthWest; } }
         public override PointAxial Vector { get { return new PointAxial(0, 1); } }
         public override int GetHashCode() { return 2456783; }
+        public override bool Equals(Direction other) { return other is SouthEast; }
     }
 
     sealed class East : Direction
@@ -141,5 +136,6 @@ namespace EsotericIDE.Hexagony
         public override Direction Reverse { get { return Direction.West; } }
         public override PointAxial Vector { get { return new PointAxial(1, 0); } }
         public override int GetHashCode() { return 24567837; }
+        public override bool Equals(Direction other) { return other is East; }
     }
 }

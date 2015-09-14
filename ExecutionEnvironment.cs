@@ -92,6 +92,9 @@ namespace EsotericIDE
             }
 
             _resetEvent.Set();
+            if (blockUntilFinished)
+                while (State != ExecutionState.Finished)
+                    _resetEvent.WaitOne();
         }
 
         public virtual void Dispose()
@@ -129,6 +132,8 @@ namespace EsotericIDE
                                 fireDebuggerBreak(instructionPointer.Current);
                                 _resetEvent.Reset();
                                 _resetEvent.WaitOne();
+                                if (State == ExecutionState.Stop)
+                                    goto case ExecutionState.Stop;
                                 continue;
                             case ExecutionState.Stop:
                                 canceled = true;

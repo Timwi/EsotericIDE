@@ -42,7 +42,7 @@ namespace EsotericIDE.Languages
                 case '\\': return "Mirror.";
 
                 case '<':
-                case '>': return "Mirror/branch.";
+                case '>': return "Mirror/branch. 60° right turn if positive, 60° left turn if zero or negative.";
 
                 case '[': return "Switches to the previous instruction pointer (wrapping around from 0 to 5).";
                 case ']': return "Switches to the next instruction pointer (wrapping around from 5 to 0).";

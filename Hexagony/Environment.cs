@@ -149,6 +149,7 @@ namespace EsotericIDE.Hexagony
                     case ']': newIp = (_activeIp + 1) % 6; break;
                     case '[': newIp = (_activeIp + 5) % 6; break;
                     case '#': newIp = ((int) (_memory.Get() % 6) + 6) % 6; break;
+                    case '$': _ips[_activeIp] += dir.Vector; break;
 
                     // Digits and letters
                     default:

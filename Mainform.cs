@@ -144,6 +144,7 @@ namespace EsotericIDE
 
         private Position _currentPosition;
         private DateTime _lastFileTime;
+        private int? _runToCursorBreakpoint;
 
         private void updateUi()
         {
@@ -330,6 +331,7 @@ namespace EsotericIDE
 
         private bool compile(ExecutionState state)
         {
+            removeRunToCursorBreakpoint();
             _currentPosition = null;
 
             if (_env != null)
@@ -383,6 +385,7 @@ namespace EsotericIDE
 
         private void executionFinished(bool canceled, RuntimeError runtimeError)
         {
+            removeRunToCursorBreakpoint();
             txtExecutionState.Text = "(not running)";
             txtOutput.Text = _env.Output.UnifyLineEndings();
             if (canceled && runtimeError == null)
@@ -433,6 +436,7 @@ namespace EsotericIDE
 
         private void debuggerBreak(Position position)
         {
+            removeRunToCursorBreakpoint();
             _currentPosition = position;
             txtExecutionState.Text = _env.DescribeExecutionState();
             txtOutput.Text = _env.Output;
@@ -442,11 +446,16 @@ namespace EsotericIDE
 
         private void runToCursor(object _, EventArgs __)
         {
+            if (_env != null && _env.State != ExecutionState.Debugging)
+                return;
             if (!compile(ExecutionState.Debugging))
                 return;
             var to = txtSource.SelectionStart;
             if (!_env.Breakpoints.Contains(to))
+            {
                 _env.AddBreakpoint(to);
+                _runToCursorBreakpoint = to;
+            }
             _env.State = ExecutionState.Running;
             _env.Continue();
         }
@@ -455,8 +464,19 @@ namespace EsotericIDE
         {
             if (_env == null)
                 return;
+            removeRunToCursorBreakpoint();
             _env.State = ExecutionState.Stop;
             _env.Continue();
+        }
+
+        private void removeRunToCursorBreakpoint()
+        {
+            if (_runToCursorBreakpoint == null)
+                return;
+            if (_env != null)
+                _env.RemoveBreakpoint(_runToCursorBreakpoint.Value);
+            else
+                lstBreakpoints.Items.Remove(_runToCursorBreakpoint.Value);
         }
 
         private void exiting(object _, FormClosingEventArgs e)
@@ -571,14 +591,19 @@ namespace EsotericIDE
         {
             if (_env == null)
             {
-                if (lstBreakpoints.Items.Contains(txtSource.SelectionStart))
-                    lstBreakpoints.Items.Remove(txtSource.SelectionStart);
+                var any = lstBreakpoints.Items.OfType<int>().Where(i => i >= txtSource.SelectionStart && i < txtSource.SelectionStart + txtSource.SelectionLength.ClipMin(1)).ToArray();
+                if (any.Length > 0)
+                    foreach (var bp in any)
+                        lstBreakpoints.Items.Remove(bp);
                 else
                     lstBreakpoints.Items.Add(txtSource.SelectionStart);
             }
             else
             {
-                if (!_env.RemoveBreakpoint(txtSource.SelectionStart))
+                var any = false;
+                for (int i = 0; i < txtSource.SelectionLength.ClipMin(1); i++)
+                    any = any | _env.RemoveBreakpoint(txtSource.SelectionStart + i);
+                if (!any)
                     _env.AddBreakpoint(txtSource.SelectionStart);
             }
         }

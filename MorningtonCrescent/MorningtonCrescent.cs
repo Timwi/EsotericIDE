@@ -10,7 +10,6 @@ namespace EsotericIDE.Languages
         public override string LanguageName { get { return "Mornington Crescent"; } }
         public override string DefaultFileExtension { get { return "mcresc"; } }
         public override string GetInfo(string source, int cursorPosition) { return ""; }
-        public override System.Windows.Forms.ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText) { return new System.Windows.Forms.ToolStripMenuItem[0]; }
 
         public override ExecutionEnvironment Compile(string source, string input)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using RT.Util;
@@ -41,7 +42,7 @@ namespace EsotericIDE.Hexagony
 
         public override string DescribeExecutionState()
         {
-            return _memory.Describe;
+            return _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString() + Environment.NewLine + _memory.Describe;
         }
 
         private Direction dir { get { return _ipDirs[_activeIp]; } }

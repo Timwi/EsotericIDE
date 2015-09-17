@@ -47,6 +47,7 @@ namespace EsotericIDE.Hexagony
         public override PointAxial Vector { get { return new PointAxial(1, -1); } }
         public override int GetHashCode() { return 245; }
         public override bool Equals(Direction other) { return other is NorthEast; }
+        public override string ToString() { return "↗"; }
     }
 
     sealed class NorthWest : Direction
@@ -65,6 +66,7 @@ namespace EsotericIDE.Hexagony
         public override PointAxial Vector { get { return new PointAxial(0, -1); } }
         public override int GetHashCode() { return 2456; }
         public override bool Equals(Direction other) { return other is NorthWest; }
+        public override string ToString() { return "↖"; }
     }
 
     sealed class West : Direction
@@ -83,6 +85,7 @@ namespace EsotericIDE.Hexagony
         public override PointAxial Vector { get { return new PointAxial(-1, 0); } }
         public override int GetHashCode() { return 24567; }
         public override bool Equals(Direction other) { return other is West; }
+        public override string ToString() { return "←"; }
     }
 
     sealed class SouthWest : Direction
@@ -101,6 +104,7 @@ namespace EsotericIDE.Hexagony
         public override PointAxial Vector { get { return new PointAxial(-1, 1); } }
         public override int GetHashCode() { return 245678; }
         public override bool Equals(Direction other) { return other is SouthWest; }
+        public override string ToString() { return "↙"; }
     }
 
     sealed class SouthEast : Direction
@@ -119,6 +123,7 @@ namespace EsotericIDE.Hexagony
         public override PointAxial Vector { get { return new PointAxial(0, 1); } }
         public override int GetHashCode() { return 2456783; }
         public override bool Equals(Direction other) { return other is SouthEast; }
+        public override string ToString() { return "↘"; }
     }
 
     sealed class East : Direction
@@ -137,5 +142,6 @@ namespace EsotericIDE.Hexagony
         public override PointAxial Vector { get { return new PointAxial(1, 0); } }
         public override int GetHashCode() { return 24567837; }
         public override bool Equals(Direction other) { return other is East; }
+        public override string ToString() { return "→"; }
     }
 }

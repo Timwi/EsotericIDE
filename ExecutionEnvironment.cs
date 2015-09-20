@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using RT.Util;
 
 namespace EsotericIDE
 {
@@ -150,8 +151,7 @@ namespace EsotericIDE
                 }
                 catch (Exception e)
                 {
-                    var type = e.GetType();
-                    error = new RuntimeError(instructionPointer.Current, e.Message + (type != typeof(Exception) ? " (" + type.Name + ")" : ""));
+                    error = new RuntimeError(instructionPointer.Current, e.Message + e.GetType().Apply(type => type != typeof(Exception) ? " (" + type.Name + ")" : ""));
                 }
 
                 finished:

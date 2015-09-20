@@ -48,15 +48,15 @@ namespace EsotericIDE.Hexagony
 
         private TextBox _txtIpInfo;
         private ScrollableControl _scroll;
-        private DoubleBufferedPanel _pnlMemory;
+        private Panel _pnlMemory;
         private Bitmap _lastMemoryBitmap;
         private HexagonySettings _settings;
 
         public override Control InitializeWatchWindow()
         {
             _txtIpInfo = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, Width = 300 };
-            _pnlMemory = new DoubleBufferedPanel();
-            _pnlMemory.PaintBuffer += paintBuffer;
+            _pnlMemory = new Panel();
+            _pnlMemory.Paint += paintMemory;
             _scroll = new ScrollableControl { Dock = DockStyle.Fill, AutoScroll = true };
             _scroll.Controls.Add(_pnlMemory);
 
@@ -70,9 +70,8 @@ namespace EsotericIDE.Hexagony
             return layout;
         }
 
-        private void paintBuffer(object _, PaintEventArgs e)
+        private void paintMemory(object _, PaintEventArgs e)
         {
-            e.Graphics.Clear(Color.Transparent);
             if (_lastMemoryBitmap != null)
                 e.Graphics.DrawImage(_lastMemoryBitmap, 0, 0);
         }

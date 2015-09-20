@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.Linq;
 using System.Numerics;
+using System.Windows.Forms;
+using RT.Util.Controls;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Brainfuck
@@ -50,11 +55,6 @@ namespace EsotericIDE.Brainfuck
                 _program = Program.Parse(source);
             }
 
-            public override void UpdateWatch()
-            {
-                _txtWatch.Text = _cells.Select((cell, i) => (_pointer == i ? "→ " : "  ") + cell).JoinString(Environment.NewLine);
-            }
-
             public sealed override void MoveLeft()
             {
                 _pointer--;
@@ -101,6 +101,79 @@ namespace EsotericIDE.Brainfuck
             protected abstract void outputCharacter();
 
             protected override IEnumerable<Position> GetProgram() { return _program.Execute(this); }
+
+            private ScrollableControl _scroll;
+            private Panel _pnlMemory;
+            private Bitmap _lastMemoryBitmap;
+            private FontSpec _watchFont;
+
+            public override Control InitializeWatchWindow()
+            {
+                _pnlMemory = new DoubleBufferedPanel();
+                _pnlMemory.Paint += paintMemoryPanel;
+                _scroll = new ScrollableControl { Dock = DockStyle.Fill, AutoScroll = true };
+                _scroll.Controls.Add(_pnlMemory);
+                return _scroll;
+            }
+
+            public override void SetWatchWindowFont(FontSpec font)
+            {
+                _watchFont = font;
+                UpdateWatch();
+            }
+
+            public override void UpdateWatch()
+            {
+                const int xPadding = 10;
+                const int yPadding = 5;
+                const int bottomPadding = 15;
+
+                if (_lastMemoryBitmap == null)
+                    _lastMemoryBitmap = new Bitmap(10, 10, PixelFormat.Format32bppArgb);
+
+                var totalWidth = 0;
+                var totalHeight = 2 * yPadding + bottomPadding;
+
+                using (var g = Graphics.FromImage(_lastMemoryBitmap))
+                using (var font = _watchFont.Font)
+                {
+                    for (int i = 0; i < _cells.Length; i++)
+                        totalWidth += 2 * xPadding + (int) g.MeasureString(_cells[i].ToString(), font).Width;
+                    totalHeight += (int) g.MeasureString("Wg", font).Height;
+                }
+
+                _lastMemoryBitmap = new Bitmap(totalWidth, totalHeight);
+                using (var g = Graphics.FromImage(_lastMemoryBitmap))
+                using (var font = _watchFont.Font)
+                {
+                    g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+
+                    g.DrawRectangle(Pens.LightGray, 0, 0, totalWidth - 1, totalHeight - bottomPadding);
+
+                    float x = 0;
+                    for (int i = 0; i < _cells.Length; i++)
+                    {
+                        var str = _cells[i].ToString();
+                        g.DrawString(str, font, Brushes.Black, x + xPadding, yPadding);
+                        var thisWidth = 2 * xPadding + g.MeasureString(_cells[i].ToString(), font).Width;
+
+                        if (_pointer == i)
+                            g.FillPolygon(Brushes.Crimson, new[] { new PointF(x + thisWidth / 2, totalHeight - bottomPadding), new PointF(x + thisWidth / 2 - xPadding, totalHeight - 1), new PointF(x + thisWidth / 2 + xPadding, totalHeight - 1) });
+
+                        x += thisWidth;
+                        g.DrawLine(Pens.LightGray, x, 0, x, totalHeight - bottomPadding);
+                    }
+                }
+
+                _pnlMemory.Size = _lastMemoryBitmap.Size;
+                _pnlMemory.Refresh();
+            }
+
+            private void paintMemoryPanel(object _, PaintEventArgs e)
+            {
+                if (_lastMemoryBitmap != null)
+                    e.Graphics.DrawImage(_lastMemoryBitmap, 0, 0);
+            }
         }
 
         sealed class EnvBytes : Env<byte>

@@ -72,6 +72,7 @@ namespace EsotericIDE.Hexagony
 
         private void paintBuffer(object _, PaintEventArgs e)
         {
+            e.Graphics.Clear(Color.Transparent);
             if (_lastMemoryBitmap != null)
                 e.Graphics.DrawImage(_lastMemoryBitmap, 0, 0);
         }

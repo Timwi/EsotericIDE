@@ -507,6 +507,7 @@ namespace EsotericIDE
                 _env.RemoveBreakpoint(_runToCursorBreakpoint.Value);
             else
                 lstBreakpoints.Items.Remove(_runToCursorBreakpoint.Value);
+            _runToCursorBreakpoint = null;
         }
 
         private void exiting(object _, FormClosingEventArgs e)

@@ -208,7 +208,7 @@ namespace EsotericIDE.Hexagony
                 }
             minX -= 3; minY -= 3; maxX += 3; maxY += 3;
 
-            const int xFactor = 20, yFactor = 32;
+            const int xFactor = 20, yFactor = 33;
 
             return GraphicsUtil.DrawBitmap((maxX - minX) * xFactor, (maxY - minY) * yFactor, g =>
             {

@@ -43,7 +43,7 @@ namespace EsotericIDE
             if (instance.Length == 6 && Regex.IsMatch(instance, @"^[0-9a-fA-F]{6}$"))
                 return Color.FromArgb(Convert.ToInt32(instance.Substring(0, 2), 16), Convert.ToInt32(instance.Substring(2, 2), 16), Convert.ToInt32(instance.Substring(4, 2), 16));
             if (instance.Length == 8 && Regex.IsMatch(instance, @"^[0-9a-fA-F]{8}$"))
-                return Color.FromArgb(Convert.ToInt32(instance.Substring(6, 2), 16), Convert.ToInt32(instance.Substring(0, 2), 16), Convert.ToInt32(instance.Substring(2, 2), 16), Convert.ToInt32(instance.Substring(4, 2), 16));
+                return Color.FromArgb(Convert.ToInt32(instance.Substring(0, 2), 16), Convert.ToInt32(instance.Substring(2, 2), 16), Convert.ToInt32(instance.Substring(4, 2), 16), Convert.ToInt32(instance.Substring(6, 2), 16));
             return Color.Black;
         }
 

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using RT.Util;
+using RT.Util.Serialization;
 
 [assembly: AssemblyTitle("Esoteric IDE")]
 [assembly: AssemblyDescription("IDE (Interpreter/Debugger Engine) for esoteric programming languages")]
@@ -32,6 +34,8 @@ namespace EsotericIDE
 
             if (args.Length == 2 && args[0] == "--post-build-check")
                 return Ut.RunPostBuildChecks(args[1], Assembly.GetExecutingAssembly());
+
+            Classify.DefaultOptions.AddTypeOptions(typeof(Color), new ClassifyColorSubstitute());
 
             SettingsUtil.LoadSettings(out Settings);
 

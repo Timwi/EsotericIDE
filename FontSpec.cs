@@ -8,7 +8,6 @@ namespace EsotericIDE
         public string Name { get; private set; }
         public float Size { get; private set; }
         public FontStyle Style { get; private set; }
-        [ClassifySubstitute(typeof(ClassifyColorSubstitute))]
         public Color Color { get; private set; }
 
         public FontSpec(string name, float size, FontStyle style, Color color)

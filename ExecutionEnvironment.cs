@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using RT.Util;
 
 namespace EsotericIDE
@@ -108,8 +110,6 @@ namespace EsotericIDE
                 ((IDisposable) _resetEvent).Dispose();
         }
 
-        public abstract string DescribeExecutionState();
-
         protected virtual IEnumerable<Position> GetProgram()
         {
             throw new NotImplementedException("Your Environment must override either the Run() method or the GetProgram() method.");
@@ -160,5 +160,27 @@ namespace EsotericIDE
                 _resetEvent.Reset();
             }
         }
+
+        protected TextBox _txtWatch;
+
+        public virtual Control InitializeWatchWindow()
+        {
+            return _txtWatch = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(5),
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical
+            };
+        }
+
+        public virtual void SetWatchWindowFont(Font font)
+        {
+            if (_txtWatch != null) // In case a derived class overrides InitializeWatchWindow() but not this
+                _txtWatch.Font = font;
+        }
+
+        public abstract void UpdateWatch();
     }
 }

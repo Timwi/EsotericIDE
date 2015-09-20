@@ -40,9 +40,9 @@ namespace EsotericIDE.Hexagony
                 Direction.NorthEast);
         }
 
-        public override string DescribeExecutionState()
+        public override void UpdateWatch()
         {
-            return _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString() + Environment.NewLine + _memory.Describe;
+            _txtWatch.Text = _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString() + Environment.NewLine + _memory.Describe;
         }
 
         private Direction dir { get { return _ipDirs[_activeIp]; } }

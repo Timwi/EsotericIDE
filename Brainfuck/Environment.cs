@@ -50,9 +50,9 @@ namespace EsotericIDE.Brainfuck
                 _program = Program.Parse(source);
             }
 
-            public override string DescribeExecutionState()
+            public override void UpdateWatch()
             {
-                return _cells.Cast<object>().Select((cell, i) => (_pointer == i ? "→ " : "  ") + cell).JoinString(Environment.NewLine);
+                _txtWatch.Text = _cells.Select((cell, i) => (_pointer == i ? "→ " : "  ") + cell).JoinString(Environment.NewLine);
             }
 
             public sealed override void MoveLeft()

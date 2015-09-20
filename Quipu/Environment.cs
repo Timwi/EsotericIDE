@@ -27,12 +27,12 @@ namespace EsotericIDE.Quipu
             Input = new StringReader(input);
         }
 
-        public override string DescribeExecutionState()
+        public override void UpdateWatch()
         {
             var threadValues = new[] { "Thread values:" }.Concat(ThreadValues.Select((s, i) => (s is string ? @"{{0}}: ""{0}""".Fmt(((string) s).CLiteralEscape()) : @"{{0}}: {0}".Fmt(s)).Fmt(i))).ToArray();
             var stackValues = new[] { "Stack:" }.Concat(Stack.Select(s => s is string ? @"""{0}""".Fmt(((string) s).CLiteralEscape()) : s.ToString())).ToArray();
             var width = stackValues.Max(v => v.Length);
-            return Enumerable.Range(0, Math.Max(threadValues.Length, stackValues.Length))
+            _txtWatch.Text = Enumerable.Range(0, Math.Max(threadValues.Length, stackValues.Length))
                 .Select(l => "{{0,{0}}}  {{1}}".Fmt(width).Fmt(l < stackValues.Length ? stackValues[l] : "", l < threadValues.Length ? threadValues[l] : ""))
                 .JoinString(Environment.NewLine);
         }

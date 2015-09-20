@@ -463,9 +463,9 @@ Woodside Park [Northern]";
                     _dic.AddSafe(m.Groups[1].Value, m2.Groups[1].Value);
         }
 
-        public override string DescribeExecutionState()
+        public override void UpdateWatch()
         {
-            return "Current station: {1}{0}Accumulator: {2}{0}Jumpstack: {3}{0}{0}{4}".Fmt(
+            _txtWatch.Text = "Current station: {1}{0}Accumulator: {2}{0}Jumpstack: {3}{0}{0}{4}".Fmt(
                 Environment.NewLine,
                 _currentStation,
                 _accumulator is string ? "\"{0}\"".Fmt(((string) _accumulator).CLiteralEscape()) : _accumulator.ToString(),

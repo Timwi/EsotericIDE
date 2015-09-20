@@ -14,8 +14,8 @@ namespace EsotericIDE
         public float SourceFontSize;
         public string OutputFontName;
         public float OutputFontSize;
-        public string ExecutionStateFontName;
-        public float ExecutionStateFontSize;
+        public string WatchFontName;
+        public float WatchFontSize;
         public string LastDirectory;
         public double SplitterPercent;
         public string DebugInput;

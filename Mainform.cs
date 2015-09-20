@@ -29,14 +29,12 @@ namespace EsotericIDE
             ctMenu.Renderer = new NativeToolStripRenderer();
             if (EsotericIDEProgram.Settings.SourceFontName != null)
                 txtSource.Font = new Font(EsotericIDEProgram.Settings.SourceFontName, EsotericIDEProgram.Settings.SourceFontSize);
-            if (EsotericIDEProgram.Settings.ExecutionStateFontName != null)
-                txtExecutionState.Font = new Font(EsotericIDEProgram.Settings.ExecutionStateFontName, EsotericIDEProgram.Settings.ExecutionStateFontSize);
             if (EsotericIDEProgram.Settings.OutputFontName != null)
                 txtOutput.Font = new Font(EsotericIDEProgram.Settings.OutputFontName, EsotericIDEProgram.Settings.OutputFontSize);
 
             miWordwrap.Checked = txtSource.WordWrap = EsotericIDEProgram.Settings.WordWrap;
 
-            txtExecutionState.Text = "(not running)";
+            tabWatch.Controls.Add(notRunningLabel);
 
             updateUi();
             _splitterDistanceBugWorkaround = false;
@@ -234,7 +232,6 @@ namespace EsotericIDE
             _anyChanges = false;
 
             txtSource.Text = "";
-            txtExecutionState.Text = "";
             txtOutput.Text = "";
             _timerPreviousSource = "";
             _timerPreviousCursorPosition = -1;
@@ -285,7 +282,6 @@ namespace EsotericIDE
             }
             _currentFilePath = filePath;
             txtSource.Text = File.ReadAllText(_currentFilePath).UnifyLineEndings();
-            txtExecutionState.Text = "";
             txtOutput.Text = "";
             _timerPreviousSource = txtSource.Text;
             _timerPreviousCursorPosition = -1;
@@ -308,10 +304,17 @@ namespace EsotericIDE
         {
             if (sender == miSourceFont)
                 font(ref EsotericIDEProgram.Settings.SourceFontName, ref EsotericIDEProgram.Settings.SourceFontSize, f => txtSource.Font = f);
-            else if (sender == miExecutionStateFont)
-                font(ref EsotericIDEProgram.Settings.ExecutionStateFontName, ref EsotericIDEProgram.Settings.ExecutionStateFontSize, f => txtExecutionState.Font = f);
             else if (sender == miOutputFont)
                 font(ref EsotericIDEProgram.Settings.OutputFontName, ref EsotericIDEProgram.Settings.OutputFontSize, f => txtOutput.Font = f);
+            else if (sender == miWatchFont)
+                font(ref EsotericIDEProgram.Settings.WatchFontName, ref EsotericIDEProgram.Settings.WatchFontSize, f =>
+                {
+                    if (_env != null)
+                        _env.SetWatchWindowFont(f);
+                    else
+                        // Assume that the notRunningLabel is there
+                        tabWatch.Controls[0].Font = f;
+                });
         }
 
         private void font(ref string name, ref float size, Action<Font> set)
@@ -355,6 +358,10 @@ namespace EsotericIDE
                 foreach (int bp in lstBreakpoints.Items)
                     _env.AddBreakpoint(bp);
                 _env.BreakpointsChanged += () => { this.BeginInvoke(new Action(() => breakpointsChanged())); };
+                tabWatch.Controls.Clear();
+                tabWatch.Controls.Add(_env.InitializeWatchWindow());
+                if (EsotericIDEProgram.Settings.WatchFontName != null)
+                    _env.SetWatchWindowFont(new Font(EsotericIDEProgram.Settings.WatchFontName, EsotericIDEProgram.Settings.WatchFontSize));
                 return true;
             }
             catch (CompileException e)
@@ -383,10 +390,27 @@ namespace EsotericIDE
             _env.Continue();
         }
 
+        private Control notRunningLabel
+        {
+            get
+            {
+                var ret = new Label
+                {
+                    Text = "(not running)",
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+                if (EsotericIDEProgram.Settings.WatchFontName != null)
+                    ret.Font = new Font(EsotericIDEProgram.Settings.WatchFontName, EsotericIDEProgram.Settings.WatchFontSize);
+                return ret;
+            }
+        }
+
         private void executionFinished(bool canceled, RuntimeError runtimeError)
         {
             removeRunToCursorBreakpoint();
-            txtExecutionState.Text = "(not running)";
+            tabWatch.Controls.Clear();
+            tabWatch.Controls.Add(notRunningLabel);
             txtOutput.Text = _env.Output.UnifyLineEndings();
             if (canceled && runtimeError == null)
                 txtOutput.Text += Environment.NewLine + Environment.NewLine + "Execution stopped.";
@@ -438,9 +462,9 @@ namespace EsotericIDE
         {
             removeRunToCursorBreakpoint();
             _currentPosition = position;
-            txtExecutionState.Text = _env.DescribeExecutionState();
+            _env.UpdateWatch();
             txtOutput.Text = _env.Output;
-            ctTabs.SelectedTab = tabExecutionState;
+            ctTabs.SelectedTab = tabWatch;
             goToCurrentInstruction();
         }
 
@@ -548,10 +572,9 @@ namespace EsotericIDE
             _saveWhenRun = !_saveWhenRun;
         }
 
-        private void viewExecutionState(object _, EventArgs __)
+        private void viewWatch(object _, EventArgs __)
         {
-            ctTabs.SelectedTab = tabExecutionState;
-            txtExecutionState.Focus();
+            ctTabs.SelectedTab = tabWatch;
         }
 
         private void viewOutput(object _, EventArgs __)

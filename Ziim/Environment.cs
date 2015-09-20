@@ -12,10 +12,10 @@ namespace EsotericIDE.Ziim
         public List<Thread> Threads;
         public string Input;
 
-        public override string DescribeExecutionState()
+        public override void UpdateWatch()
         {
             var firstUnsuspended = Threads.IndexOf(t => !t.Suspended);
-            return Threads.Select((t, i) =>
+            _txtWatch.Text = Threads.Select((t, i) =>
                 "{0} {1,3}: {2} {3}".Fmt(
                     t.Suspended ? "·" : i == firstUnsuspended ? "→" : " ",
                     i,

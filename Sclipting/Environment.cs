@@ -72,7 +72,7 @@ namespace EsotericIDE.Sclipting
                 _output.Append(Util.ToString(CurrentStack[index]));
         }
 
-        public override string DescribeExecutionState()
+        public override void UpdateWatch()
         {
             var sb = new StringBuilder();
             if (RegexObjects.Any())
@@ -87,7 +87,7 @@ namespace EsotericIDE.Sclipting
                 sb.AppendLine(describe(CurrentStack[i], i + 1));
             if (sb.Length > 0)
                 sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
-            return sb.ToString();
+            _txtWatch.Text = sb.ToString();
         }
 
         private string describe(object item)

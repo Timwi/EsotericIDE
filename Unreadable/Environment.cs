@@ -21,9 +21,9 @@ namespace EsotericIDE.Unreadable
             _variables = new Dictionary<BigInteger, BigInteger>();
         }
 
-        public override string DescribeExecutionState()
+        public override void UpdateWatch()
         {
-            return "Stack:\r\n{0}\r\n\r\nVariables:\r\n{1}".Fmt(
+            _txtWatch.Text = "Stack:\r\n{0}\r\n\r\nVariables:\r\n{1}".Fmt(
                 _stack.Select(val => val == null ? "<void>" : val.Value.ToString()).DefaultIfEmpty("<empty>").JoinString("\r\n"),
                 _variables.Select(kvp => "#{0} = {1}".Fmt(kvp.Key, kvp.Value)).DefaultIfEmpty("<none>").JoinString("\r\n")
             );

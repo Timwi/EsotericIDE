@@ -112,7 +112,7 @@ namespace EsotericIDE.Languages
             return "{2} {0} — {1}".Fmt(source[cursorPos], description, instructionType);
         }
 
-        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText)
+        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText, Func<ExecutionEnvironment> getEnv)
         {
             var mnuInsert = new ToolStripMenuItem("&Insert");
             var groupMenuItems = typeof(InstructionGroup).GetFields(BindingFlags.Public | BindingFlags.Static)

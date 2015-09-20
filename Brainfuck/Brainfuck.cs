@@ -55,7 +55,7 @@ namespace EsotericIDE.Languages
             return "";
         }
 
-        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText)
+        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText, Func<ExecutionEnvironment> getEnv)
         {
             var menuItems = new List<Tuple<ToolStripMenuItem, Func<bool>>>();
 
@@ -67,7 +67,7 @@ namespace EsotericIDE.Languages
 
             var createItem = Ut.Lambda((string label, Action action, Func<bool> checkedFunc) =>
             {
-                var menuItem = new ToolStripMenuItem(label, null, (s, e) => { action(); update(); });
+                var menuItem = new ToolStripMenuItem(label, null, delegate { action(); update(); });
                 menuItems.Add(new Tuple<ToolStripMenuItem, Func<bool>>(menuItem, checkedFunc));
                 return menuItem;
             });
@@ -92,16 +92,10 @@ namespace EsotericIDE.Languages
 
         private BrainfuckSettings _settings = new BrainfuckSettings();
 
-        public override LanguageSettings GetSettings()
+        public override LanguageSettings Settings
         {
-            return _settings;
-        }
-
-        public override void SetSettings(LanguageSettings settings)
-        {
-            if (!(settings is BrainfuckSettings))
-                throw new InvalidOperationException();
-            _settings = (BrainfuckSettings) settings;
+            get { return _settings; }
+            set { _settings = (BrainfuckSettings) value; }
         }
     }
 }

@@ -19,25 +19,34 @@ namespace EsotericIDE
 
     abstract class ExecutionEnvironment : IDisposable
     {
-        protected object _locker = new object();
+        //
+        //  PUBLIC
+        //
 
         public event Action<Position> DebuggerBreak;
-        protected void fireDebuggerBreak(Position position) { if (DebuggerBreak != null) DebuggerBreak(position); }
-
         public event Action<bool, RuntimeError> ExecutionFinished;
-        protected void fireExecutionFinished(bool canceled, RuntimeError error) { if (ExecutionFinished != null) ExecutionFinished(canceled, error); }
-
         public event Action BreakpointsChanged;
 
-        // This StringBuilder can be safely appended to in derived classes.
-        protected StringBuilder _output = new StringBuilder();
-        // This property is only called when the esolang is not executing, so there is no race condition.
-        public string Output { get { return _output.ToString(); } }
+        public volatile ExecutionState State = ExecutionState.Debugging;
 
-        // This List is accessed from derived classes as well as the WinForms code. Therefore, always lock on _locker when accessing it.
-        protected List<int> _breakpoints = new List<int>();
-        public int[] Breakpoints { get { lock (_locker) return _breakpoints.ToArray(); } }
+        public string Output
+        {
+            get
+            {
+                // This property is only called when the esolang is not executing, so there is no race condition.
+                return _output.ToString();
+            }
+        }
 
+        public int[] Breakpoints
+        {
+            get
+            {
+                // Lock to prevent concurrency programs, and take a copy so that the caller won’t modify the contents outside the lock.
+                lock (_locker)
+                    return _breakpoints.ToArray();
+            }
+        }
         public void AddBreakpoint(int index)
         {
             lock (_locker) { _breakpoints.Add(index); }
@@ -55,11 +64,6 @@ namespace EsotericIDE
             lock (_locker) { _breakpoints.Clear(); }
             if (BreakpointsChanged != null) BreakpointsChanged();
         }
-
-        public volatile ExecutionState State = ExecutionState.Debugging;
-
-        protected ManualResetEvent _resetEvent = new ManualResetEvent(false);
-        protected Thread _runner;
 
         public void Continue(bool blockUntilFinished = false)
         {
@@ -103,12 +107,54 @@ namespace EsotericIDE
                     _resetEvent.WaitOne();
         }
 
+        public virtual Control InitializeWatchWindow()
+        {
+            return _txtWatch = new TextBox
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(5),
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical
+            };
+        }
+        public virtual void SetWatchWindowFont(FontSpec font)
+        {
+            if (_txtWatch != null) // In case a derived class overrides InitializeWatchWindow() but not this
+            {
+                _txtWatch.Font = font.Font;
+                _txtWatch.ForeColor = font.Color;
+            }
+        }
+        public abstract void UpdateWatch();
+
         public virtual void Dispose()
         {
             State = ExecutionState.Stop;
             if (_resetEvent != null)
                 ((IDisposable) _resetEvent).Dispose();
         }
+
+
+        //
+        //  PROTECTED
+        //
+
+        protected object _locker = new object();
+        protected void fireDebuggerBreak(Position position) { if (DebuggerBreak != null) DebuggerBreak(position); }
+        protected void fireExecutionFinished(bool canceled, RuntimeError error) { if (ExecutionFinished != null) ExecutionFinished(canceled, error); }
+
+        // This StringBuilder can be safely appended to in derived classes.
+        protected StringBuilder _output = new StringBuilder();
+
+        // This List is accessed from derived classes as well as the WinForms code. Therefore, always lock on _locker when accessing it.
+        protected List<int> _breakpoints = new List<int>();
+
+        protected ManualResetEvent _resetEvent = new ManualResetEvent(false);
+        protected Thread _runner;
+
+        // If the derived class overrides InitializeWatchWindow() to create their own control, this is null.
+        protected TextBox _txtWatch;
 
         protected virtual IEnumerable<Position> GetProgram()
         {
@@ -130,15 +176,18 @@ namespace EsotericIDE
                             case ExecutionState.Running:
                                 lock (_locker)
                                     if (_breakpoints.Any(bp => bp >= instructionPointer.Current.Index && bp < instructionPointer.Current.Index + Math.Max(instructionPointer.Current.Length, 1)))
+                                    {
+                                        State = ExecutionState.Debugging;
                                         goto case ExecutionState.Debugging;
-                                continue;
+                                    }
+                                break;
                             case ExecutionState.Debugging:
                                 fireDebuggerBreak(instructionPointer.Current);
                                 _resetEvent.Reset();
                                 _resetEvent.WaitOne();
                                 if (State == ExecutionState.Stop)
                                     goto case ExecutionState.Stop;
-                                continue;
+                                break;
                             case ExecutionState.Stop:
                                 canceled = true;
                                 goto finished;
@@ -160,27 +209,5 @@ namespace EsotericIDE
                 _resetEvent.Reset();
             }
         }
-
-        protected TextBox _txtWatch;
-
-        public virtual Control InitializeWatchWindow()
-        {
-            return _txtWatch = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Margin = new Padding(5),
-                Multiline = true,
-                ReadOnly = true,
-                ScrollBars = ScrollBars.Vertical
-            };
-        }
-
-        public virtual void SetWatchWindowFont(Font font)
-        {
-            if (_txtWatch != null) // In case a derived class overrides InitializeWatchWindow() but not this
-                _txtWatch.Font = font;
-        }
-
-        public abstract void UpdateWatch();
     }
 }

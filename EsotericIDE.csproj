@@ -61,12 +61,14 @@
     <Compile Include="Brainfuck\Program.cs" />
     <Compile Include="Brainfuck\Settings.cs" />
     <Compile Include="Brainfuck\Enums.cs" />
+    <Compile Include="FontSpec.cs" />
     <Compile Include="Hexagony\PointAxial.cs" />
     <Compile Include="Hexagony\Direction.cs" />
     <Compile Include="Hexagony\Environment.cs" />
     <Compile Include="Hexagony\Grid.cs" />
     <Compile Include="Hexagony\Hexagony.cs" />
     <Compile Include="Hexagony\Memory.cs" />
+    <Compile Include="Hexagony\Settings.cs" />
     <Compile Include="MorningtonCrescent\Environment.cs" />
     <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Sclipting\Parser.cs" />

@@ -27,10 +27,10 @@ namespace EsotericIDE
         private void init()
         {
             ctMenu.Renderer = new NativeToolStripRenderer();
-            if (EsotericIDEProgram.Settings.SourceFontName != null)
-                txtSource.Font = new Font(EsotericIDEProgram.Settings.SourceFontName, EsotericIDEProgram.Settings.SourceFontSize);
-            if (EsotericIDEProgram.Settings.OutputFontName != null)
-                txtOutput.Font = new Font(EsotericIDEProgram.Settings.OutputFontName, EsotericIDEProgram.Settings.OutputFontSize);
+            if (EsotericIDEProgram.Settings.SourceFont != null)
+                txtSource.Font = EsotericIDEProgram.Settings.SourceFont.Font;
+            if (EsotericIDEProgram.Settings.OutputFont != null)
+                txtOutput.Font = EsotericIDEProgram.Settings.OutputFont.Font;
 
             miWordwrap.Checked = txtSource.WordWrap = EsotericIDEProgram.Settings.WordWrap;
 
@@ -55,19 +55,20 @@ namespace EsotericIDE
             LanguageSettings settings;
             foreach (var lang in _languages)
                 if (EsotericIDEProgram.Settings.LanguageSettings.TryGetValue(lang.LanguageName, out settings) && settings != null)
-                    lang.SetSettings(settings);
+                    lang.Settings = settings;
             cmbLanguage.Items.AddRange(_languages);
 
             ToolStripMenuItem[] currentLanguageSpecificMenus = null;
             cmbLanguage.SelectedIndexChanged += (_, __) =>
             {
+                if (_currentLanguage != null)
+                    EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = _currentLanguage.Settings;
                 _currentLanguage = (ProgrammingLanguage) cmbLanguage.SelectedItem;
-                EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = _currentLanguage.GetSettings();
                 EsotericIDEProgram.Settings.LastLanguageName = _currentLanguage.LanguageName;
                 if (currentLanguageSpecificMenus != null)
                     foreach (var menuItem in currentLanguageSpecificMenus)
                         ctMenu.Items.Remove(menuItem);
-                currentLanguageSpecificMenus = _currentLanguage.CreateMenus(() => txtSource.SelectedText, s => { txtSource.SelectedText = s; });
+                currentLanguageSpecificMenus = _currentLanguage.CreateMenus(() => txtSource.SelectedText, s => { txtSource.SelectedText = s; }, () => _env);
                 ctMenu.Items.AddRange(currentLanguageSpecificMenus);
             };
             var ll = _languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
@@ -303,31 +304,33 @@ namespace EsotericIDE
         private void font(object sender, EventArgs __)
         {
             if (sender == miSourceFont)
-                font(ref EsotericIDEProgram.Settings.SourceFontName, ref EsotericIDEProgram.Settings.SourceFontSize, f => txtSource.Font = f);
+                font(ref EsotericIDEProgram.Settings.SourceFont, f => txtSource.Font = f.Font);
             else if (sender == miOutputFont)
-                font(ref EsotericIDEProgram.Settings.OutputFontName, ref EsotericIDEProgram.Settings.OutputFontSize, f => txtOutput.Font = f);
+                font(ref EsotericIDEProgram.Settings.OutputFont, f => txtOutput.Font = f.Font);
             else if (sender == miWatchFont)
-                font(ref EsotericIDEProgram.Settings.WatchFontName, ref EsotericIDEProgram.Settings.WatchFontSize, f =>
+                font(ref EsotericIDEProgram.Settings.WatchFont, f =>
                 {
                     if (_env != null)
                         _env.SetWatchWindowFont(f);
                     else
+                    {
                         // Assume that the notRunningLabel is there
-                        tabWatch.Controls[0].Font = f;
+                        tabWatch.Controls[0].Font = f.Font;
+                        tabWatch.Controls[0].ForeColor = f.Color;
+                    }
                 });
         }
 
-        private void font(ref string name, ref float size, Action<Font> set)
+        private void font(ref FontSpec fontSpec, Action<FontSpec> set)
         {
-            using (var font = new FontDialog { ShowColor = true })
+            using (var fontDlg = new FontDialog { ShowColor = true })
             {
-                if (name != null)
-                    font.Font = new Font(name, size);
-                if (font.ShowDialog() == DialogResult.OK)
+                if (fontSpec != null)
+                    fontDlg.Font = fontSpec.Font;
+                if (fontDlg.ShowDialog() == DialogResult.OK)
                 {
-                    set(font.Font);
-                    name = font.Font.Name;
-                    size = font.Font.Size;
+                    fontSpec = fontSpec == null ? new FontSpec(fontDlg.Font, Color.Black) : fontSpec.SetFont(fontDlg.Font);
+                    set(fontSpec);
                 }
             }
         }
@@ -360,8 +363,8 @@ namespace EsotericIDE
                 _env.BreakpointsChanged += () => { this.BeginInvoke(new Action(() => breakpointsChanged())); };
                 tabWatch.Controls.Clear();
                 tabWatch.Controls.Add(_env.InitializeWatchWindow());
-                if (EsotericIDEProgram.Settings.WatchFontName != null)
-                    _env.SetWatchWindowFont(new Font(EsotericIDEProgram.Settings.WatchFontName, EsotericIDEProgram.Settings.WatchFontSize));
+                if (EsotericIDEProgram.Settings.WatchFont != null)
+                    _env.SetWatchWindowFont(EsotericIDEProgram.Settings.WatchFont);
                 return true;
             }
             catch (CompileException e)
@@ -400,8 +403,11 @@ namespace EsotericIDE
                     Dock = DockStyle.Fill,
                     TextAlign = ContentAlignment.MiddleCenter
                 };
-                if (EsotericIDEProgram.Settings.WatchFontName != null)
-                    ret.Font = new Font(EsotericIDEProgram.Settings.WatchFontName, EsotericIDEProgram.Settings.WatchFontSize);
+                if (EsotericIDEProgram.Settings.WatchFont != null)
+                {
+                    ret.Font = EsotericIDEProgram.Settings.WatchFont.Font;
+                    ret.ForeColor = EsotericIDEProgram.Settings.WatchFont.Color;
+                }
                 return ret;
             }
         }
@@ -505,7 +511,7 @@ namespace EsotericIDE
 
         private void exiting(object _, FormClosingEventArgs e)
         {
-            var settings = _currentLanguage.GetSettings();
+            var settings = _currentLanguage.Settings;
             if (settings != null)
                 EsotericIDEProgram.Settings.LanguageSettings[_currentLanguage.LanguageName] = settings;
             else

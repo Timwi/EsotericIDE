@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using RT.Util;
+using RT.Util.Controls;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Hexagony
@@ -18,10 +21,9 @@ namespace EsotericIDE.Hexagony
         private string _input;
         private int _inputIndex = 0;
 
-        public HexagonyEnv(string source, string input)
+        public HexagonyEnv(string source, string input, HexagonySettings settings)
         {
             _grid = Grid.Parse(source);
-            _memory = new Memory();
             _input = input;
             _inputIndex = 0;
             _ips = Ut.NewArray(
@@ -38,11 +40,57 @@ namespace EsotericIDE.Hexagony
                 Direction.West,
                 Direction.NorthWest,
                 Direction.NorthEast);
+            _settings = settings;
+            if (!settings.MemoryAnnotations.ContainsKey(settings.LastMemoryAnnotationSet))
+                settings.MemoryAnnotations[settings.LastMemoryAnnotationSet] = new Dictionary<Direction, Dictionary<PointAxial, string>>();
+            _memory = new Memory(settings.MemoryAnnotations[settings.LastMemoryAnnotationSet]);
+        }
+
+        private TextBox _txtIpInfo;
+        private ScrollableControl _scroll;
+        private DoubleBufferedPanel _pnlMemory;
+        private Bitmap _lastMemoryBitmap;
+        private HexagonySettings _settings;
+
+        public override Control InitializeWatchWindow()
+        {
+            _txtIpInfo = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, Width = 300 };
+            _pnlMemory = new DoubleBufferedPanel();
+            _pnlMemory.PaintBuffer += paintBuffer;
+            _scroll = new ScrollableControl { Dock = DockStyle.Fill, AutoScroll = true };
+            _scroll.Controls.Add(_pnlMemory);
+
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill };
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 1));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 1));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+
+            layout.Controls.Add(_scroll, 0, 0);
+            layout.Controls.Add(_txtIpInfo, 1, 0);
+            return layout;
+        }
+
+        private void paintBuffer(object _, PaintEventArgs e)
+        {
+            if (_lastMemoryBitmap != null)
+                e.Graphics.DrawImage(_lastMemoryBitmap, 0, 0);
+        }
+
+        public override void SetWatchWindowFont(FontSpec font)
+        {
+            if (_txtIpInfo != null)
+            {
+                _txtIpInfo.Font = font.Font;
+                _txtIpInfo.ForeColor = font.Color;
+            }
         }
 
         public override void UpdateWatch()
         {
-            _txtWatch.Text = _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString() + Environment.NewLine + _memory.Describe;
+            _txtIpInfo.Text = _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString();
+            _lastMemoryBitmap = _memory.DrawBitmap(_settings, _pnlMemory.Font, _pnlMemory.Font);
+            _pnlMemory.Size = _lastMemoryBitmap.Size;
+            _pnlMemory.Refresh();
         }
 
         private Direction dir { get { return _ipDirs[_activeIp]; } }
@@ -213,6 +261,16 @@ namespace EsotericIDE.Hexagony
                 else if ((!zBigger && !isPositive) || (!xBigger && isPositive))
                     _ips[_activeIp] = new PointAxial(-coords.R, -coords.Q);
             }
+        }
+
+        public string GetCurrentAnnotation() { return _memory.GetCurrentAnnotation(); }
+        public void Annotate(string annotation) { _memory.Annotate(annotation); }
+
+        public void SaveMemoryVisualization(string filename)
+        {
+            if (_lastMemoryBitmap == null)
+                UpdateWatch();
+            _lastMemoryBitmap.Save(filename);
         }
     }
 }

@@ -289,5 +289,10 @@ namespace EsotericIDE.Hexagony
         {
             return _annotations.Get(_dir, _mp, "");
         }
+
+        public void SetAnnotations(Dictionary<Direction, Dictionary<PointAxial, string>> annotations)
+        {
+            _annotations = annotations;
+        }
     }
 }

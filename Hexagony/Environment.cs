@@ -89,6 +89,7 @@ namespace EsotericIDE.Hexagony
         public override void UpdateWatch()
         {
             _txtIpInfo.Text = _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString();
+            _memory.SetAnnotations(_settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet]);
             _lastMemoryBitmap = _memory.DrawBitmap(_settings, _pnlMemory.Font, _pnlMemory.Font);
             _pnlMemory.Size = _lastMemoryBitmap.Size;
             _pnlMemory.Refresh();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -79,96 +80,24 @@ namespace EsotericIDE.Languages
             set { _settings = value == null ? new HexagonySettings() : (HexagonySettings) value; }
         }
 
+        private ToolStripMenuItem _valueColorItem;
+        private ToolStripMenuItem _annotationColorItem;
+        private ToolStripMenuItem _annotationSets;
+
         public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText, Func<ExecutionEnvironment> getEnv)
         {
-            ToolStripMenuItem valueColorItem = null;
-            ToolStripMenuItem annotationColorItem = null;
-            ToolStripMenuItem annotationSets = null;
-
-            Action updateEnvironment = () =>
-            {
-                var env = getEnv() as HexagonyEnv;
-                if (env != null)
-                    env.UpdateWatch();
-            };
-
-            var createAnnotationSet = Ut.Lambda((bool copyFromCurrent) =>
-            {
-                string newName = null;
-                while (true)
-                {
-                    newName = InputBox.GetLine("Enter new name for this annotation set:", newName, "Create new annotation set", "&OK", "&Cancel");
-                    if (newName == null)
-                        break;
-                    if (!_settings.MemoryAnnotations.ContainsKey(newName))
-                    {
-                        _settings.MemoryAnnotations[newName] = copyFromCurrent
-                            ? new Dictionary<Direction, Dictionary<PointAxial, string>>(_settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet])
-                            : new Dictionary<Direction, Dictionary<PointAxial, string>>();
-                        _settings.LastMemoryAnnotationSet = newName;
-                    }
-                    DlgMessage.Show("The specified annotation set name already exists. Annotation set names must be unique.", "Error", DlgType.Error);
-                }
-            });
-
-            Action updateAnnotationSets = null;
-            updateAnnotationSets = () =>
-            {
-                annotationSets.DropDownItems.Clear();
-                foreach (var kvp in _settings.MemoryAnnotations)
-                {
-                    var setName = kvp.Key;
-                    var super = new ToolStripMenuItem(setName);
-                    annotationSets.DropDownItems.Add(super);
-                    if (setName == _settings.LastMemoryAnnotationSet)
-                        super.Checked = true;
-
-                    super.DropDownItems.AddRange(Ut.NewArray(
-                        new ToolStripMenuItem("&Switch to this set", null, delegate
-                        {
-                            _settings.LastMemoryAnnotationSet = setName;
-                            updateAnnotationSets();
-                            updateEnvironment();
-                        }) { Checked = setName == _settings.LastMemoryAnnotationSet },
-                        new ToolStripMenuItem("&Rename this set...", null, delegate
-                        {
-                            var newName = InputBox.GetLine("Enter new name for this annotation set:", setName, "Rename annotation set", "&OK", "&Cancel");
-                            if (newName != null && newName != setName)
-                            {
-                                _settings.MemoryAnnotations[newName] = _settings.MemoryAnnotations[setName];
-                                _settings.MemoryAnnotations.Remove(setName);
-                                if (_settings.LastMemoryAnnotationSet == setName)
-                                    _settings.LastMemoryAnnotationSet = newName;
-                                updateAnnotationSets();
-                            }
-                        }),
-                        new ToolStripMenuItem("&Delete this set", null, delegate
-                        {
-                            _settings.MemoryAnnotations.Remove(setName);
-                            _settings.LastMemoryAnnotationSet = _settings.MemoryAnnotations.Keys.FirstOrDefault("(default)");
-                            if (!_settings.MemoryAnnotations.ContainsKey(_settings.LastMemoryAnnotationSet))
-                                _settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet] = new Dictionary<Direction, Dictionary<PointAxial, string>>();
-                            updateEnvironment();
-                        })
-                    ));
-                }
-                annotationSets.DropDownItems.Add("-");
-                annotationSets.DropDownItems.Add(new ToolStripMenuItem("&Create new annotation set...", null, delegate { createAnnotationSet(false); }));
-                annotationSets.DropDownItems.Add(new ToolStripMenuItem("C&opy current annotation set...", null, delegate { createAnnotationSet(true); }));
-            };
-
             var menu = new ToolStripMenuItem("&Memory visualization", null, Ut.NewArray(
 
                 // Unused mnemonics: cdefhijkmqruwxy
 
-                new ToolStripMenuItem("&Background color...", null, delegate { color(getEnv, _settings.MemoryBackgroundColor, c => { _settings.MemoryBackgroundColor = c; }, (c, e) => { e.UpdateWatch(); }); }),
-                new ToolStripMenuItem("Grid color (&zeros)...", null, delegate { color(getEnv, _settings.MemoryGridZeroColor, c => { _settings.MemoryGridZeroColor = c; }, (c, e) => { e.UpdateWatch(); }); }),
-                new ToolStripMenuItem("&Grid color (non-zeros)...", null, delegate { color(getEnv, _settings.MemoryGridNonZeroColor, c => { _settings.MemoryGridNonZeroColor = c; }, (c, e) => { e.UpdateWatch(); }); }),
-                new ToolStripMenuItem("&Pointer color...", null, delegate { color(getEnv, _settings.MemoryPointerColor, c => { _settings.MemoryPointerColor = c; }, (c, e) => { e.UpdateWatch(); }); }),
-                new ToolStripMenuItem("&Value font...", null, delegate { font(getEnv, _settings.MemoryValueFont, Color.CornflowerBlue, f => { _settings.MemoryValueFont = f; valueColorItem.Enabled = true; }, (f, e) => { e.UpdateWatch(); }); }),
-                (valueColorItem = new ToolStripMenuItem("Va&lue color...", null, delegate { color(getEnv, _settings.MemoryValueFont.Color, c => { _settings.MemoryValueFont = _settings.MemoryValueFont.SetColor(c); }, (c, e) => { e.UpdateWatch(); }); }) { Enabled = _settings.MemoryValueFont != null }),
-                new ToolStripMenuItem("Ann&otation font...", null, delegate { font(getEnv, _settings.MemoryAnnotationFont, Color.ForestGreen, f => { _settings.MemoryAnnotationFont = f; annotationColorItem.Enabled = true; }, (f, e) => { e.UpdateWatch(); }); }),
-                (annotationColorItem = new ToolStripMenuItem("Anno&tation color...", null, delegate { color(getEnv, _settings.MemoryAnnotationFont.Color, c => { _settings.MemoryAnnotationFont = _settings.MemoryAnnotationFont.SetColor(c); }, (c, e) => { e.UpdateWatch(); }); }) { Enabled = _settings.MemoryAnnotationFont != null }),
+                new ToolStripMenuItem("&Background color...", null, delegate { color(getEnv(), _settings.MemoryBackgroundColor, c => { _settings.MemoryBackgroundColor = c; }); }),
+                new ToolStripMenuItem("Grid color (&zeros)...", null, delegate { color(getEnv(), _settings.MemoryGridZeroColor, c => { _settings.MemoryGridZeroColor = c; }); }),
+                new ToolStripMenuItem("&Grid color (non-zeros)...", null, delegate { color(getEnv(), _settings.MemoryGridNonZeroColor, c => { _settings.MemoryGridNonZeroColor = c; }); }),
+                new ToolStripMenuItem("&Pointer color...", null, delegate { color(getEnv(), _settings.MemoryPointerColor, c => { _settings.MemoryPointerColor = c; }); }),
+                new ToolStripMenuItem("&Value font...", null, delegate { font(getEnv(), _settings.MemoryValueFont, Color.CornflowerBlue, f => { _settings.MemoryValueFont = f; _valueColorItem.Enabled = true; }); }),
+                (_valueColorItem = new ToolStripMenuItem("Va&lue color...", null, delegate { color(getEnv(), _settings.MemoryValueFont.Color, c => { _settings.MemoryValueFont = _settings.MemoryValueFont.SetColor(c); }); }) { Enabled = _settings.MemoryValueFont != null }),
+                new ToolStripMenuItem("Ann&otation font...", null, delegate { font(getEnv(), _settings.MemoryAnnotationFont, Color.ForestGreen, f => { _settings.MemoryAnnotationFont = f; _annotationColorItem.Enabled = true; }); }),
+                (_annotationColorItem = new ToolStripMenuItem("Anno&tation color...", null, delegate { color(getEnv(), _settings.MemoryAnnotationFont.Color, c => { _settings.MemoryAnnotationFont = _settings.MemoryAnnotationFont.SetColor(c); }); }) { Enabled = _settings.MemoryAnnotationFont != null }),
                 new ToolStripMenuItem("&Annotate current edge...", null, checkDebugging(getEnv, env =>
                 {
                     var newAnnotation = InputBox.GetLine("Enter annotation:", env.GetCurrentAnnotation(), "Annotate edge", "&OK", "&Cancel");
@@ -178,7 +107,7 @@ namespace EsotericIDE.Languages
                         env.UpdateWatch();
                     }
                 })),
-                (annotationSets = new ToolStripMenuItem("A&nnotation sets")),
+                (_annotationSets = new ToolStripMenuItem("A&nnotation sets")),
                 new ToolStripMenuItem("&Save memory as PNG...", null, checkDebugging(getEnv, env =>
                 {
                     using (var dlg = new SaveFileDialog { DefaultExt = "png", Filter = "PNG files (*.png)|*.png", OverwritePrompt = true, Title = "Save memory visualization to file" })
@@ -187,8 +116,82 @@ namespace EsotericIDE.Languages
                 }))
             ));
 
-            updateAnnotationSets();
+            updateAnnotationSets(getEnv);
             return new[] { menu };
+        }
+
+        private static void updateWatch(Func<ExecutionEnvironment> getEnv)
+        {
+            var env = getEnv() as HexagonyEnv;
+            if (env != null)
+                env.UpdateWatch();
+        }
+
+        private void createAnnotationSet(bool copyFromCurrent, Func<ExecutionEnvironment> getEnv)
+        {
+            string newName = copyFromCurrent ? _settings.LastMemoryAnnotationSet : null;
+            while (true)
+            {
+                newName = InputBox.GetLine("Enter new name for this annotation set:", newName, "Create new annotation set", "&OK", "&Cancel");
+                if (newName == null)
+                    break;
+                if (!_settings.MemoryAnnotations.ContainsKey(newName))
+                {
+                    _settings.MemoryAnnotations[newName] = copyFromCurrent
+                        ? _settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet].ToDictionary(kvp => kvp.Key, kvp => new Dictionary<PointAxial, string>(kvp.Value))
+                        : new Dictionary<Direction, Dictionary<PointAxial, string>>();
+                    _settings.LastMemoryAnnotationSet = newName;
+                    updateAnnotationSets(getEnv);
+                    return;
+                }
+                DlgMessage.Show("The specified annotation set name already exists. Annotation set names must be unique.", "Error", DlgType.Error);
+            }
+        }
+
+        private void updateAnnotationSets(Func<ExecutionEnvironment> getEnv)
+        {
+            _annotationSets.DropDownItems.Clear();
+            foreach (var kvp in _settings.MemoryAnnotations)
+            {
+                var setName = kvp.Key;
+                var super = new ToolStripMenuItem(setName);
+                _annotationSets.DropDownItems.Add(super);
+                if (setName == _settings.LastMemoryAnnotationSet)
+                    super.Checked = true;
+
+                super.DropDownItems.AddRange(Ut.NewArray(
+                    new ToolStripMenuItem("&Switch to this set", null, delegate
+                    {
+                        _settings.LastMemoryAnnotationSet = setName;
+                        updateAnnotationSets(getEnv);
+                        updateWatch(getEnv);
+                    }) { Checked = setName == _settings.LastMemoryAnnotationSet },
+                    new ToolStripMenuItem("&Rename this set...", null, delegate
+                    {
+                        var newName = InputBox.GetLine("Enter new name for this annotation set:", setName, "Rename annotation set", "&OK", "&Cancel");
+                        if (newName != null && newName != setName)
+                        {
+                            _settings.MemoryAnnotations[newName] = _settings.MemoryAnnotations[setName];
+                            _settings.MemoryAnnotations.Remove(setName);
+                            if (_settings.LastMemoryAnnotationSet == setName)
+                                _settings.LastMemoryAnnotationSet = newName;
+                            updateAnnotationSets(getEnv);
+                        }
+                    }),
+                    new ToolStripMenuItem("&Delete this set", null, delegate
+                    {
+                        _settings.MemoryAnnotations.Remove(setName);
+                        _settings.LastMemoryAnnotationSet = _settings.MemoryAnnotations.Keys.FirstOrDefault("(default)");
+                        if (!_settings.MemoryAnnotations.ContainsKey(_settings.LastMemoryAnnotationSet))
+                            _settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet] = new Dictionary<Direction, Dictionary<PointAxial, string>>();
+                        updateAnnotationSets(getEnv);
+                        updateWatch(getEnv);
+                    })
+                ));
+            }
+            _annotationSets.DropDownItems.Add("-");
+            _annotationSets.DropDownItems.Add(new ToolStripMenuItem("&Create new annotation set...", null, delegate { createAnnotationSet(false, getEnv); }));
+            _annotationSets.DropDownItems.Add(new ToolStripMenuItem("C&opy current annotation set...", null, delegate { createAnnotationSet(true, getEnv); }));
         }
 
         private EventHandler checkDebugging(Func<ExecutionEnvironment> getEnv, Action<HexagonyEnv> action)
@@ -203,19 +206,17 @@ namespace EsotericIDE.Languages
             };
         }
 
-        private void color(Func<ExecutionEnvironment> getEnv, Color orig, Action<Color> setColor1, Action<Color, HexagonyEnv> setColor2)
+        private void color(ExecutionEnvironment env, Color orig, Action<Color> setColor)
         {
             using (var colorDlg = new ColorDialog { Color = orig })
                 if (colorDlg.ShowDialog() == DialogResult.OK)
                 {
-                    setColor1(colorDlg.Color);
-                    var env = getEnv() as HexagonyEnv;
-                    if (env != null)
-                        setColor2(colorDlg.Color, env);
+                    setColor(colorDlg.Color);
+                    env.IfType((HexagonyEnv e) => { e.UpdateWatch(); });
                 }
         }
 
-        private void font(Func<ExecutionEnvironment> getEnv, FontSpec prevFont, Color defaultColor, Action<FontSpec> setFont1, Action<FontSpec, HexagonyEnv> setFont2)
+        private void font(ExecutionEnvironment env, FontSpec prevFont, Color defaultColor, Action<FontSpec> setFont)
         {
             using (var fontDlg = new FontDialog())
             {
@@ -223,11 +224,8 @@ namespace EsotericIDE.Languages
                     fontDlg.Font = prevFont.Font;
                 if (fontDlg.ShowDialog() == DialogResult.OK)
                 {
-                    var spec = new FontSpec(fontDlg.Font, defaultColor);
-                    setFont1(spec);
-                    var env = getEnv() as HexagonyEnv;
-                    if (env != null)
-                        setFont2(spec, env);
+                    setFont(new FontSpec(fontDlg.Font, defaultColor));
+                    env.IfType((HexagonyEnv e) => { e.UpdateWatch(); });
                 }
             }
         }

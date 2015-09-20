@@ -469,7 +469,7 @@ namespace EsotericIDE
             removeRunToCursorBreakpoint();
             _currentPosition = position;
             _env.UpdateWatch();
-            txtOutput.Text = _env.Output;
+            txtOutput.Text = _env.Output.UnifyLineEndings();
             ctTabs.SelectedTab = tabWatch;
             goToCurrentInstruction();
         }

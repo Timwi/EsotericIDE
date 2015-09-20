@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Linq;
@@ -147,10 +148,11 @@ namespace EsotericIDE.Brainfuck
                 using (var font = _watchFont.Font)
                 {
                     g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
 
                     g.DrawRectangle(Pens.LightGray, 0, 0, totalWidth - 1, totalHeight - bottomPadding);
 
-                    float x = 0;
+                    int x = 0;
                     for (int i = 0; i < _cells.Length; i++)
                     {
                         var str = _cells[i].ToString();
@@ -160,7 +162,7 @@ namespace EsotericIDE.Brainfuck
                         if (_pointer == i)
                             g.FillPolygon(Brushes.Crimson, new[] { new PointF(x + thisWidth / 2, totalHeight - bottomPadding), new PointF(x + thisWidth / 2 - xPadding, totalHeight - 1), new PointF(x + thisWidth / 2 + xPadding, totalHeight - 1) });
 
-                        x += thisWidth;
+                        x += (int) thisWidth;
                         g.DrawLine(Pens.LightGray, x, 0, x, totalHeight - bottomPadding);
                     }
                 }

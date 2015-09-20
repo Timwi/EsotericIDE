@@ -100,7 +100,7 @@ namespace EsotericIDE.Languages
                     });
             });
 
-            // STEP 2: Translate each arrow into a ‘node’ instance with the appropriate ‘instruction’
+            // STEP 2: Translate each arrow into a Node instance with the appropriate Instruction
             var nodes = Ut.NewArray<Node>(height, width);
             forEachArrow((x, y, i, single, p, ch) =>
             {
@@ -143,11 +143,11 @@ namespace EsotericIDE.Languages
                 nodes[y][x].PointedToBy.AddRange(pointedToFrom.Select(tup => nodes[tup.Item2][tup.Item1]));
             });
 
-            var nodesList = nodes.SelectMany(row => row.Where(n => n != null)).ToList();
+            var nodesArr = nodes.SelectMany(row => row.Where(n => n != null)).ToArray();
             return new ZiimEnv
             {
-                Nodes = nodesList,
-                Threads = nodesList.Where(n => n.Instruction == Instruction.Zero).Select(n => new Thread { CurrentValue = Bits.Zero, CurrentInstruction = n, Suspended = false }).ToList(),
+                Nodes = nodesArr,
+                Threads = nodesArr.Where(n => n.Instruction == Instruction.Zero).Select(n => new Thread { CurrentValue = Bits.Zero, CurrentInstruction = n, Suspended = false }).ToList(),
                 Input = input
             };
         }

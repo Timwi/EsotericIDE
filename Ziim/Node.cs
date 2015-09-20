@@ -7,6 +7,7 @@ namespace EsotericIDE.Ziim
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Index { get; private set; }
+        public Position Position { get; private set; }
         public Instruction Instruction { get; private set; }
         public List<Node> PointsTo { get; private set; }
         public List<Node> PointedToBy { get; private set; }
@@ -18,6 +19,7 @@ namespace EsotericIDE.Ziim
             Instruction = instr;
             PointsTo = new List<Node>();
             PointedToBy = new List<Node>();
+            Position = new Position(Index, 1);
         }
     }
 }

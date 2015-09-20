@@ -125,8 +125,7 @@ namespace EsotericIDE.Hexagony
                         break;
 
                     case ';':
-                        lock (_output)
-                            _output.Append(char.ConvertFromUtf32((int) _memory.Get()));
+                        _output.Append(char.ConvertFromUtf32((int) _memory.Get()));
                         break;
 
                     case '?':
@@ -136,8 +135,7 @@ namespace EsotericIDE.Hexagony
                         break;
 
                     case '!':
-                        lock (_output)
-                            _output.Append(_memory.Get().ToString());
+                        _output.Append(_memory.Get().ToString());
                         break;
 
                     // Control flow

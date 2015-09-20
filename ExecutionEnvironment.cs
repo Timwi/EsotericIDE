@@ -26,9 +26,12 @@ namespace EsotericIDE
 
         public event Action BreakpointsChanged;
 
+        // This StringBuilder can be safely appended to in derived classes.
         protected StringBuilder _output = new StringBuilder();
-        public string Output { get { lock (_locker) return _output.ToString(); } }
+        // This property is only called when the esolang is not executing, so there is no race condition.
+        public string Output { get { return _output.ToString(); } }
 
+        // This List is accessed from derived classes as well as the WinForms code. Therefore, always lock on _locker when accessing it.
         protected List<int> _breakpoints = new List<int>();
         public int[] Breakpoints { get { lock (_locker) return _breakpoints.ToArray(); } }
 

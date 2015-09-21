@@ -18,7 +18,7 @@ namespace EsotericIDE.Hexagony
         private Direction _dir = Direction.East;
         private bool _cw = false;
 
-        public Memory(Dictionary<Direction, Dictionary<PointAxial, string>> annotations = null)
+        public Memory(Dictionary<Direction, Dictionary<PointAxial, string>> annotations)
         {
             if (annotations == null)
                 throw new ArgumentNullException("annotations");

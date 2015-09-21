@@ -55,7 +55,7 @@ namespace EsotericIDE.Languages
             return "";
         }
 
-        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText, Func<ExecutionEnvironment> getEnv)
+        public override ToolStripMenuItem[] CreateMenus(IIde ide)
         {
             var menuItems = new List<Tuple<ToolStripMenuItem, Func<bool>>>();
 

@@ -15,6 +15,7 @@ namespace EsotericIDE.Hexagony
     {
         private Memory _memory;
         private Grid _grid;
+        private string _linearCode;
         private PointAxial[] _ips;
         private Direction[] _ipDirs;
         private int _activeIp = 0;
@@ -23,23 +24,28 @@ namespace EsotericIDE.Hexagony
 
         public HexagonyEnv(string source, string input, HexagonySettings settings)
         {
-            _grid = Grid.Parse(source);
+            if (source.StartsWith("❢"))
+                _linearCode = source.Substring(1);
+            else
+            {
+                _grid = Grid.Parse(source);
+                _ips = Ut.NewArray(
+                    new PointAxial(0, -_grid.Size + 1),
+                    new PointAxial(_grid.Size - 1, -_grid.Size + 1),
+                    new PointAxial(_grid.Size - 1, 0),
+                    new PointAxial(0, _grid.Size - 1),
+                    new PointAxial(-_grid.Size + 1, _grid.Size - 1),
+                    new PointAxial(-_grid.Size + 1, 0));
+                _ipDirs = Ut.NewArray(
+                    Direction.East,
+                    Direction.SouthEast,
+                    Direction.SouthWest,
+                    Direction.West,
+                    Direction.NorthWest,
+                    Direction.NorthEast);
+            }
             _input = input;
             _inputIndex = 0;
-            _ips = Ut.NewArray(
-                new PointAxial(0, -_grid.Size + 1),
-                new PointAxial(_grid.Size - 1, -_grid.Size + 1),
-                new PointAxial(_grid.Size - 1, 0),
-                new PointAxial(0, _grid.Size - 1),
-                new PointAxial(-_grid.Size + 1, _grid.Size - 1),
-                new PointAxial(-_grid.Size + 1, 0));
-            _ipDirs = Ut.NewArray(
-                Direction.East,
-                Direction.SouthEast,
-                Direction.SouthWest,
-                Direction.West,
-                Direction.NorthWest,
-                Direction.NorthEast);
             _settings = settings;
             if (!settings.MemoryAnnotations.ContainsKey(settings.LastMemoryAnnotationSet))
                 settings.MemoryAnnotations[settings.LastMemoryAnnotationSet] = new Dictionary<Direction, Dictionary<PointAxial, string>>();
@@ -87,7 +93,8 @@ namespace EsotericIDE.Hexagony
 
         public override void UpdateWatch()
         {
-            _txtIpInfo.Text = _ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString();
+            _txtIpInfo.Text = _ips.NullOr(ips => ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString())
+                + "{0}{0}Input: {1}".Fmt(Environment.NewLine, _input.Substring(_inputIndex));
             _memory.SetAnnotations(_settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet]);
             _lastMemoryBitmap = _memory.DrawBitmap(_settings, _pnlMemory.Font, _pnlMemory.Font);
             _pnlMemory.Size = _lastMemoryBitmap.Size;
@@ -99,10 +106,151 @@ namespace EsotericIDE.Hexagony
 
         protected override IEnumerable<Position> GetProgram()
         {
+            var integerFinder = new Regex(@"-?\d+");
+
+            if (_linearCode != null)
+            {
+                var program = Regex.Matches(_linearCode, @"[^\r\n]+").Cast<Match>()
+                    .Select(m => new { Line = Regex.Replace(m.Value.TrimStart('✓'), @"#.*", "").TrimEnd(), Position = new Position(m.Index + 1, m.Length) })
+                    .Where(inf => inf.Line.Trim().Length > 0)
+                    .ToArray();
+                var labels = program.Select(inf => inf.Line.Trim()).Where(l => l.StartsWith("goto ")).Select(l => l.Substring("goto ".Length)).ToHashSet();
+                var index = 0;
+                while (true)
+                {
+                    yield return program[index].Position;
+                    if (labels.Contains(program[index].Line.Trim()))
+                    {
+                    }
+                    else if (program[index].Line.Trim() == "if > 0")
+                    {
+                        if (_memory.Get() <= 0)
+                        {
+                            var indent = program[index].Line.Length - program[index].Line.Trim().Length;
+                            do { index++; }
+                            while (program[index].Line.Length - program[index].Line.Trim().Length > indent);
+                            continue;
+                        }
+                    }
+                    else if (program[index].Line.Trim().StartsWith("goto "))
+                    {
+                        var newIndex = program.IndexOf(l => l.Line.Trim() == program[index].Line.Trim().Substring("goto ".Length));
+                        if (newIndex == -1)
+                            throw new InvalidOperationException();
+                        index = newIndex;
+                    }
+                    else
+                    {
+                        var line = program[index].Line.Trim();
+                        for (int lineIndex = 0; lineIndex < line.Length; lineIndex++)
+                        {
+                            var opcode = line[lineIndex];
+                            switch (opcode)
+                            {
+                                // Annotations 
+                                case '[':
+                                    lineIndex++;
+                                    var closePos = line.IndexOf(']', lineIndex);
+                                    _memory.Annotate(line.Substring(lineIndex, closePos - lineIndex));
+                                    lineIndex = closePos;
+                                    break;
+
+                                // NOP
+                                case '.': break;
+
+                                // Arithmetic
+                                case ')': _memory.Set(_memory.Get() + 1); break;
+                                case '(': _memory.Set(_memory.Get() - 1); break;
+                                case '+': _memory.Set(_memory.GetLeft() + _memory.GetRight()); break;
+                                case '-': _memory.Set(_memory.GetLeft() - _memory.GetRight()); break;
+                                case '*': _memory.Set(_memory.GetLeft() * _memory.GetRight()); break;
+                                case '~': _memory.Set(-_memory.Get()); break;
+
+                                case ':':
+                                case '%':
+                                    var leftVal = _memory.GetLeft();
+                                    var rightVal = _memory.GetRight();
+                                    BigInteger rem;
+                                    var div = BigInteger.DivRem(leftVal, rightVal, out rem);
+                                    // The semantics of integer division and modulo are different in Hexagony because the
+                                    // reference interpreter was written in Ruby. Account for this discrepancy.
+                                    if (rem != 0 && (leftVal < 0 ^ rightVal < 0))
+                                    {
+                                        rem += rightVal;
+                                        div--;
+                                    }
+                                    _memory.Set(opcode == ':' ? div : rem);
+                                    break;
+
+                                // Memory manipulation
+                                case '{': _memory.MoveLeft(); break;
+                                case '}': _memory.MoveRight(); break;
+                                case '=': _memory.Reverse(); break;
+                                case '"': _memory.Reverse(); _memory.MoveRight(); _memory.Reverse(); break;
+                                case '\'': _memory.Reverse(); _memory.MoveLeft(); _memory.Reverse(); break;
+                                case '^':
+                                    if (_memory.Get() > 0)
+                                        _memory.MoveRight();
+                                    else
+                                        _memory.MoveLeft();
+                                    break;
+                                case '&':
+                                    if (_memory.Get() > 0)
+                                        _memory.Set(_memory.GetRight());
+                                    else
+                                        _memory.Set(_memory.GetLeft());
+                                    break;
+
+                                // I/O
+                                case ',':
+                                    if (_inputIndex >= _input.Length)
+                                        _memory.Set(BigInteger.MinusOne);
+                                    else
+                                    {
+                                        _memory.Set(char.ConvertToUtf32(_input, _inputIndex));
+                                        _inputIndex += char.IsSurrogate(_input, _inputIndex) ? 2 : 1;
+                                    }
+                                    break;
+
+                                case ';':
+                                    _output.Append(char.ConvertFromUtf32((int) _memory.Get()));
+                                    break;
+
+                                case '?':
+                                    var match = integerFinder.Match(_input, _inputIndex);
+                                    _memory.Set(match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero);
+                                    _inputIndex = match.Success ? match.Index + match.Length : _input.Length;
+                                    break;
+
+                                case '!':
+                                    _output.Append(_memory.Get().ToString());
+                                    break;
+
+                                case '@':
+                                    yield break;
+
+                                // Digits and letters
+                                default:
+                                    if (opcode >= '0' && opcode <= '9')
+                                    {
+                                        var opVal = opcode - '0';
+                                        var memVal = _memory.Get();
+                                        _memory.Set(memVal * 10 + (memVal < 0 ? -opVal : opVal));
+                                    }
+                                    else if ((opcode >= 'a' && opcode <= 'z') || (opcode >= 'A' && opcode <= 'Z'))
+                                        _memory.Set(opcode);
+                                    else
+                                        throw new Exception("'{0}' is not a recognized instruction.".Fmt(opcode));
+                                    break;
+                            }
+                        }
+                    }
+                    index++;
+                }
+            }
+
             if (_grid.Size == 0)
                 yield break;
-
-            var integerFinder = new Regex(@"-?\d+");
 
             while (true)
             {
@@ -180,7 +328,7 @@ namespace EsotericIDE.Hexagony
                     case '?':
                         var match = integerFinder.Match(_input, _inputIndex);
                         _memory.Set(match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero);
-                        _inputIndex = match.Index + match.Length;
+                        _inputIndex = match.Success ? match.Index + match.Length : _input.Length;
                         break;
 
                     case '!':

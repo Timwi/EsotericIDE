@@ -899,7 +899,7 @@ namespace EsotericIDE.Sclipting
                 .Fmt(ordinal);
         }
 
-        public static ToolStripItem[] GetMenuItems(Action<string> insertText)
+        public static ToolStripItem[] GetMenuItems(IIde ide)
         {
             return typeof(ListStringInstruction).GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select((field, fi) =>
@@ -907,7 +907,7 @@ namespace EsotericIDE.Sclipting
                     var item = new ToolStripMenuItem(field.GetCustomAttributes<ListStringInstructionAttribute>().First().MenuLabel);
                     item.DropDownItems.AddRange(Enumerable.Range(0, 20)
                         .Select(i => new { Ch = Characters[fi * 20 + i], Engrish = Engrish[fi * 20 + i] })
-                        .Select(inf => new ToolStripMenuItem("{0} &{1} — {2}".Fmt(inf.Ch, inf.Engrish, new ListStringElementNode(inf.Ch, 0).Explain()), null, (_, __) => { insertText(inf.Ch.ToString()); }))
+                        .Select(inf => new ToolStripMenuItem("{0} &{1} — {2}".Fmt(inf.Ch, inf.Engrish, new ListStringElementNode(inf.Ch, 0).Explain()), null, (_, __) => { ide.InsertText(inf.Ch.ToString()); }))
                         .ToArray());
                     return item;
                 })

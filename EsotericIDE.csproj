@@ -70,6 +70,7 @@
     <Compile Include="Hexagony\Hexagony.cs" />
     <Compile Include="Hexagony\Memory.cs" />
     <Compile Include="Hexagony\Settings.cs" />
+    <Compile Include="IIde.cs" />
     <Compile Include="MorningtonCrescent\Environment.cs" />
     <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Sclipting\Parser.cs" />

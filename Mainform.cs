@@ -12,7 +12,7 @@ using RT.Util.Forms;
 
 namespace EsotericIDE
 {
-    partial class Mainform : ManagedForm
+    partial class Mainform : ManagedForm, IIde
     {
         private bool _splitterDistanceBugWorkaround;
 
@@ -68,7 +68,7 @@ namespace EsotericIDE
                 if (currentLanguageSpecificMenus != null)
                     foreach (var menuItem in currentLanguageSpecificMenus)
                         ctMenu.Items.Remove(menuItem);
-                currentLanguageSpecificMenus = _currentLanguage.CreateMenus(() => txtSource.SelectedText, s => { txtSource.SelectedText = s; }, () => _env);
+                currentLanguageSpecificMenus = _currentLanguage.CreateMenus(this);
                 ctMenu.Items.AddRange(currentLanguageSpecificMenus);
             };
             var ll = _languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
@@ -692,5 +692,11 @@ namespace EsotericIDE
             if (_currentFilePath != null && DlgMessage.Show("Revert all changes made since last save?", "Revert", DlgType.Question, "&Revert", "&Cancel") == 0)
                 openCore(_currentFilePath);
         }
+
+        public string GetSource() { return txtSource.Text; }
+        public void ReplaceSource(string newSource) { txtSource.Text = newSource; }
+        public string GetSelectedText() { return txtSource.SelectedText; }
+        public void InsertText(string text) { txtSource.SelectedText = text; }
+        public ExecutionEnvironment GetEnvironment() { return _env; }
     }
 }

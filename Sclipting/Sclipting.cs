@@ -112,7 +112,7 @@ namespace EsotericIDE.Languages
             return "{2} {0} — {1}".Fmt(source[cursorPos], description, instructionType);
         }
 
-        public override ToolStripMenuItem[] CreateMenus(Func<string> getSelectedText, Action<string> insertText, Func<ExecutionEnvironment> getEnv)
+        public override ToolStripMenuItem[] CreateMenus(IIde ide)
         {
             var mnuInsert = new ToolStripMenuItem("&Insert");
             var groupMenuItems = typeof(InstructionGroup).GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -130,9 +130,9 @@ namespace EsotericIDE.Languages
             var miInsertString = new ToolStripMenuItem("&String...");
             var miInsertByteArray = new ToolStripMenuItem("Byte &array...");
 
-            miInsertInteger.Click += (_, __) => { insertInteger(getSelectedText, insertText); };
-            miInsertString.Click += (_, __) => { insertString(getSelectedText, insertText); };
-            miInsertByteArray.Click += (_, __) => { insertByteArray(getSelectedText, insertText); };
+            miInsertInteger.Click += (_, __) => { insertInteger(ide); };
+            miInsertString.Click += (_, __) => { insertString(ide); };
+            miInsertByteArray.Click += (_, __) => { insertByteArray(ide); };
 
             mnuInsert.DropDownItems.AddRange(groupMenuItems.Values.ToArray());
             mnuInsert.DropDownItems.AddRange(new ToolStripItem[] { miInsertInteger, miInsertString, miInsertByteArray });
@@ -143,7 +143,7 @@ namespace EsotericIDE.Languages
                 var ch = attr.Character;
                 groupMenuItems[attr.Group].DropDownItems.Add(new ToolStripMenuItem(
                     "{0} &{1} — {2}{3}".Fmt(ch, attr.Engrish, attr.Description, attr.Type == NodeType.BlockHead ? " █" : ""),
-                    null, (_, __) => { insertText(ch.ToString()); }
+                    null, (_, __) => { ide.InsertText(ch.ToString()); }
                 ));
             }
 
@@ -153,41 +153,41 @@ namespace EsotericIDE.Languages
                 miInsertStackInstructionCopyFromTop, miInsertStackInstructionMoveFromTop));
 
             groupMenuItems[InstructionGroup.ListStringManipulation].DropDownItems.Add("-");
-            groupMenuItems[InstructionGroup.ListStringManipulation].DropDownItems.AddRange(ListStringElementNode.GetMenuItems(insertText));
+            groupMenuItems[InstructionGroup.ListStringManipulation].DropDownItems.AddRange(ListStringElementNode.GetMenuItems(ide));
 
             for (var ch = '①'; ch <= '⑳'; ch++)
-                miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '①' + 1, insertText));
+                miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '①' + 1, ide));
             for (var ch = '㉑'; ch <= '㉟'; ch++)
-                miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '㉑' + 21, insertText));
+                miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '㉑' + 21, ide));
             for (var ch = '㊱'; ch <= '㊿'; ch++)
-                miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '㊱' + 36, insertText));
+                miInsertStackInstructionCopyFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '㊱' + 36, ide));
             for (var ch = '⓵'; ch <= '⓾'; ch++)
-                miInsertStackInstructionMoveFromTop.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⓵' + 1, insertText));
+                miInsertStackInstructionMoveFromTop.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⓵' + 1, ide));
             for (var ch = '❶'; ch <= '❿'; ch++)
-                miInsertStackInstructionCopyFromTop.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '❶' + 1, insertText));
+                miInsertStackInstructionCopyFromTop.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '❶' + 1, ide));
             for (var ch = '⓫'; ch <= '⓴'; ch++)
-                miInsertStackInstructionCopyFromTop.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⓫' + 11, insertText));
+                miInsertStackInstructionCopyFromTop.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⓫' + 11, ide));
             for (var ch = '⑴'; ch <= '⒇'; ch++)
-                miInsertStackInstructionMoveFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⑴' + 1, insertText));
+                miInsertStackInstructionMoveFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⑴' + 1, ide));
             for (var ch = '⒈'; ch <= '⒛'; ch++)
-                miInsertStackInstructionSwapFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⒈' + 1, insertText));
+                miInsertStackInstructionSwapFromBottom.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - '⒈' + 1, ide));
 
             groupMenuItems[InstructionGroup.StringManipulation].DropDownItems.Add("-");
             groupMenuItems[InstructionGroup.StringManipulation].DropDownItems.Add(miInsertRegexGroupInstruction);
             for (var ch = 'Ⓐ'; ch <= 'Ⓩ'; ch++)
-                miInsertRegexGroupInstruction.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, insertText));
+                miInsertRegexGroupInstruction.DropDownItems.Add(stackOrRegexMenuItem(ch, ch - 'Ⓐ' + 1, ide));
 
             return Ut.NewArray<ToolStripMenuItem>(mnuInsert);
         }
 
-        private static ToolStripItem stackOrRegexMenuItem(char ch, int num, Action<string> insertText)
+        private static ToolStripItem stackOrRegexMenuItem(char ch, int num, IIde ide)
         {
-            return new ToolStripMenuItem("{0} — &{1}".Fmt(ch, num), null, (_, __) => { insertText(ch.ToString()); });
+            return new ToolStripMenuItem("{0} — &{1}".Fmt(ch, num), null, (_, __) => { ide.InsertText(ch.ToString()); });
         }
 
-        private void insertInteger(Func<string> getSelectedText, Action<string> insertText)
+        private void insertInteger(IIde ide)
         {
-            string @default, selected = getSelectedText();
+            string @default, selected = ide.GetSelectedText();
             try
             {
                 if (selected.Length == 1 && selected[0] >= 0xbc00 && selected[0] <= 0xd7a3)
@@ -203,18 +203,18 @@ namespace EsotericIDE.Languages
                 if (BigInteger.TryParse(line, out i) && (i >= -7076))
                 {
                     if (i < 0)
-                        insertText(((char) (0xbbff - i)).ToString());
+                        ide.InsertText(((char) (0xbbff - i)).ToString());
                     else
-                        insertText(Util.EncodeByteArray(i.ToByteArray().Reverse().SkipWhile(b => b == 0).DefaultIfEmpty().ToArray()));
+                        ide.InsertText(Util.EncodeByteArray(i.ToByteArray().Reverse().SkipWhile(b => b == 0).DefaultIfEmpty().ToArray()));
                 }
                 else
                     DlgMessage.Show("The integer you typed is not a valid literal integer for Sclipting. Literal integers must be greater than −7077.", "Esoteric IDE", DlgType.Error, "&OK");
             }
         }
 
-        private void insertString(Func<string> getSelectedText, Action<string> insertText)
+        private void insertString(IIde ide)
         {
-            string @default, selected = getSelectedText();
+            string @default, selected = ide.GetSelectedText();
             try
             {
                 if (selected.Length == 1 && selected[0] >= 0xbc00 && selected[0] <= 0xd7a3)
@@ -225,18 +225,18 @@ namespace EsotericIDE.Languages
             catch { @default = "\\n"; }
             var line = InputBox.GetLine("Type a string to insert (in C-escaped format; backslashes must be escaped):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
-                try { insertText(Util.EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
+                try { ide.InsertText(Util.EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
                 catch { DlgMessage.Show("The string you typed is not a valid C-escaped string. Please ensure that your backslashes are escaped.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
 
-        private void insertByteArray(Func<string> getSelectedText, Action<string> insertText)
+        private void insertByteArray(IIde ide)
         {
-            string @default, selected = getSelectedText();
+            string @default, selected = ide.GetSelectedText();
             try { @default = Util.DecodeByteArray(selected).ToHex(); }
             catch { @default = ""; }
             var line = InputBox.GetLine("Type a byte array to insert (in hexdump format; two hexadecimal digits per byte):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
-                try { insertText(Util.EncodeByteArray(line.FromHex())); }
+                try { ide.InsertText(Util.EncodeByteArray(line.FromHex())); }
                 catch { DlgMessage.Show("The text you entered is not valid hexadecimal. Please ensure that you enter an even number of characters 0-9/a-f.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
     }

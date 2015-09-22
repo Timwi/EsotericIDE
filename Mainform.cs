@@ -424,6 +424,9 @@ namespace EsotericIDE
             _env = null;
             _currentPosition = null;
 
+            // In case the file has changed since the last time we ran the program
+            checkFileChanged();
+
             txtSource.Focus();
             if (runtimeError != null)
             {
@@ -671,19 +674,26 @@ namespace EsotericIDE
             _wordWrap = !_wordWrap;
         }
 
-        private bool _activatedProcessing = false;
+        private bool _checkFileChangedBusy = false;
         private void activated(object sender, EventArgs e)
         {
-            if (!_activatedProcessing)
+            if (_env != null)
+                checkFileChanged();
+        }
+
+        private void checkFileChanged()
+        {
+            // Make sure this is not called while it is already running, which would
+            // happen because dismissing the DlgMessage triggers activated()
+            if (!_checkFileChangedBusy)
             {
-                _activatedProcessing = true;
-                // Check if the file on disk has changed.
+                _checkFileChangedBusy = true;
                 if (_currentFilePath != null &&
                     File.Exists(_currentFilePath) &&
                     File.GetLastWriteTimeUtc(_currentFilePath) > _lastFileTime &&
                     DlgMessage.Show("The file has changed on disk. Reload?", "File has changed", DlgType.Question, "&Reload", "&Cancel") == 0)
                     openCore(_currentFilePath);
-                _activatedProcessing = false;
+                _checkFileChangedBusy = false;
             }
         }
 

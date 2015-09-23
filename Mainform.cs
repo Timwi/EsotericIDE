@@ -677,7 +677,7 @@ namespace EsotericIDE
         private bool _checkFileChangedBusy = false;
         private void activated(object sender, EventArgs e)
         {
-            if (_env != null)
+            if (_env == null)
                 checkFileChanged();
         }
 

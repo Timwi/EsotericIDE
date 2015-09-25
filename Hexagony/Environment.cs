@@ -147,7 +147,7 @@ namespace EsotericIDE.Hexagony
                             var opcode = line[lineIndex];
                             switch (opcode)
                             {
-                                // Annotations 
+                                // Annotations
                                 case '[':
                                     lineIndex++;
                                     var closePos = line.IndexOf(']', lineIndex);
@@ -281,7 +281,7 @@ namespace EsotericIDE.Hexagony
                         var rightVal = _memory.GetRight();
                         BigInteger rem;
                         var div = BigInteger.DivRem(leftVal, rightVal, out rem);
-                        // The semantics of integer division and modulo are different in Hexagony because the 
+                        // The semantics of integer division and modulo are different in Hexagony because the
                         // reference interpreter was written in Ruby. Account for this discrepancy.
                         if (rem != 0 && (leftVal < 0 ^ rightVal < 0))
                         {
@@ -345,7 +345,7 @@ namespace EsotericIDE.Hexagony
                     case ']': newIp = (_activeIp + 1) % 6; break;
                     case '[': newIp = (_activeIp + 5) % 6; break;
                     case '#': newIp = ((int) (_memory.Get() % 6) + 6) % 6; break;
-                    case '$': _ips[_activeIp] += dir.Vector; break;
+                    case '$': _ips[_activeIp] += dir.Vector; handleEdges(); break;
 
                     // Digits and letters
                     default:

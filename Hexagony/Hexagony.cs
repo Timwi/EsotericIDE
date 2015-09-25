@@ -14,7 +14,7 @@ namespace EsotericIDE.Languages
     sealed class Hexagony : ProgrammingLanguage
     {
         public override string LanguageName { get { return "Hexagony"; } }
-        public override string DefaultFileExtension { get { return "hex"; } }
+        public override string DefaultFileExtension { get { return "hxg"; } }
 
         public override ExecutionEnvironment Compile(string source, string input)
         {

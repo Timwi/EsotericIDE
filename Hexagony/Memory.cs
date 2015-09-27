@@ -45,10 +45,7 @@ namespace EsotericIDE.Hexagony
 
         public void Set(BigInteger value)
         {
-            if (value.IsZero)
-                _edges.RemoveSafe(_dir, _mp);
-            else
-                _edges.AddSafe(_dir, _mp, value);
+            _edges.AddSafe(_dir, _mp, value);
         }
 
         public BigInteger Get()
@@ -160,8 +157,8 @@ namespace EsotericIDE.Hexagony
             {
                 g.Clear(settings.MemoryBackgroundColor);
 
-                using (var zeroPen = new Pen(settings.MemoryGridZeroColor))
-                using (var nonZeroPen = new Pen(settings.MemoryGridNonZeroColor, 2f))
+                using (var unusedEdgePen = new Pen(settings.MemoryGridZeroColor))
+                using (var usedEdgePen = new Pen(settings.MemoryGridNonZeroColor, 2f))
                 using (var pointerBrush = new SolidBrush(settings.MemoryPointerColor))
                 using (var valueBrush = new SolidBrush(settings.MemoryValueFont.NullOr(f => f.Color) ?? Color.CornflowerBlue))
                 using (var annotationBrush = new SolidBrush(settings.MemoryAnnotationFont.NullOr(f => f.Color) ?? Color.ForestGreen))
@@ -200,20 +197,19 @@ namespace EsotericIDE.Hexagony
 
                             var xx = (x - minX) * xFactor;
                             var yy = (y - minY) * yFactor;
-                            var value = _edges.Get(dir, mp, 0);
-                            var pen = value.IsZero ? zeroPen : nonZeroPen;
+                            var hasValue = _edges.ContainsKeys(dir, mp);
 
                             using (var tr = new GraphicsTransformer(g).Rotate((dir is NorthEast ? -60 : dir is SouthEast ? 60 : 0) + (_cw ? 180 : 0)).Translate(xx, yy))
                             {
-                                g.DrawLine(pen, 0, yFactor * -.68f, 0, yFactor * .68f);
+                                g.DrawLine(hasValue ? usedEdgePen : unusedEdgePen, 0, yFactor * -.68f, 0, yFactor * .68f);
                                 if (dir == _dir && mp == _mp)
                                     g.FillPolygon(pointerBrush,
                                         new[] { new PointF(0, yFactor * -.68f), new PointF(3, yFactor * .68f), new PointF(-3, yFactor * .68f) });
                             }
                             using (var tr = new GraphicsTransformer(g).Rotate((dir is NorthEast ? 30 : dir is SouthEast ? -30 : -90)).Translate(xx, yy))
                             {
-                                if (!value.IsZero)
-                                    g.DrawString(value.ToString(), valueFont ?? defaultValueFont, valueBrush, 0, 0, sfValue);
+                                if (hasValue)
+                                    g.DrawString(_edges[dir][mp].ToString(), valueFont ?? defaultValueFont, valueBrush, 0, 0, sfValue);
                                 var annotation = _annotations.Get(dir, mp, null);
                                 if (!string.IsNullOrWhiteSpace(annotation))
                                     g.DrawString(annotation, annotationFont ?? defaultAnnotationFont, annotationBrush, 0, 2, sfAnnotation);

@@ -165,22 +165,8 @@ namespace EsotericIDE.Hexagony
                                 case '-': _memory.Set(_memory.GetLeft() - _memory.GetRight()); break;
                                 case '*': _memory.Set(_memory.GetLeft() * _memory.GetRight()); break;
                                 case '~': _memory.Set(-_memory.Get()); break;
-
-                                case ':':
-                                case '%':
-                                    var leftVal = _memory.GetLeft();
-                                    var rightVal = _memory.GetRight();
-                                    BigInteger rem;
-                                    var div = BigInteger.DivRem(leftVal, rightVal, out rem);
-                                    // The semantics of integer division and modulo are different in Hexagony because the
-                                    // reference interpreter was written in Ruby. Account for this discrepancy.
-                                    if (rem != 0 && (leftVal < 0 ^ rightVal < 0))
-                                    {
-                                        rem += rightVal;
-                                        div--;
-                                    }
-                                    _memory.Set(opcode == ':' ? div : rem);
-                                    break;
+                                case ':': _memory.Set(Util.DivideRubyStyle(_memory.GetLeft(), _memory.GetRight())); break;
+                                case '%': _memory.Set(Util.ModuloRubyStyle(_memory.GetLeft(), _memory.GetRight())); break;
 
                                 // Memory manipulation
                                 case '{': _memory.MoveLeft(); break;

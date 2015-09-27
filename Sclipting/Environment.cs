@@ -24,7 +24,7 @@ namespace EsotericIDE.Sclipting
 
         public void NumericOperation(Func<BigInteger, object> fromInt, Func<double, object> fromDouble)
         {
-            var item = Util.ToNumeric(Pop());
+            var item = ScliptingUtil.ToNumeric(Pop());
 
             if (item is double)
                 CurrentStack.Add(fromDouble((double) item));
@@ -34,8 +34,8 @@ namespace EsotericIDE.Sclipting
 
         public void NumericOperation(Func<BigInteger, BigInteger, object> intInt, Func<double, double, object> doubleDouble)
         {
-            var item2 = Util.ToNumeric(Pop());
-            var item1 = Util.ToNumeric(Pop());
+            var item2 = ScliptingUtil.ToNumeric(Pop());
+            var item1 = ScliptingUtil.ToNumeric(Pop());
 
             if (item1 is double)
             {
@@ -69,7 +69,7 @@ namespace EsotericIDE.Sclipting
             while (index > 0 && !(CurrentStack[index - 1] is Mark))
                 index--;
             for (; index < CurrentStack.Count; index++)
-                _output.Append(Util.ToString(CurrentStack[index]));
+                _output.Append(ScliptingUtil.ToString(CurrentStack[index]));
         }
 
         public override void UpdateWatch()
@@ -97,7 +97,7 @@ namespace EsotericIDE.Sclipting
             Function fnc;
 
             if ((b = item as byte[]) != null)
-                return "Byte array: “{0}” ({1})".Fmt(b.FromUtf8().CLiteralEscape(), Util.ToInt(b));
+                return "Byte array: “{0}” ({1})".Fmt(b.FromUtf8().CLiteralEscape(), ScliptingUtil.ToInt(b));
             else if (item is BigInteger)
                 return "Integer: {0}".Fmt(item);
             else if (item is string)

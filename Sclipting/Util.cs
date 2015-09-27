@@ -9,7 +9,7 @@ using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Sclipting
 {
-    static class Util
+    static class ScliptingUtil
     {
         private static Dictionary<char, Instruction> _instructions;
         private static Dictionary<char, NodeType> _instructionTypes;

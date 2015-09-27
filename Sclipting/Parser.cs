@@ -32,7 +32,7 @@ namespace EsotericIDE.Sclipting
                     index += hangeul.Length;
                     try
                     {
-                        ret.Add(new ByteArray { Array = Util.DecodeByteArray(hangeul), Index = origIndex + addIndex, Count = index - origIndex });
+                        ret.Add(new ByteArray { Array = ScliptingUtil.DecodeByteArray(hangeul), Index = origIndex + addIndex, Count = index - origIndex });
                     }
                     catch (CompileException ce)
                     {
@@ -61,9 +61,9 @@ namespace EsotericIDE.Sclipting
                     ret.Add(new StackOrRegexNode { Type = StackOrRegexNodeType.RegexCapture, Value = ch - 'Ⓐ' + 1, Index = index++ + addIndex, Count = 1 });
                 else if (ListStringElementNode.Characters.Contains(ch))
                     ret.Add(new ListStringElementNode(ch, index++ + addIndex));
-                else if (Util.GetInstructionInfo(ch, out listStringType, out backwards))
+                else if (ScliptingUtil.GetInstructionInfo(ch, out listStringType, out backwards))
                     ret.Add(new ListStringElementNode(listStringType, backwards, index++ + addIndex));
-                else if (Util.GetInstructionInfo(ch, out instruction, out type))
+                else if (ScliptingUtil.GetInstructionInfo(ch, out instruction, out type))
                 {
                     switch (type)
                     {
@@ -146,7 +146,7 @@ namespace EsotericIDE.Sclipting
             NodeType type;
             for (int i = start; i < source.Length; i++)
             {
-                if (Util.GetInstructionInfo(source[i], out instruction, out type))
+                if (ScliptingUtil.GetInstructionInfo(source[i], out instruction, out type))
                 {
                     if (type == NodeType.BlockHead)
                         depth++;

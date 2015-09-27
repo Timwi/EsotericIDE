@@ -50,8 +50,8 @@ namespace EsotericIDE.Languages
                     {
                         try
                         {
-                            var array = Util.DecodeByteArray(hangeul);
-                            return "Byte array: {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), Util.ToInt(array));
+                            var array = ScliptingUtil.DecodeByteArray(hangeul);
+                            return "Byte array: {0} = {{ {1} }} = “{2}” = {3}".Fmt(hangeul, array.Select(b => b.ToString("X2")).JoinString(" "), array.FromUtf8().CLiteralEscape(), ScliptingUtil.ToInt(array));
                         }
                         catch (CompileException ce)
                         {
@@ -193,7 +193,7 @@ namespace EsotericIDE.Languages
                 if (selected.Length == 1 && selected[0] >= 0xbc00 && selected[0] <= 0xd7a3)
                     @default = (0xbbff - selected[0]).ToString();
                 else
-                    @default = new BigInteger(new byte[] { 0 }.Concat(Util.DecodeByteArray(selected)).Reverse().ToArray()).ToString();
+                    @default = new BigInteger(new byte[] { 0 }.Concat(ScliptingUtil.DecodeByteArray(selected)).Reverse().ToArray()).ToString();
             }
             catch { @default = "0"; }
             var line = InputBox.GetLine("Type an integer to insert (must be greater than −7077):", @default, "Esoteric IDE", "&OK", "&Cancel");
@@ -205,7 +205,7 @@ namespace EsotericIDE.Languages
                     if (i < 0)
                         ide.InsertText(((char) (0xbbff - i)).ToString());
                     else
-                        ide.InsertText(Util.EncodeByteArray(i.ToByteArray().Reverse().SkipWhile(b => b == 0).DefaultIfEmpty().ToArray()));
+                        ide.InsertText(ScliptingUtil.EncodeByteArray(i.ToByteArray().Reverse().SkipWhile(b => b == 0).DefaultIfEmpty().ToArray()));
                 }
                 else
                     DlgMessage.Show("The integer you typed is not a valid literal integer for Sclipting. Literal integers must be greater than −7077.", "Esoteric IDE", DlgType.Error, "&OK");
@@ -220,23 +220,23 @@ namespace EsotericIDE.Languages
                 if (selected.Length == 1 && selected[0] >= 0xbc00 && selected[0] <= 0xd7a3)
                     @default = (0xbbff - selected[0]).ToString();
                 else
-                    @default = Util.DecodeByteArray(selected).FromUtf8().CLiteralEscape();
+                    @default = ScliptingUtil.DecodeByteArray(selected).FromUtf8().CLiteralEscape();
             }
             catch { @default = "\\n"; }
             var line = InputBox.GetLine("Type a string to insert (in C-escaped format; backslashes must be escaped):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
-                try { ide.InsertText(Util.EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
+                try { ide.InsertText(ScliptingUtil.EncodeByteArray(line.CLiteralUnescape().ToUtf8())); }
                 catch { DlgMessage.Show("The string you typed is not a valid C-escaped string. Please ensure that your backslashes are escaped.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
 
         private void insertByteArray(IIde ide)
         {
             string @default, selected = ide.GetSelectedText();
-            try { @default = Util.DecodeByteArray(selected).ToHex(); }
+            try { @default = ScliptingUtil.DecodeByteArray(selected).ToHex(); }
             catch { @default = ""; }
             var line = InputBox.GetLine("Type a byte array to insert (in hexdump format; two hexadecimal digits per byte):", @default, "Esoteric IDE", "&OK", "&Cancel");
             if (line != null)
-                try { ide.InsertText(Util.EncodeByteArray(line.FromHex())); }
+                try { ide.InsertText(ScliptingUtil.EncodeByteArray(line.FromHex())); }
                 catch { DlgMessage.Show("The text you entered is not valid hexadecimal. Please ensure that you enter an even number of characters 0-9/a-f.", "Esoteric IDE", DlgType.Error, "&OK"); }
         }
     }

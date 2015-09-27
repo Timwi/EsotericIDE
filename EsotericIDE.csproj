@@ -71,6 +71,10 @@
     <Compile Include="Hexagony\Memory.cs" />
     <Compile Include="Hexagony\Settings.cs" />
     <Compile Include="IIde.cs" />
+    <Compile Include="Labyrinth\Direction.cs" />
+    <Compile Include="Labyrinth\Environment.cs" />
+    <Compile Include="Labyrinth\Labyrinth.cs" />
+    <Compile Include="Labyrinth\Turn.cs" />
     <Compile Include="MorningtonCrescent\Environment.cs" />
     <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Sclipting\Parser.cs" />
@@ -105,6 +109,7 @@
     <Compile Include="Sclipting\RegexMatch.cs" />
     <Compile Include="Sclipting\Sclipting.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Util.cs" />
     <Compile Include="Ziim\Instruction.cs" />
     <Compile Include="Ziim\Bits.cs" />
     <Compile Include="Ziim\Node.cs" />

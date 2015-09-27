@@ -355,6 +355,7 @@ namespace EsotericIDE
                 if (input == null)
                     return false;
                 _env = _currentLanguage.Compile(txtSource.Text, input);
+                _env.OriginalSource = txtSource.Text;
                 _env.State = state;
                 _env.DebuggerBreak += p => { this.BeginInvoke(new Action(() => debuggerBreak(p))); };
                 _env.ExecutionFinished += (c, e) => { this.BeginInvoke(new Action(() => executionFinished(c, e))); };
@@ -417,17 +418,26 @@ namespace EsotericIDE
             removeRunToCursorBreakpoint();
             tabWatch.Controls.Clear();
             tabWatch.Controls.Add(notRunningLabel);
+
+            var sel = txtSource.SelectionStart;
+            var len = txtSource.SelectionLength;
+            txtSource.Text = _env.OriginalSource;
             txtOutput.Text = _env.Output.UnifyLineEndings();
             if (canceled && runtimeError == null)
                 txtOutput.Text += Environment.NewLine + Environment.NewLine + "Execution stopped.";
-            ctTabs.SelectedTab = tabOutput;
+
             _env = null;
             _currentPosition = null;
+
+            ctTabs.SelectedTab = tabOutput;
+            txtSource.Focus();
+            txtSource.SelectionStart = sel;
+            txtSource.SelectionLength = len;
+            txtSource.ScrollToCaret();
 
             // In case the file has changed since the last time we ran the program
             checkFileChanged();
 
-            txtSource.Focus();
             if (runtimeError != null)
             {
                 var msg = "A run-time error occurred:{0}{0}{1}".Fmt(Environment.NewLine, runtimeError.Message);
@@ -472,6 +482,9 @@ namespace EsotericIDE
             removeRunToCursorBreakpoint();
             _currentPosition = position;
             _env.UpdateWatch();
+            var newSource = _env.ModifiedSource;
+            if (newSource != null)
+                txtSource.Text = newSource;
             txtOutput.Text = _env.Output.UnifyLineEndings();
             ctTabs.SelectedTab = tabWatch;
             goToCurrentInstruction();
@@ -535,10 +548,12 @@ namespace EsotericIDE
             if (cursorPos == _timerPreviousCursorPosition && source == _timerPreviousSource)
                 return;
             _timerPreviousCursorPosition = cursorPos;
-            if (_timerPreviousSource != source)
-                _anyChanges = true;
-            _timerPreviousSource = source;
-
+            if (_env == null)
+            {
+                if (_timerPreviousSource != source)
+                    _anyChanges = true;
+                _timerPreviousSource = source;
+            }
             if (cursorPos < 0 || cursorPos > source.Length)
                 lblInfo.Text = "";
             else

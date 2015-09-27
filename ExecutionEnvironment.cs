@@ -27,6 +27,9 @@ namespace EsotericIDE
         public event Action<bool, RuntimeError> ExecutionFinished;
         public event Action BreakpointsChanged;
 
+        public string OriginalSource { get; set; }
+        public virtual string ModifiedSource { get { return null; } }
+
         public volatile ExecutionState State = ExecutionState.Debugging;
 
         public string Output

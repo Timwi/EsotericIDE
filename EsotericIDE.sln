@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EsotericIDE", "EsotericIDE.csproj", "{05A3C955-369E-44E2-85D8-496B84F6A548}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EsotericIDE", "Src\EsotericIDE.csproj", "{05A3C955-369E-44E2-85D8-496B84F6A548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

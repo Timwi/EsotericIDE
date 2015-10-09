@@ -21,9 +21,3 @@ In chronological order of implementation in Esoteric IDE:
 * **[Unreadable](http://esolangs.org/wiki/Unreadable)** — Consists only of apostrophe (`'`) and double-quote (`"`) characters.
 * **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** — Travel on the London Underground, but remember to always come back to Mornington Crescent.
 * **[Hexagony](http://esolangs.org/wiki/Hexagony)** — Program instructions and memory locations are laid out in a 2D hexagonal grid.
-
-## Incomplete implementations
-
-There are incomplete implementations for these included in the source. However, the C# project (the `csproj` file) does not include them, so the IDE doesn’t list them. To use them, include the files in the project and recompile it.
-
-* **[Funciton](http://esolangs.org/wiki/Funciton)** — Struggling to support stepwise debugging for this one. For the moment, use [Funciton Interpreter](https://bitbucket.org/Timwi/funciton-interpreter) instead, which includes a Funciton-to-IL compiler.

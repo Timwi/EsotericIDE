@@ -148,7 +148,7 @@ namespace EsotericIDE.Languages
             {
                 Nodes = nodesArr,
                 Threads = nodesArr.Where(n => n.Instruction == Instruction.Zero).Select(n => new Thread { CurrentValue = Bits.Zero, CurrentInstruction = n, Suspended = false }).ToList(),
-                Input = input
+                Input = input.ToUtf8().SelectMany(b => Enumerable.Range(0, 8).Select(i => (b & (1 << (7 - i))) != 0)).ToQueue()
             };
         }
 

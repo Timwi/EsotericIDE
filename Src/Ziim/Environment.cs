@@ -10,7 +10,7 @@ namespace EsotericIDE.Ziim
     {
         public Node[] Nodes;
         public List<Thread> Threads;
-        public string Input;
+        public Queue<bool> Input;
 
         public override void UpdateWatch()
         {
@@ -55,18 +55,10 @@ namespace EsotericIDE.Ziim
 
                         case Instruction.Stdin:
                             {
-                                if (string.IsNullOrEmpty(Input))
+                                if (Input.Count == 0)
                                     activeThread.CurrentValue = Bits.Empty;
-                                else if (char.IsSurrogate(Input, 0))
-                                {
-                                    activeThread.CurrentValue = Bits.FromString(Input.Substring(0, 2));
-                                    Input = Input.Substring(2);
-                                }
                                 else
-                                {
-                                    activeThread.CurrentValue = Bits.FromString(Input.Substring(0, 1));
-                                    Input = Input.Substring(1);
-                                }
+                                    activeThread.CurrentValue = Input.Dequeue() ? Bits.Zero.Invert() : Bits.Zero;
                                 activeThread.CurrentInstruction = activeThread.CurrentInstruction.PointsTo[0];
                                 break;
                             }

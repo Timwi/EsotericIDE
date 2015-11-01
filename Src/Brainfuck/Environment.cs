@@ -134,9 +134,9 @@ namespace EsotericIDE.Brainfuck
 
                 var totalWidth = 0;
                 var totalHeight = 2 * yPadding + bottomPadding;
+                var font = _watchFont == null ? _pnlMemory.Font : _watchFont.Font;
 
                 using (var g = Graphics.FromImage(_lastMemoryBitmap))
-                using (var font = _watchFont.Font)
                 {
                     for (int i = 0; i < _cells.Length; i++)
                         totalWidth += 2 * xPadding + (int) g.MeasureString(_cells[i].ToString(), font).Width;
@@ -145,9 +145,8 @@ namespace EsotericIDE.Brainfuck
 
                 _lastMemoryBitmap = new Bitmap(totalWidth, totalHeight);
                 using (var g = Graphics.FromImage(_lastMemoryBitmap))
-                using (var font = _watchFont.Font)
                 {
-                    g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                    g.TextRenderingHint = TextRenderingHint.AntiAlias;
                     g.SmoothingMode = SmoothingMode.AntiAlias;
 
                     g.DrawRectangle(Pens.LightGray, 0, 0, totalWidth - 1, totalHeight - bottomPadding);

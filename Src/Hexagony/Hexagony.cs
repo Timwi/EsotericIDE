@@ -39,7 +39,7 @@ namespace EsotericIDE.Languages
                 case '%': return "Sets the current memory edge to the modulo of the left and right neighbours (left % right, the sign of the result is the same as the sign of right).";
                 case '~': return "Multiplies the current memory edge by −1.";
 
-                case ',': return "Reads a single character from STDIN and sets the current memory edge to its Unicode codepoint. Returns −1 once EOF is reached.";
+                case ',': return "Reads a single byte from STDIN and sets the current memory edge to its value, or −1 if EOF is reached.";
                 case '?': return "Reads and discards from STDIN until a digit, a - or a + is found. Then reads as many characters as possible to form a valid (signed) decimal integer and sets the current memory edge to its value. Returns 0 once EOF is reached.";
                 case ';': return "Interprets the current memory edge as a codepoint and writes the corresponding Unicode character to STDOUT.";
                 case '!': return "Writes the decimal representation of the current memory edge to STDOUT.";
@@ -87,6 +87,16 @@ namespace EsotericIDE.Languages
 
         public override ToolStripMenuItem[] CreateMenus(IIde ide)
         {
+            var inputModes = EnumStrong.GetValues<InputMode>();
+            var inputModeItems = new ToolStripMenuItem[inputModes.Length];
+
+            var setInputMode = Ut.Lambda((InputMode mode) =>
+            {
+                _settings.InputMode = mode;
+                for (int i = 0; i < inputModes.Length; i++)
+                    inputModeItems[i].Checked = (mode == inputModes[i]);
+            });
+
             var ret = Ut.NewArray(
                 new ToolStripMenuItem("&Memory visualization", null, Ut.NewArray(
 
@@ -136,9 +146,15 @@ namespace EsotericIDE.Languages
                         }
                     }),
                     new ToolStripMenuItem("&Layout source", null, delegate { ide.ReplaceSource(Grid.Parse(ide.GetSource()).ToString()); }),
-                    new ToolStripMenuItem("&Minify source", null, delegate { ide.ReplaceSource(Regex.Replace(ide.GetSource(), @"[\s`]", "").TrimEnd('.')); }))));
+                    new ToolStripMenuItem("&Minify source", null, delegate { ide.ReplaceSource(Regex.Replace(ide.GetSource(), @"[\s`]", "").TrimEnd('.')); }))),
+
+                new ToolStripMenuItem("&Input semantics", null, Ut.NewArray(
+                    (inputModeItems[0] = new ToolStripMenuItem("Encode input as UTF-&8", null, (_, __) => setInputMode(InputMode.Utf8))),
+                    (inputModeItems[1] = new ToolStripMenuItem("Encode input as UTF-1&6 (little endian)", null, (_, __) => setInputMode(InputMode.Utf16))),
+                    (inputModeItems[2] = new ToolStripMenuItem("Input string is a list of &bytes", null, (_, __) => setInputMode(InputMode.Numbers))))));
 
             updateAnnotationSets(ide);
+            setInputMode(_settings.InputMode);
             return ret;
         }
 
@@ -188,7 +204,8 @@ namespace EsotericIDE.Languages
                         _settings.LastMemoryAnnotationSet = setName;
                         updateAnnotationSets(ide);
                         updateWatch(ide);
-                    }) { Checked = setName == _settings.LastMemoryAnnotationSet },
+                    })
+                    { Checked = setName == _settings.LastMemoryAnnotationSet },
                     new ToolStripMenuItem("&Rename this set...", null, delegate
                     {
                         var newName = InputBox.GetLine("Enter new name for this annotation set:", setName, "Rename annotation set", "&OK", "&Cancel");

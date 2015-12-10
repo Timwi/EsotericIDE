@@ -6,6 +6,8 @@ namespace EsotericIDE.Hexagony
 {
     sealed class HexagonySettings : LanguageSettings
     {
+        public InputMode InputMode;
+
         public Color MemoryBackgroundColor = Color.White;
         public Color MemoryGridZeroColor = Color.FromArgb(192, 192, 192);
         public Color MemoryGridNonZeroColor = Color.Black;

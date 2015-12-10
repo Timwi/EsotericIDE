@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using RT.Util;
@@ -19,8 +20,9 @@ namespace EsotericIDE.Hexagony
         private PointAxial[] _ips;
         private Direction[] _ipDirs;
         private int _activeIp = 0;
-        private string _input;
+        private byte[] _input;
         private int _inputIndex = 0;
+        private InputMode _inputMode;
 
         public HexagonyEnv(string source, string input, HexagonySettings settings)
         {
@@ -44,7 +46,33 @@ namespace EsotericIDE.Hexagony
                     Direction.NorthWest,
                     Direction.NorthEast);
             }
-            _input = input;
+            switch (_inputMode = settings.InputMode)
+            {
+                case InputMode.Utf8:
+                    _input = input.ToUtf8();
+                    break;
+
+                case InputMode.Utf16:
+                    _input = input.ToUtf16();
+                    break;
+
+                case InputMode.Numbers:
+                    var m = Regex.Match(input, @"\A(\s*\d+\s*)*\Z", RegexOptions.Singleline);
+                    if (!m.Success)
+                        throw new InvalidOperationException("The input provided is not a whitespace-separated list of numbers.");
+                    _input = m.Groups[1].Captures.Cast<Capture>().Select(c =>
+                    {
+                        byte b;
+                        if (!byte.TryParse(c.Value.Trim(), out b))
+                            throw new InvalidOperationException("The number {0} in the input string does not fit in a byte.".Fmt(c.Value.Trim()));
+                        return b;
+                    }).ToArray();
+                    break;
+
+                default:
+                    throw new InvalidOperationException("Please choose an input mode from the “Input semantics” menu.");
+            }
+
             _inputIndex = 0;
             _settings = settings;
             if (!settings.MemoryAnnotations.ContainsKey(settings.LastMemoryAnnotationSet))
@@ -94,7 +122,7 @@ namespace EsotericIDE.Hexagony
         public override void UpdateWatch()
         {
             _txtIpInfo.Text = _ips.NullOr(ips => ips.Select((pos, i) => "IP #{0}: {1} ({2}){3}{4}".Fmt(i, pos, _ipDirs[i], _activeIp == i ? " (active)" : null, Environment.NewLine)).JoinString())
-                + "Input: " + _input.Substring(_inputIndex);
+                + "Input: " + _input.Skip(_inputIndex).Select(b => b < 32 || b >= 0x7f ? "<{0:X2}>".Fmt(b) : ((char) b).ToString()).JoinString();
             _memory.SetAnnotations(_settings.MemoryAnnotations[_settings.LastMemoryAnnotationSet]);
             _lastMemoryBitmap = _memory.DrawBitmap(_settings, _pnlMemory.Font, _pnlMemory.Font);
             _pnlMemory.Size = _lastMemoryBitmap.Size;
@@ -193,8 +221,8 @@ namespace EsotericIDE.Hexagony
                                         _memory.Set(BigInteger.MinusOne);
                                     else
                                     {
-                                        _memory.Set(char.ConvertToUtf32(_input, _inputIndex));
-                                        _inputIndex += char.IsSurrogate(_input, _inputIndex) ? 2 : 1;
+                                        _memory.Set(_input[_inputIndex]);
+                                        _inputIndex++;
                                     }
                                     break;
 
@@ -203,9 +231,7 @@ namespace EsotericIDE.Hexagony
                                     break;
 
                                 case '?':
-                                    var match = integerFinder.Match(_input, _inputIndex);
-                                    _memory.Set(match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero);
-                                    _inputIndex = match.Success ? match.Index + match.Length : _input.Length;
+                                    _memory.Set(findInteger());
                                     break;
 
                                 case '!':
@@ -302,8 +328,8 @@ namespace EsotericIDE.Hexagony
                             _memory.Set(BigInteger.MinusOne);
                         else
                         {
-                            _memory.Set(char.ConvertToUtf32(_input, _inputIndex));
-                            _inputIndex += char.IsSurrogate(_input, _inputIndex) ? 2 : 1;
+                            _memory.Set(_input[_inputIndex]);
+                            _inputIndex++;
                         }
                         break;
 
@@ -312,9 +338,7 @@ namespace EsotericIDE.Hexagony
                         break;
 
                     case '?':
-                        var match = integerFinder.Match(_input, _inputIndex);
-                        _memory.Set(match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero);
-                        _inputIndex = match.Success ? match.Index + match.Length : _input.Length;
+                        _memory.Set(findInteger());
                         break;
 
                     case '!':
@@ -352,6 +376,30 @@ namespace EsotericIDE.Hexagony
                 handleEdges();
                 _activeIp = newIp;
             }
+        }
+
+        private BigInteger findInteger()
+        {
+            var chs = "0123456789+-".Select(c => (byte) c).ToArray();
+            while (_inputIndex < _input.Length && !chs.Contains(_input[_inputIndex]))
+                _inputIndex++;
+            if (_inputIndex == _input.Length)
+                return BigInteger.Zero;
+            var sb = new StringBuilder();
+            if (_input[_inputIndex] == '-' || _input[_inputIndex] == '+')
+            {
+                if (_input[_inputIndex] == '-')
+                    sb.Append('-');
+                _inputIndex++;
+            }
+            if (_inputIndex == _input.Length)
+                return BigInteger.Zero;
+            while (_inputIndex < _input.Length && _input[_inputIndex] >= '0' && _input[_inputIndex] <= '9')
+            {
+                sb.Append((char) _input[_inputIndex]);
+                _inputIndex++;
+            }
+            return BigInteger.Parse(sb.ToString());
         }
 
         private void handleEdges()

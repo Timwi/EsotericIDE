@@ -1,4 +1,6 @@
-﻿using EsotericIDE.Labyrinth;
+﻿using System.Windows.Forms;
+using EsotericIDE.Labyrinth;
+using RT.Util;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Languages
@@ -10,7 +12,7 @@ namespace EsotericIDE.Languages
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            return new LabyrinthEnv(source, input);
+            return new LabyrinthEnv(source, input, _settings.InputMode);
         }
 
         public override string GetInfo(string source, int cursorPosition)
@@ -67,6 +69,36 @@ namespace EsotericIDE.Languages
                         return "Multiplies the top of the stack by 10 and then adds {0}.".Fmt(ch);
                     return "";
             }
+        }
+
+        private LabyrinthSettings _settings = new LabyrinthSettings();
+
+        public override LanguageSettings Settings
+        {
+            get { return _settings; }
+            set { _settings = value == null ? new LabyrinthSettings() : (LabyrinthSettings) value; }
+        }
+
+        public override ToolStripMenuItem[] CreateMenus(IIde ide)
+        {
+            var inputModes = EnumStrong.GetValues<InputMode>();
+            var inputModeItems = new ToolStripMenuItem[inputModes.Length];
+
+            var setInputMode = Ut.Lambda((InputMode mode) =>
+            {
+                _settings.InputMode = mode;
+                for (int i = 0; i < inputModes.Length; i++)
+                    inputModeItems[i].Checked = (mode == inputModes[i]);
+            });
+
+            var ret = Ut.NewArray(
+                new ToolStripMenuItem("&Input semantics", null, Ut.NewArray(
+                    (inputModeItems[0] = new ToolStripMenuItem("Encode input as UTF-&8", null, (_, __) => setInputMode(InputMode.Utf8))),
+                    (inputModeItems[1] = new ToolStripMenuItem("Encode input as UTF-1&6 (little endian)", null, (_, __) => setInputMode(InputMode.Utf16))),
+                    (inputModeItems[2] = new ToolStripMenuItem("Input string is a list of &bytes", null, (_, __) => setInputMode(InputMode.Numbers))))));
+
+            setInputMode(_settings.InputMode);
+            return ret;
         }
     }
 }

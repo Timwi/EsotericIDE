@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using System.Text.RegularExpressions;
 using RT.Util;
 using RT.Util.ExtensionMethods;
@@ -10,8 +11,9 @@ namespace EsotericIDE.Labyrinth
 {
     sealed class LabyrinthEnv : ExecutionEnvironment
     {
-        private string _input;
+        private byte[] _input;
         private int _inputIndex;
+        private InputMode _inputMode;
         private char[][] _source;
         private int _curX, _curY;
         private Direction _dir = Direction.Right;
@@ -20,7 +22,7 @@ namespace EsotericIDE.Labyrinth
 
         private static string _knownInstructions = "_0123456789)(+-*/%`&|$~:;}{=#,?.!\\<^>v\"'@";
 
-        public LabyrinthEnv(string source, string input)
+        public LabyrinthEnv(string source, string input, InputMode inputMode)
         {
             if (source == null)
                 throw new ArgumentNullException("source");
@@ -30,7 +32,34 @@ namespace EsotericIDE.Labyrinth
             var lines = Regex.Split(source, "\r?\n");
             var longestLine = lines.Max(l => l.Length);
             _source = Ut.NewArray(lines.Length, longestLine, (y, x) => x < lines[y].Length ? lines[y][x] : ' ');
-            _input = input;
+
+            switch (_inputMode = inputMode)
+            {
+                case InputMode.Utf8:
+                    _input = input.ToUtf8();
+                    break;
+
+                case InputMode.Utf16:
+                    _input = input.ToUtf16();
+                    break;
+
+                case InputMode.Numbers:
+                    var m = Regex.Match(input, @"\A(\s*\d+\s*)*\Z", RegexOptions.Singleline);
+                    if (!m.Success)
+                        throw new InvalidOperationException("The input provided is not a whitespace-separated list of numbers.");
+                    _input = m.Groups[1].Captures.Cast<Capture>().Select(c =>
+                    {
+                        byte b;
+                        if (!byte.TryParse(c.Value.Trim(), out b))
+                            throw new InvalidOperationException("The number {0} in the input string does not fit in a byte.".Fmt(c.Value.Trim()));
+                        return b;
+                    }).ToArray();
+                    break;
+
+                default:
+                    throw new InvalidOperationException("Please choose an input mode from the “Input semantics” menu.");
+            }
+
             _inputIndex = 0;
 
             for (int y = 0; y < _source.Length; y++)
@@ -116,19 +145,17 @@ namespace EsotericIDE.Labyrinth
 
                     // I/O
                     case ',':
-                        if (_inputIndex < _input.Length)
-                        {
-                            push(char.ConvertToUtf32(_input, _inputIndex));
-                            _inputIndex += char.IsSurrogate(_input, _inputIndex) ? 2 : 1;
-                        }
-                        else
+                        if (_inputIndex >= _input.Length)
                             push(BigInteger.MinusOne);
+                        else
+                        {
+                            push(_input[_inputIndex]);
+                            _inputIndex++;
+                        }
                         break;
 
                     case '?':
-                        var match = integerFinder.Match(_input, _inputIndex);
-                        push(match.Success ? BigInteger.Parse(match.Value) : BigInteger.Zero);
-                        _inputIndex = match.Success ? match.Index + match.Length : _input.Length;
+                        push(findInteger());
                         break;
 
                     case '.': _output.Append(char.ConvertFromUtf32((int) pop())); break;
@@ -236,19 +263,44 @@ namespace EsotericIDE.Labyrinth
                     case Direction.Up: _curY--; break;
                 }
 
-                dontMove: ;
+                dontMove:;
             }
+        }
+
+        private BigInteger findInteger()
+        {
+            var chs = "0123456789+-".Select(c => (byte) c).ToArray();
+            while (_inputIndex < _input.Length && !chs.Contains(_input[_inputIndex]))
+                _inputIndex++;
+            if (_inputIndex == _input.Length)
+                return BigInteger.Zero;
+            var sb = new StringBuilder();
+            if (_input[_inputIndex] == '-' || _input[_inputIndex] == '+')
+            {
+                if (_input[_inputIndex] == '-')
+                    sb.Append('-');
+                _inputIndex++;
+            }
+            if (_inputIndex == _input.Length)
+                return BigInteger.Zero;
+            while (_inputIndex < _input.Length && _input[_inputIndex] >= '0' && _input[_inputIndex] <= '9')
+            {
+                sb.Append((char) _input[_inputIndex]);
+                _inputIndex++;
+            }
+            return BigInteger.Parse(sb.ToString());
         }
 
         public override void UpdateWatch()
         {
-            _txtWatch.Text = "Main: {1}{0}Aux: {2}{0}Position: ({3}, {4}) {5}".Fmt(
+            _txtWatch.Text = "Main: {1}{0}Aux: {2}{0}Position: ({3}, {4}) {5}{0}Input: {6}".Fmt(
                 /* 0 */ Environment.NewLine,
                 /* 1 */ _mainStack.JoinString(", "),
                 /* 2 */ _auxStack.JoinString(", "),
                 /* 3 */ _curX,
                 /* 4 */ _curY,
-                /* 5 */ _dir == Direction.Right ? "→" : _dir == Direction.Down ? "↓" : _dir == Direction.Left ? "←" : "↑"
+                /* 5 */ _dir == Direction.Right ? "→" : _dir == Direction.Down ? "↓" : _dir == Direction.Left ? "←" : "↑",
+                /* 6 */ _input.Skip(_inputIndex).Select(b => b < 32 || b >= 0x7f ? "<{0:X2}>".Fmt(b) : ((char) b).ToString()).JoinString()
             );
         }
 

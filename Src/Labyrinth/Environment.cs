@@ -158,7 +158,7 @@ namespace EsotericIDE.Labyrinth
                         push(findInteger());
                         break;
 
-                    case '.': _output.Append(char.ConvertFromUtf32((int) pop())); break;
+                    case '.': _output.Append((char) (pop() % 256)); break;
                     case '!': _output.Append(pop().ToString()); break;
                     case '\\': _output.AppendLine(); break;
 

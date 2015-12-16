@@ -209,7 +209,14 @@ namespace EsotericIDE.Hexagony
                             using (var tr = new GraphicsTransformer(g).Rotate((dir is NorthEast ? 30 : dir is SouthEast ? -30 : -90)).Translate(xx, yy))
                             {
                                 if (hasValue)
-                                    g.DrawString(_edges[dir][mp].ToString(), valueFont ?? defaultValueFont, valueBrush, 0, 0, sfValue);
+                                {
+                                    var str = _edges[dir][mp].ToString();
+                                    // Show printable ISO-8859-1 characters
+                                    if (_edges[dir][mp] >= 0x20 && _edges[dir][mp] <= 0xff && _edges[dir][mp] != 0x7f)
+                                        try { str += " '" + char.ConvertFromUtf32((int) _edges[dir][mp]) + "'"; }
+                                        catch { }
+                                    g.DrawString(str, valueFont ?? defaultValueFont, valueBrush, 0, 0, sfValue);
+                                }
                                 var annotation = _annotations.Get(dir, mp, null);
                                 if (!string.IsNullOrWhiteSpace(annotation))
                                     g.DrawString(annotation, annotationFont ?? defaultAnnotationFont, annotationBrush, 0, 2, sfAnnotation);

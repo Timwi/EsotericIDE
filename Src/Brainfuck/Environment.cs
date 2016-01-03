@@ -7,6 +7,7 @@ using System.Drawing.Text;
 using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
+using RT.Util;
 using RT.Util.Controls;
 using RT.Util.ExtensionMethods;
 
@@ -123,6 +124,8 @@ namespace EsotericIDE.Brainfuck
                 UpdateWatch();
             }
 
+            protected abstract string charStr(TCell cell);
+
             public override void UpdateWatch()
             {
                 const int xPadding = 10;
@@ -132,16 +135,19 @@ namespace EsotericIDE.Brainfuck
                 if (_lastMemoryBitmap == null)
                     _lastMemoryBitmap = new Bitmap(10, 10, PixelFormat.Format32bppArgb);
 
-                var totalWidth = 0;
-                var totalHeight = 2 * yPadding + bottomPadding;
                 var font = _watchFont == null ? _pnlMemory.Font : _watchFont.Font;
+
+                int[] widths;
+                int totalHeight;
 
                 using (var g = Graphics.FromImage(_lastMemoryBitmap))
                 {
-                    for (int i = 0; i < _cells.Length; i++)
-                        totalWidth += 2 * xPadding + (int) g.MeasureString(_cells[i].ToString(), font).Width;
-                    totalHeight += (int) g.MeasureString("Wg", font).Height;
+                    widths = Ut.NewArray(_cells.Length, i => 2 * xPadding + (int) Math.Max(
+                        g.MeasureString(_cells[i].ToString(), font).Width,
+                        g.MeasureString(charStr(_cells[i]), font).Width));
+                    totalHeight = 2 * yPadding + bottomPadding + (int) (g.MeasureString("Wg", font).Height * 2);
                 }
+                var totalWidth = widths.Sum();
 
                 _lastMemoryBitmap = new Bitmap(totalWidth, totalHeight);
                 using (var g = Graphics.FromImage(_lastMemoryBitmap))
@@ -152,16 +158,19 @@ namespace EsotericIDE.Brainfuck
                     g.DrawRectangle(Pens.LightGray, 0, 0, totalWidth - 1, totalHeight - bottomPadding);
 
                     int x = 0;
+                    var sfTop = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Near };
+                    var sfBottom = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far };
                     for (int i = 0; i < _cells.Length; i++)
                     {
-                        var str = _cells[i].ToString();
-                        g.DrawString(str, font, Brushes.Black, x + xPadding, yPadding);
-                        var thisWidth = 2 * xPadding + g.MeasureString(_cells[i].ToString(), font).Width;
+                        var str1 = _cells[i].ToString();
+                        var str2 = charStr(_cells[i]);
+                        g.DrawString(str1, font, Brushes.Black, x + widths[i] / 2, yPadding, sfTop);
+                        g.DrawString(str2, font, Brushes.Black, x + widths[i] / 2, totalHeight - bottomPadding - yPadding, sfBottom);
 
                         if (_pointer == i)
-                            g.FillPolygon(Brushes.Crimson, new[] { new PointF(x + thisWidth / 2, totalHeight - bottomPadding), new PointF(x + thisWidth / 2 - xPadding, totalHeight - 1), new PointF(x + thisWidth / 2 + xPadding, totalHeight - 1) });
+                            g.FillPolygon(Brushes.Crimson, new[] { new PointF(x + widths[i] / 2, totalHeight - bottomPadding), new PointF(x + widths[i] / 2 - xPadding, totalHeight - 1), new PointF(x + widths[i] / 2 + xPadding, totalHeight - 1) });
 
-                        x += (int) thisWidth;
+                        x += widths[i];
                         g.DrawLine(Pens.LightGray, x, 0, x, totalHeight - bottomPadding);
                     }
                 }
@@ -185,6 +194,13 @@ namespace EsotericIDE.Brainfuck
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32(_cells[_pointer])); }
+
+            protected override string charStr(byte cell)
+            {
+                if (cell < 32 || cell == 0x7f)
+                    return "";
+                return "'{0}'".Fmt(char.ConvertFromUtf32(cell));
+            }
         }
 
         sealed class EnvUInt32 : Env<uint>
@@ -195,6 +211,14 @@ namespace EsotericIDE.Brainfuck
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32((int) _cells[_pointer])); }
+
+            protected override string charStr(uint cell)
+            {
+                if (cell < 32 || cell == 0x7f || cell > 0x10ffff)
+                    return "";
+                try { return "'{0}'".Fmt(char.ConvertFromUtf32((int) cell)); }
+                catch { return ""; }
+            }
         }
 
         sealed class EnvInt32 : Env<int>
@@ -205,6 +229,14 @@ namespace EsotericIDE.Brainfuck
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32(_cells[_pointer])); }
+
+            protected override string charStr(int cell)
+            {
+                if (cell < 32 || cell == 0x7f || cell > 0x10ffff)
+                    return "";
+                try { return "'{0}'".Fmt(char.ConvertFromUtf32(cell)); }
+                catch { return ""; }
+            }
         }
 
         sealed class EnvBigInt : Env<BigInteger>
@@ -215,6 +247,14 @@ namespace EsotericIDE.Brainfuck
             public override void Dec() { _cells[_pointer]--; }
             public override bool IsNonZero { get { return !_cells[_pointer].IsZero; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32((int) _cells[_pointer])); }
+
+            protected override string charStr(BigInteger cell)
+            {
+                if (cell < 32 || cell == 0x7f || cell > 0x10ffff)
+                    return "";
+                try { return "'{0}'".Fmt(char.ConvertFromUtf32((int) cell)); }
+                catch { return ""; }
+            }
         }
     }
 }

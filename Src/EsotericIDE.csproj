@@ -33,9 +33,6 @@
     <ApplicationIcon>Resources\EsotericIDEIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RT.Util">
-      <HintPath>..\Thirdparty\RT.Util.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -133,6 +130,12 @@
   <ItemGroup>
     <None Include="Resources\EsotericIDEIcon.ico" />
     <None Include="Resources\EsotericIDELogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\RT.Util\Src\RT.Util.csproj">
+      <Project>{8d0fe79c-ad8d-475c-9e6f-9cae85365b5d}</Project>
+      <Name>RT.Util</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

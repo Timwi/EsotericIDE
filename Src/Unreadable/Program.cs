@@ -61,6 +61,7 @@ namespace EsotericIDE.Unreadable
                 case 9: numArgs = 1; action = env => { env.Dec(); }; break;
                 case 10: return new ifNode(parse(source, ref index), parse(source, ref index), parse(source, ref index), new Position(origIndex, index - origIndex));
                 case 11: numArgs = 0; action = env => { env.Read(); }; break;
+                case 12: numArgs = 0; action = env => { env.State = ExecutionState.Debugging; }; break;
 
                 default:
                     throw new CompileException("Too many quotation marks.", index, 1);

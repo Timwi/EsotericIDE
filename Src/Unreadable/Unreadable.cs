@@ -36,6 +36,7 @@ namespace EsotericIDE.Languages
                 case 9: return "'\"\"\"\"\"\"\"\"X — Return X − 1.";
                 case 10: return "'\"\"\"\"\"\"\"\"\"XYZ — If X is not 0, do Y, else do Z. Return what Y/Z returned.";
                 case 11: return "'\"\"\"\"\"\"\"\"\"\" — Return a single Unicode character which has been read from stdin, or -1 if stdin is exhausted.";
+                case 12: return "'\"\"\"\"\"\"\"\"\"\"\" — Debugger break.";
                 default: return "";
             }
         }

@@ -21,6 +21,7 @@ In chronological order of implementation in Esoteric IDE:
 * **[Unreadable](http://esolangs.org/wiki/Unreadable)** — Consists only of apostrophe (`'`) and double-quote (`"`) characters.
 * **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** — Travel on the London Underground, but remember to always come back to Mornington Crescent.
 * **[Hexagony](http://esolangs.org/wiki/Hexagony)** — Program instructions and memory locations are laid out in a 2D hexagonal grid.
+* **[Labyrinth](http://esolangs.org/wiki/Labyrinth)** — Two-dimensional stack-based language where the code can self-modify by applying cycling rotations of rows or columns of characters.
 
 ## How to compile
 

@@ -21,3 +21,7 @@ In chronological order of implementation in Esoteric IDE:
 * **[Unreadable](http://esolangs.org/wiki/Unreadable)** — Consists only of apostrophe (`'`) and double-quote (`"`) characters.
 * **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** — Travel on the London Underground, but remember to always come back to Mornington Crescent.
 * **[Hexagony](http://esolangs.org/wiki/Hexagony)** — Program instructions and memory locations are laid out in a 2D hexagonal grid.
+
+## How to compile
+
+You need to check out [RT.Util](https://github.com/RT-Projects/RT.Util) as well. Place it in another folder (called RT.Util) at the same level as Esoteric IDE.

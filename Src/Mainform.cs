@@ -351,10 +351,7 @@ namespace EsotericIDE
 
             try
             {
-                var input = _input ?? InputBox.GetLine("Please type the input to the program:", "", "Esoteric IDE", "&OK", "&Cancel");
-                if (input == null)
-                    return false;
-                _env = _currentLanguage.Compile(txtSource.Text, input);
+                _env = _currentLanguage.Compile(txtSource.Text, _input ?? "");
                 _env.OriginalSource = txtSource.Text;
                 _env.State = state;
                 _env.DebuggerBreak += p => { this.BeginInvoke(new Action(() => debuggerBreak(p))); };

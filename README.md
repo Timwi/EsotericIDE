@@ -25,6 +25,8 @@ In chronological order of implementation in Esoteric IDE:
 
 ## How to compile
 
-To compile it yourself, you need to check out [RT.Util](https://github.com/RT-Projects/RT.Util) as well. Place it in another folder (called RT.Util) at the same level as Esoteric IDE.
+You have several options:
 
-You can also check out the [AppVeyor project page](https://ci.appveyor.com/project/Timwi/esotericide).
+* Download the full source from the [Releases](https://github.com/Timwi/EsotericIDE/releases) page. This contains the source for Esoteric IDE and all its dependencies, but not the git repo.
+* Clone this and [RT.Util](https://github.com/RT-Projects/RT.Util) from github. Place the two repos at the same level in your folder hierarchy.
+* If you just want compiled binaries of the newest commit (as opposed to the newest release), you can download those from the [artifacts page on AppVeyor](https://ci.appveyor.com/project/Timwi/esotericide/build/artifacts).

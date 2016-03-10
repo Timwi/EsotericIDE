@@ -25,4 +25,6 @@ In chronological order of implementation in Esoteric IDE:
 
 ## How to compile
 
-You need to check out [RT.Util](https://github.com/RT-Projects/RT.Util) as well. Place it in another folder (called RT.Util) at the same level as Esoteric IDE.
+To compile it yourself, you need to check out [RT.Util](https://github.com/RT-Projects/RT.Util) as well. Place it in another folder (called RT.Util) at the same level as Esoteric IDE.
+
+You can also check out the [AppVeyor project page](https://ci.appveyor.com/project/Timwi/esotericide).

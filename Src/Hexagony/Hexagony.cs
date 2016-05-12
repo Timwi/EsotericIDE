@@ -41,7 +41,7 @@ namespace EsotericIDE.Languages
 
                 case ',': return "Reads a single byte from STDIN and sets the current memory edge to its value, or −1 if EOF is reached.";
                 case '?': return "Reads and discards from STDIN until a digit, a - or a + is found. Then reads as many characters as possible to form a valid (signed) decimal integer and sets the current memory edge to its value. Returns 0 once EOF is reached.";
-                case ';': return "Interprets the current memory edge as a codepoint and writes the corresponding Unicode character to STDOUT.";
+                case ';': return "Takes the current memory edge modulo 256 (positive) and writes the corresponding byte to STDOUT.";
                 case '!': return "Writes the decimal representation of the current memory edge to STDOUT.";
 
                 case '_':

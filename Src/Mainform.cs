@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using RT.Util;
 using RT.Util.Controls;
 using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
@@ -581,7 +582,7 @@ namespace EsotericIDE
 
         private void input(object _, EventArgs __)
         {
-            _input = InputBox.GetLine("Please type the input to the program:", _input, "Esoteric IDE", "&OK", "&Cancel", useMultilineBox: true) ?? _input;
+            _input = InputBox.GetLine("Please type the input to the program:", _input?.UnifyLineEndings(), "Esoteric IDE", "&OK", "&Cancel", useMultilineBox: true)?.Replace("\r", "") ?? _input;
         }
 
         private void clearInput(object _, EventArgs __)

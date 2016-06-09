@@ -75,10 +75,14 @@
     <Compile Include="Labyrinth\Labyrinth.cs" />
     <Compile Include="Labyrinth\Settings.cs" />
     <Compile Include="Labyrinth\Turn.cs" />
+    <Compile Include="StackCats\Enums.cs" />
+    <Compile Include="StackCats\Environment.cs" />
     <Compile Include="MorningtonCrescent\Environment.cs" />
     <Compile Include="MorningtonCrescent\MorningtonCrescent.cs" />
     <Compile Include="Sclipting\Parser.cs" />
     <Compile Include="Sclipting\Util.cs" />
+    <Compile Include="StackCats\Settings.cs" />
+    <Compile Include="StackCats\StackCats.cs" />
     <Compile Include="Unreadable\Unreadable.cs" />
     <Compile Include="Unreadable\Environment.cs" />
     <Compile Include="Unreadable\Program.cs" />

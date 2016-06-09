@@ -22,6 +22,7 @@ In chronological order of implementation in Esoteric IDE:
 * **[Mornington Crescent](http://esolangs.org/wiki/Mornington_Crescent)** — Travel on the London Underground, but remember to always come back to Mornington Crescent.
 * **[Hexagony](http://esolangs.org/wiki/Hexagony)** — Program instructions and memory locations are laid out in a 2D hexagonal grid.
 * **[Labyrinth](http://esolangs.org/wiki/Labyrinth)** — Two-dimensional stack-based language where the code can self-modify by applying cycling rotations of rows or columns of characters.
+* **[Stack Cats](http://esolangs.org/wiki/Stack_Cats)** — Reversible programming language in which every program must be a mirror image of itself.
 
 ## How to compile
 

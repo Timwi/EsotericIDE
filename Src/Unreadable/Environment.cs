@@ -185,7 +185,6 @@ namespace EsotericIDE.Unreadable
             int totalWidth;
             int totalHeight;
             int top;
-            int stackTop;
 
             using (var g = Graphics.FromImage(_lastMemoryBitmap))
             {

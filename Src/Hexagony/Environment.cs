@@ -227,7 +227,7 @@ namespace EsotericIDE.Hexagony
                                     break;
 
                                 case ';':
-                                    _output.Append((char) (_memory.Get() % 256)); break;
+                                    _output.Append((char) (_memory.Get() % 256));
                                     break;
 
                                 case '?':
@@ -334,7 +334,7 @@ namespace EsotericIDE.Hexagony
                         break;
 
                     case ';':
-                        _output.Append((char) (_memory.Get() % 256)); break;
+                        _output.Append((char) (_memory.Get() % 256));
                         break;
 
                     case '?':

@@ -6,4 +6,11 @@ namespace EsotericIDE.StackCats
         Bytes,
         Numbers
     }
+
+    enum MirrorType
+    {
+        None,
+        Left,
+        Right
+    }
 }

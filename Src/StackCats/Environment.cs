@@ -47,8 +47,12 @@ namespace EsotericIDE.StackCats
                         break;
 
                     case '}':
-                        if (top != _remember.Pop())
+                        var remembered = _remember.Pop();
+                        if (top != remembered)
+                        {
                             index = _jumpTable[index];
+                            _remember.Push(remembered);
+                        }
                         break;
 
                     case '-': _tape[_pointer].PopAndPush(-top); break;
@@ -131,6 +135,8 @@ namespace EsotericIDE.StackCats
                     case ']':
                         _tape[_pointer].PopSafe();
                         _pointer++;
+                        if (_pointer >= _tape.Count)
+                            _tape.Add(new Stack<BigInteger>());
                         _tape[_pointer].Push(top);
                         if (doNeg)
                             goto case '-';

@@ -14,12 +14,50 @@ namespace EsotericIDE.Languages
     {
         public override string LanguageName { get { return "Stack Cats"; } }
         public override string DefaultFileExtension { get { return "sks"; } }
-        public override string GetInfo(string source, int cursorPosition) { return ""; }
+        public override string GetInfo(string source, int cursorPosition)
+        {
+            if (cursorPosition < 0 || cursorPosition >= source.Length)
+                return "";
+
+            switch (source[cursorPosition])
+            {
+                case '(': return "If the top is zero or negative, control flow continues after the matching ')'.";
+                case ')': return "If the top is zero or negative, control flow continues after the matching '('.";
+                case '{': return "Remembers the top. The matching '}' compares this value against its top.";
+                case '}': return "If the top differs from the value remembered at the matching '{', control flow continues after the matching '{' (without remembering a new value).";
+                case '-': return "Negate the top (i.e. multiply by −1).";
+                case '!': return "Take the bitwise NOT of the top (this is equivalent to incrementing and negating).";
+                case '*': return "Toggle the least-significant bit of the top. In other words, compute x XOR 1.";
+                case '_': return "Pop a, pop b, push b, push b − a.";
+                case '^': return "Pop a, pop b, push b, push b XOR a.";
+                case ':': return "Swap the top two elements of the stack.";
+                case '+': return "Swap the top and third elements of the stack.";
+                case '=': return "Swap the top elements of the two adjacent stacks.";
+                case '|': return "Reverse all values on the stack down to (and excluding) the first zero from the top.";
+                case 'T': return "If the top is non-zero, reverse the entire stack (down to and including the bottommost non-zero value).";
+                case '<': return "Move the tape head left one stack.";
+                case '>': return "Move the tape head right one stack.";
+                case '[': return "Move the tape head left one stack, taking the top with it.";
+                case ']': return "Move the tape head right one stack, taking the top with it.";
+                case 'I': return "If the top is negative, do [-, if it is positive, do ]-, if it is zero, do nothing.";
+                case '/': return "Swap the current stack with the stack to the left, and move the tape head left.";
+                case '\\': return "Swap the current stack with the stack to the right, and move the tape head right.";
+                case 'X': return "Swap the stacks left and right of the current stack.";
+                default: return "";
+            }
+        }
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
-            if (_settings.ImplicitlyMirror)
-                source += source.Substring(0, source.Length - 1).Select(mirror).Reverse().JoinString();
+            switch (_settings.ImplicitlyMirror)
+            {
+                case MirrorType.Left:
+                    source = source.Substring(1, source.Length - 1).Select(mirror).Reverse().JoinString() + source;
+                    break;
+                case MirrorType.Right:
+                    source += source.Substring(0, source.Length - 1).Select(mirror).Reverse().JoinString();
+                    break;
+            }
 
             var jumpTable = new int[source.Length];
             var jumpStack = new Stack<Tuple<int, char>>();
@@ -44,8 +82,8 @@ namespace EsotericIDE.Languages
             if (jumpStack.Count > 0)
                 jumpStack.Pop().Item1.Apply(index => { throw new CompileException($"Compile error: '{source[index]}' is unmatched.", index, 1); });
 
-            return new SCEnvironment(source, jumpTable, _settings.InputType == IOType.Bytes 
-                ? input.ToUtf8().Select(b => (BigInteger) b) 
+            return new SCEnvironment(source, jumpTable, _settings.InputType == IOType.Bytes
+                ? input.ToUtf8().Select(b => (BigInteger) b)
                 : Regex.Matches(input, @"[-+]?[0-9]+").Cast<Match>().Select(m => BigInteger.Parse(m.Value)));
         }
 
@@ -81,7 +119,9 @@ namespace EsotericIDE.Languages
                     createItem("Output as b&ytes", () => { _settings.OutputType = IOType.Bytes; }, () => _settings.OutputType == IOType.Bytes),
                     createItem("Output as n&umbers", () => { _settings.OutputType = IOType.Numbers; }, () => _settings.OutputType == IOType.Numbers),
                     new ToolStripSeparator(),
-                    createItem("Implicitly &mirror source", () => { _settings.ImplicitlyMirror = !_settings.ImplicitlyMirror; }, () => _settings.ImplicitlyMirror)
+                    createItem("No implicit &mirroring", () => { _settings.ImplicitlyMirror = MirrorType.None; }, () => _settings.ImplicitlyMirror == MirrorType.None),
+                    createItem("Implicitly mirror source to the &left (e.g. *|= becomes =|*|=)", () => { _settings.ImplicitlyMirror = MirrorType.Left; }, () => _settings.ImplicitlyMirror == MirrorType.Left),
+                    createItem("Implicitly mirror source to the &right (e.g. *|= becomes *|=|*)", () => { _settings.ImplicitlyMirror = MirrorType.Right; }, () => _settings.ImplicitlyMirror == MirrorType.Right)
                 )
             );
             update();

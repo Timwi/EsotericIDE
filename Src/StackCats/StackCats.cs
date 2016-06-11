@@ -49,6 +49,8 @@ namespace EsotericIDE.Languages
 
         public override ExecutionEnvironment Compile(string source, string input)
         {
+            source = Regex.Replace(source, @"[\r\n].*", "", RegexOptions.Singleline);
+
             switch (_settings.ImplicitlyMirror)
             {
                 case MirrorType.Left:

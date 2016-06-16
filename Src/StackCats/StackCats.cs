@@ -50,14 +50,36 @@ namespace EsotericIDE.Languages
         public override ExecutionEnvironment Compile(string source, string input)
         {
             source = Regex.Replace(source, @"[\r\n].*", "", RegexOptions.Singleline);
+            var origSourceLength = source.Length;
+            var translateIndex = Ut.Lambda((int ix) =>
+            {
+                switch (_settings.ImplicitlyMirror)
+                {
+                    case MirrorType.Left:
+                        return ix < origSourceLength ? origSourceLength - 1 - ix : ix;
+                    case MirrorType.Right:
+                        return ix > origSourceLength ? origSourceLength - 1 - ix : ix;
+                    default:
+                        return ix;
+                }
+            });
 
             switch (_settings.ImplicitlyMirror)
             {
                 case MirrorType.Left:
+                    if (origSourceLength == 0 || source[0] != mirror(source[0]))
+                        throw new CompileException(@"Compile error: When implicit left-mirroring is enabled, the first instruction must be self-symmetric.", 0, origSourceLength == 0 ? 0 : 1);
                     source = source.Substring(1, source.Length - 1).Select(mirror).Reverse().JoinString() + source;
                     break;
                 case MirrorType.Right:
+                    if (origSourceLength == 0 || source[origSourceLength - 1] != mirror(source[origSourceLength - 1]))
+                        throw new CompileException(@"Compile error: When implicit right-mirroring is enabled, the last instruction must be self-symmetric.", origSourceLength == 0 ? 0 : origSourceLength - 1, origSourceLength == 0 ? 0 : 1);
                     source += source.Substring(0, source.Length - 1).Select(mirror).Reverse().JoinString();
+                    break;
+                case MirrorType.None:
+                    for (int i = 0; i < source.Length / 2; i++)
+                        if (source[i] != mirror(source[source.Length - 1 - i]))
+                            throw new CompileException(@"Compile error: The program must be a mirror image of itself.", i, source.Length - 2 * i);
                     break;
             }
 
@@ -73,16 +95,18 @@ namespace EsotericIDE.Languages
                     jumpStack.Push(Tuple.Create(i, str[pos | 1]));
                 else    // close
                 {
+                    if (jumpStack.Count == 0)
+                        throw new CompileException($"Compile error: Unmatched '{source[i]}'.", translateIndex(i), 1);
                     var tup = jumpStack.Pop();
                     if (tup.Item2 != source[i])
-                        throw new CompileException($"Compile error: '{str[pos ^ 1]}' at index {tup.Item1} does not match '{source[i]}' at index {i}.", tup.Item1, i - tup.Item1 + 1);
+                        throw new CompileException($"Compile error: '{str[pos ^ 1]}' at index {tup.Item1} does not match '{source[i]}' at index {i}.", translateIndex(tup.Item1), 1);
                     jumpTable[tup.Item1] = i;
                     jumpTable[i] = tup.Item1;
                 }
             }
 
             if (jumpStack.Count > 0)
-                jumpStack.Pop().Item1.Apply(index => { throw new CompileException($"Compile error: '{source[index]}' is unmatched.", index, 1); });
+                jumpStack.Pop().Item1.Apply(index => { throw new CompileException($"Compile error: '{source[index]}' is unmatched.", translateIndex(index), 1); });
 
             return new SCEnvironment(source, jumpTable, _settings.InputType == IOType.Bytes
                 ? input.ToUtf8().Select(b => (BigInteger) b)

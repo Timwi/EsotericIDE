@@ -83,6 +83,16 @@
     <Compile Include="Sclipting\Util.cs" />
     <Compile Include="StackCats\Settings.cs" />
     <Compile Include="StackCats\StackCats.cs" />
+    <Compile Include="Whitespace\NumberInputSemantics.cs" />
+    <Compile Include="Whitespace\CharacterSemantics.cs" />
+    <Compile Include="Whitespace\Instruction.cs" />
+    <Compile Include="Whitespace\ArgKind.cs" />
+    <Compile Include="Whitespace\Environment.cs" />
+    <Compile Include="Whitespace\InstructionAttribute.cs" />
+    <Compile Include="Whitespace\Node.cs" />
+    <Compile Include="Whitespace\ParseInfoException.cs" />
+    <Compile Include="Whitespace\Settings.cs" />
+    <Compile Include="Whitespace\Whitespace.cs" />
     <Compile Include="Unreadable\Unreadable.cs" />
     <Compile Include="Unreadable\Environment.cs" />
     <Compile Include="Unreadable\Program.cs" />

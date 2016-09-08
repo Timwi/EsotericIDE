@@ -23,6 +23,7 @@ In chronological order of implementation in Esoteric IDE:
 * **[Hexagony](http://esolangs.org/wiki/Hexagony)** — Program instructions and memory locations are laid out in a 2D hexagonal grid.
 * **[Labyrinth](http://esolangs.org/wiki/Labyrinth)** — Two-dimensional stack-based language where the code can self-modify by applying cycling rotations of rows or columns of characters.
 * **[Stack Cats](http://esolangs.org/wiki/Stack_Cats)** — Reversible programming language in which every program must be a mirror image of itself.
+* **[Whitespace](http://esolangs.org/wiki/Whitespace)** — Only space, tab and newline are significant.
 
 ## How to compile
 

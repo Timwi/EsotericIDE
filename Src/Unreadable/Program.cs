@@ -77,21 +77,23 @@ namespace EsotericIDE.Unreadable
 
         private abstract class node
         {
+            private Position _pos;
+            public Position Position { get { return _pos; } }
             public abstract IEnumerable<Position> Execute(UnreadableEnv env);
+            protected node(Position pos) { _pos = pos; }
         }
 
         private sealed class simpleNode : node
         {
             private node[] _args;
-            private Position _pos;
             private Action<UnreadableEnv> _executor;
-            public simpleNode(node[] args, Action<UnreadableEnv> executor, Position pos) { _args = args; _executor = executor; _pos = pos; }
+            public simpleNode(node[] args, Action<UnreadableEnv> executor, Position pos) : base(pos) { _args = args; _executor = executor; }
             public override IEnumerable<Position> Execute(UnreadableEnv env)
             {
                 foreach (var arg in _args)
                     foreach (var pos in arg.Execute(env))
                         yield return pos;
-                yield return _pos;
+                yield return Position;
                 _executor(env);
             }
         }
@@ -100,8 +102,7 @@ namespace EsotericIDE.Unreadable
         {
             private node _argCond;
             private node _argCode;
-            private Position _pos;
-            public whileNode(node argCond, node argCode, Position pos) { _argCond = argCond; _argCode = argCode; _pos = pos; }
+            public whileNode(node argCond, node argCode, Position pos) : base(pos) { _argCond = argCond; _argCode = argCode; }
             public override IEnumerable<Position> Execute(UnreadableEnv env)
             {
                 env.Push(null);
@@ -112,7 +113,7 @@ namespace EsotericIDE.Unreadable
                 foreach (var pos in _argCond.Execute(env))
                     yield return pos;
 
-                yield return _pos;
+                yield return Position;
                 var value = env.Pop();
                 if (value == null)
                     throw new Exception("While condition cannot be void.");
@@ -126,12 +127,12 @@ namespace EsotericIDE.Unreadable
                     foreach (var pos in _argCode.Execute(env))
                         yield return pos;
 
-                    yield return _pos;
+                    yield return Position;
                     goto again;
                 }
 
                 // Last result is now on the stack
-                yield return _pos;
+                yield return Position;
             }
         }
 
@@ -140,15 +141,14 @@ namespace EsotericIDE.Unreadable
             private node _argCond;
             private node _argYCode;
             private node _argNCode;
-            private Position _pos;
-            public ifNode(node argCond, node argYCode, node argNCode, Position pos) { _argCond = argCond; _argYCode = argYCode; _argNCode = argNCode; _pos = pos; }
+            public ifNode(node argCond, node argYCode, node argNCode, Position pos) : base(pos) { _argCond = argCond; _argYCode = argYCode; _argNCode = argNCode; }
             public override IEnumerable<Position> Execute(UnreadableEnv env)
             {
                 // Evaluate the condition
                 foreach (var pos in _argCond.Execute(env))
                     yield return pos;
 
-                yield return _pos;
+                yield return Position;
                 var value = env.Pop();
                 if (value == null)
                     throw new Exception("If condition cannot be void.");
@@ -160,7 +160,7 @@ namespace EsotericIDE.Unreadable
                     yield return pos;
 
                 // Last result is now on the stack
-                yield return _pos;
+                yield return Position;
             }
         }
     }

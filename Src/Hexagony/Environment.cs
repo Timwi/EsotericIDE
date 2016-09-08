@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using RT.Util;
-using RT.Util.Controls;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Hexagony

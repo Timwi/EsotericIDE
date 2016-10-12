@@ -35,7 +35,7 @@ namespace EsotericIDE
             if (args.Length == 2 && args[0] == "--post-build-check")
                 return Ut.RunPostBuildChecks(args[1], Assembly.GetExecutingAssembly());
 
-            Classify.DefaultOptions.AddTypeOptions(typeof(Color), new ClassifyColorSubstitute());
+            Classify.DefaultOptions.AddTypeSubstitution(new ClassifyColorSubstitute());
 
             SettingsUtil.LoadSettings(out Settings);
 

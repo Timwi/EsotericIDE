@@ -7,7 +7,7 @@ using RT.Util.Serialization;
 
 namespace EsotericIDE
 {
-    sealed class ClassifyColorSubstitute : ClassifyTypeOptions, IClassifySubstitute<Color, string>
+    sealed class ClassifyColorSubstitute : IClassifySubstitute<Color, string>
     {
         public Color FromSubstitute(string instance)
         {

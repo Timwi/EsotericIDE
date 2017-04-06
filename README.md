@@ -1,4 +1,4 @@
-﻿# Esoteric IDE
+# Esoteric IDE
 
 Esoteric IDE is an interpreter and debugger for some *esoteric programming languages* (or *esolangs*).
 

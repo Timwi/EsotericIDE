@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -41,7 +40,7 @@ namespace EsotericIDE
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Mainform(Settings));
+            Application.Run(new Mainform(Settings, args));
 
             Settings.Save(onFailure: SettingsOnFailure.ShowRetryWithCancel);
             return 0;

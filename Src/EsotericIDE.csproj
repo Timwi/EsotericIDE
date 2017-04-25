@@ -62,6 +62,7 @@
     <Compile Include="Brainfuck\Settings.cs" />
     <Compile Include="Brainfuck\Enums.cs" />
     <Compile Include="ClassifySubstitutions.cs" />
+    <Compile Include="CommandLine.cs" />
     <Compile Include="FontSpec.cs" />
     <Compile Include="Hexagony\InputMode.cs" />
     <Compile Include="Hexagony\PointAxial.cs" />

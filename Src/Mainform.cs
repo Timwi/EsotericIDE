@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using RT.Util;
+using RT.Util.CommandLine;
 using RT.Util.Controls;
 using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
@@ -17,12 +16,34 @@ namespace EsotericIDE
     {
         private bool _splitterDistanceBugWorkaround;
 
-        public Mainform(EsotericIDE.Settings settings)
+        public Mainform(EsotericIDE.Settings settings, string[] cmdArgs)
             : base(settings.FormSettings)
         {
             InitializeComponent();
             Icon = Resources.EsotericIDEIcon;
             init();
+
+            try
+            {
+                var cmd = CommandLineParser.Parse<CommandLine>(cmdArgs);
+
+                if (cmd.Filename != null)
+                    openCore(cmd.Filename);
+
+                if (cmd.Filename != null && cmd.LanguagePreselect == null)
+                {
+                    // Try to guess language from file extension
+                    var ext = Path.GetExtension(cmd.Filename).Substring(1);
+                    cmd.LanguagePreselect = Languages.FirstOrDefault(pl => pl.DefaultFileExtension.Equals(ext, StringComparison.InvariantCultureIgnoreCase));
+                }
+
+                if (cmd.LanguagePreselect != null)
+                    cmbLanguage.SelectedItem = cmd.LanguagePreselect;
+            }
+            catch (CommandLineParseException px)
+            {
+                txtSource.Text = px.GetUsageInfo().ToString();
+            }
         }
 
         private void init()
@@ -48,16 +69,16 @@ namespace EsotericIDE
                     ctSplit.SplitterDistance = (int) (ctSplit.Height * EsotericIDEProgram.Settings.SplitterPercent);
             };
 
-            _languages = Assembly.GetExecutingAssembly().GetTypes()
+            Languages = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => typeof(ProgrammingLanguage).IsAssignableFrom(t) && !t.IsAbstract)
                 .Select(t => (ProgrammingLanguage) Activator.CreateInstance(t))
                 .OrderBy(t => t.LanguageName)
                 .ToArray();
             LanguageSettings settings;
-            foreach (var lang in _languages)
+            foreach (var lang in Languages)
                 if (EsotericIDEProgram.Settings.LanguageSettings.TryGetValue(lang.LanguageName, out settings) && settings != null)
                     lang.Settings = settings;
-            cmbLanguage.Items.AddRange(_languages);
+            cmbLanguage.Items.AddRange(Languages);
 
             ToolStripMenuItem[] currentLanguageSpecificMenus = null;
             cmbLanguage.SelectedIndexChanged += (_, __) =>
@@ -72,11 +93,11 @@ namespace EsotericIDE
                 currentLanguageSpecificMenus = _currentLanguage.CreateMenus(this);
                 ctMenu.Items.AddRange(currentLanguageSpecificMenus);
             };
-            var ll = _languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
+            var ll = Languages.IndexOf(lang => lang.LanguageName == EsotericIDEProgram.Settings.LastLanguageName);
             cmbLanguage.SelectedIndex = ll == -1 ? 0 : ll;
         }
 
-        private ProgrammingLanguage[] _languages;
+        public static ProgrammingLanguage[] Languages;
         private ProgrammingLanguage _currentLanguage;
 
         private string _input
@@ -255,7 +276,7 @@ namespace EsotericIDE
             if (!canDestroy())
                 return;
 
-            var filter = _languages
+            var filter = Languages
                 .OrderByDescending(lang => lang == _currentLanguage)
                 .ThenBy(lang => lang.LanguageName)
                 .Select(lang => "{1} (*.{0})|*.{0}".Fmt(lang.DefaultFileExtension, lang.LanguageName))

@@ -1,5 +1,5 @@
 ﻿using EsotericIDE.Runic.math;
-using EsotericIDE.Runic.runes;
+using EsotericIDE.Runic.Runes;
 using RT.Util.ExtensionMethods;
 using System;
 using System.Collections.Generic;

@@ -142,11 +142,9 @@ namespace EsotericIDE.Sclipting
             elseIndex = null;
             elsePops = false;
             var depth = 0;
-            Instruction instruction;
-            NodeType type;
             for (int i = start; i < source.Length; i++)
             {
-                if (ScliptingUtil.GetInstructionInfo(source[i], out instruction, out type))
+                if (ScliptingUtil.GetInstructionInfo(source[i], out var instruction, out NodeType type))
                 {
                     if (type == NodeType.BlockHead)
                         depth++;

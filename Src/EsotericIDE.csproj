@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EsotericIDE</RootNamespace>
     <AssemblyName>EsotericIDE</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -31,6 +31,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\EsotericIDEIcon.ico</ApplicationIcon>
@@ -79,6 +80,75 @@
     <Compile Include="Labyrinth\Labyrinth.cs" />
     <Compile Include="Labyrinth\Settings.cs" />
     <Compile Include="Labyrinth\Turn.cs" />
+    <Compile Include="Runic\Direction.cs" />
+    <Compile Include="Runic\IRunicContext.cs" />
+    <Compile Include="Runic\Math\Extentions.cs" />
+    <Compile Include="Runic\Math\MathHelper.cs" />
+    <Compile Include="Runic\Math\Vector2Int.cs" />
+    <Compile Include="Runic\Math\Vector3.cs" />
+    <Compile Include="Runic\ParseError.cs" />
+    <Compile Include="Runic\Parser.cs" />
+    <Compile Include="Runic\Pointer.cs" />
+    <Compile Include="Runic\Runes\IExecutableRune.cs" />
+    <Compile Include="Runic\Runes\RuneAddition.cs" />
+    <Compile Include="Runic\Runes\RuneBlank.cs" />
+    <Compile Include="Runic\Runes\RuneBranchFunction.cs" />
+    <Compile Include="Runic\Runes\RuneCharLiteral.cs" />
+    <Compile Include="Runic\Runes\RuneConcatenate.cs" />
+    <Compile Include="Runic\Runes\RuneConditional.cs" />
+    <Compile Include="Runic\Runes\RuneDelay.cs" />
+    <Compile Include="Runic\Runes\RuneDiagonalReflector.cs" />
+    <Compile Include="Runic\Runes\RuneDirection.cs" />
+    <Compile Include="Runic\Runes\RuneDistance.cs" />
+    <Compile Include="Runic\Runes\RuneDivision.cs" />
+    <Compile Include="Runic\Runes\RuneDuplicate.cs" />
+    <Compile Include="Runic\Runes\RuneEntrySimple.cs" />
+    <Compile Include="Runic\Runes\RuneEquals.cs" />
+    <Compile Include="Runic\Runes\RuneEval.cs" />
+    <Compile Include="Runic\Runes\RuneFizzle.cs" />
+    <Compile Include="Runic\Runes\RuneFork.cs" />
+    <Compile Include="Runic\Runes\RuneGreaterThan.cs" />
+    <Compile Include="Runic\Runes\RuneLength.cs" />
+    <Compile Include="Runic\Runes\RuneLessThan.cs" />
+    <Compile Include="Runic\Runes\RuneMana.cs" />
+    <Compile Include="Runic\Runes\RuneMathFunc.cs" />
+    <Compile Include="Runic\Runes\RuneMinMana.cs" />
+    <Compile Include="Runic\Runes\RuneModulo.cs" />
+    <Compile Include="Runic\Runes\RuneMultiplication.cs" />
+    <Compile Include="Runic\Runes\RuneNegate.cs" />
+    <Compile Include="Runic\Runes\RuneNumber.cs" />
+    <Compile Include="Runic\Runes\RuneOutput.cs" />
+    <Compile Include="Runic\Runes\RunePi.cs" />
+    <Compile Include="Runic\Runes\RunePop.cs" />
+    <Compile Include="Runic\Runes\RunePopNewStack.cs" />
+    <Compile Include="Runic\Runes\RunePower.cs" />
+    <Compile Include="Runic\Runes\RunePushNewStack.cs" />
+    <Compile Include="Runic\Runes\RuneReadChar.cs" />
+    <Compile Include="Runic\Runes\RuneReadCharContinuous.cs" />
+    <Compile Include="Runic\Runes\RuneReadInput.cs" />
+    <Compile Include="Runic\Runes\RuneReadNumber.cs" />
+    <Compile Include="Runic\Runes\RuneReadString.cs" />
+    <Compile Include="Runic\Runes\RuneReflectAll.cs" />
+    <Compile Include="Runic\Runes\RuneReflection.cs" />
+    <Compile Include="Runic\Runes\RuneReflector.cs" />
+    <Compile Include="Runic\Runes\RuneRegistry.cs" />
+    <Compile Include="Runic\Runes\RuneReverse.cs" />
+    <Compile Include="Runic\Runes\RuneRotateStack.cs" />
+    <Compile Include="Runic\Runes\RuneSort.cs" />
+    <Compile Include="Runic\Runes\RuneSplit.cs" />
+    <Compile Include="Runic\Runes\RuneSubtraction.cs" />
+    <Compile Include="Runic\Runes\RuneSwap.cs" />
+    <Compile Include="Runic\Runes\RuneSwapN.cs" />
+    <Compile Include="Runic\Runes\RuneTenHundred.cs" />
+    <Compile Include="Runic\Runes\RuneTerminator.cs" />
+    <Compile Include="Runic\Runes\RuneToChar.cs" />
+    <Compile Include="Runic\Runes\RuneToValue.cs" />
+    <Compile Include="Runic\Runes\RuneTrampoline.cs" />
+    <Compile Include="Runic\Runes\RuneTransferStack.cs" />
+    <Compile Include="Runic\Runes\RuneVec3.cs" />
+    <Compile Include="Runic\RunicEnchantments.cs" />
+    <Compile Include="Runic\RunicEnvironment.cs" />
+    <Compile Include="Runic\WordDictionary.cs" />
     <Compile Include="StackCats\Enums.cs" />
     <Compile Include="StackCats\Environment.cs" />
     <Compile Include="MorningtonCrescent\Environment.cs" />

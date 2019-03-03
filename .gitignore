@@ -3,3 +3,4 @@ syntax:glob
 *.sln.cache
 *.suo
 Builds
+/.vs/

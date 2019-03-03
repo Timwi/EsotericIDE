@@ -1,4 +1,4 @@
-﻿using EsotericIDE.Runic.runes;
+﻿using EsotericIDE.Runic.Runes;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

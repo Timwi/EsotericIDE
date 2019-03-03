@@ -252,7 +252,8 @@ namespace EsotericIDE.Languages
                 if (colorDlg.ShowDialog() == DialogResult.OK)
                 {
                     setColor(colorDlg.Color);
-                    env.IfType((HexagonyEnv e) => { e.UpdateWatch(); });
+                    if (env is HexagonyEnv e)
+                        e.UpdateWatch();
                 }
         }
 
@@ -265,7 +266,8 @@ namespace EsotericIDE.Languages
                 if (fontDlg.ShowDialog() == DialogResult.OK)
                 {
                     setFont(new FontSpec(fontDlg.Font, defaultColor));
-                    env.IfType((HexagonyEnv e) => { e.UpdateWatch(); });
+                    if (env is HexagonyEnv e)
+                        e.UpdateWatch();
                 }
             }
         }

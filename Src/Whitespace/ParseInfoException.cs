@@ -4,6 +4,7 @@ using System.Numerics;
 
 namespace EsotericIDE.Whitespace
 {
+    [Serializable]
     sealed class ParseInfoException : Exception
     {
         public Instruction Instruction { get; private set; }

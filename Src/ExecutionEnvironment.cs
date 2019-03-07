@@ -53,7 +53,7 @@ namespace EsotericIDE
         public void AddBreakpoint(int index)
         {
             lock (_locker) { _breakpoints.Add(index); }
-            if (BreakpointsChanged != null) BreakpointsChanged();
+            BreakpointsChanged?.Invoke();
         }
         public bool RemoveBreakpoint(int index)
         {
@@ -65,7 +65,7 @@ namespace EsotericIDE
         public void ClearBreakpoints()
         {
             lock (_locker) { _breakpoints.Clear(); }
-            if (BreakpointsChanged != null) BreakpointsChanged();
+            BreakpointsChanged?.Invoke();
         }
 
         public void Continue(bool blockUntilFinished = false)
@@ -144,8 +144,8 @@ namespace EsotericIDE
         //
 
         protected object _locker = new object();
-        protected void fireDebuggerBreak(Position position) { if (DebuggerBreak != null) DebuggerBreak(position); }
-        protected void fireExecutionFinished(bool canceled, RuntimeError error) { if (ExecutionFinished != null) ExecutionFinished(canceled, error); }
+        protected void fireDebuggerBreak(Position position) { DebuggerBreak?.Invoke(position); }
+        protected void fireExecutionFinished(bool canceled, RuntimeError error) { ExecutionFinished?.Invoke(canceled, error); }
 
         // This StringBuilder can be safely appended to in derived classes.
         protected StringBuilder _output = new StringBuilder();

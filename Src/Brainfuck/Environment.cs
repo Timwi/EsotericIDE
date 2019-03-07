@@ -41,7 +41,7 @@ namespace EsotericIDE.Brainfuck
 
         abstract class Env<TCell> : BrainfuckEnv
         {
-            private IOType _outputType;
+            private readonly IOType _outputType;
             private bool _everOutput;
             private Program _program;
 
@@ -194,13 +194,7 @@ namespace EsotericIDE.Brainfuck
             public override void Dec() { unchecked { _cells[_pointer]--; } }
             public override bool IsNonZero { get { return _cells[_pointer] != 0; } }
             protected override void outputCharacter() { _output.Append(char.ConvertFromUtf32(_cells[_pointer])); }
-
-            protected override string charStr(byte cell)
-            {
-                if (cell < 32 || cell == 0x7f)
-                    return "";
-                return "'{0}'".Fmt(char.ConvertFromUtf32(cell));
-            }
+            protected override string charStr(byte cell) => cell < 32 || cell == 0x7f ? "" : "'{0}'".Fmt(char.ConvertFromUtf32(cell));
         }
 
         sealed class EnvUInt32 : Env<uint>

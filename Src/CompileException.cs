@@ -2,6 +2,7 @@
 
 namespace EsotericIDE
 {
+    [Serializable]
     public sealed class CompileException : Exception
     {
         public int? Index { get; private set; }

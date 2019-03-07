@@ -10,6 +10,7 @@ namespace EsotericIDE.Sclipting
         public object CapturedItem;
     }
 
+    [Serializable]
     sealed class DuplicateCharacterException : Exception
     {
         public char Character { get; private set; }

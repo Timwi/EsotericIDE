@@ -14,8 +14,7 @@ namespace EsotericIDE.Runic.Runes
             }
             else if (o is string)
             {
-                double d;
-                if (double.TryParse((string) o, out d))
+                if (double.TryParse((string) o, out var d))
                     pointer.Push(d);
                 else
                     pointer.Push(WordDictionary.GetIndex(((string) o).ToLowerInvariant()));

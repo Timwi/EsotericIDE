@@ -15,13 +15,13 @@ namespace EsotericIDE.Hexagony
     {
         private Memory _memory;
         private Grid _grid;
-        private string _linearCode;
-        private PointAxial[] _ips;
-        private Direction[] _ipDirs;
+        private readonly string _linearCode;
+        private readonly PointAxial[] _ips;
+        private readonly Direction[] _ipDirs;
         private int _activeIp = 0;
         private byte[] _input;
         private int _inputIndex = 0;
-        private InputMode _inputMode;
+        private readonly InputMode _inputMode;
 
         public HexagonyEnv(string source, string input, HexagonySettings settings)
         {

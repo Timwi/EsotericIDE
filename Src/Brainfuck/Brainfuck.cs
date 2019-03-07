@@ -19,7 +19,8 @@ namespace EsotericIDE.Languages
             var inputQ = new Queue<BigInteger>();
             switch (_settings.InputType)
             {
-                case IOType.Numbers: try
+                case IOType.Numbers:
+                    try
                     {
                         inputQ.EnqueueRange(input.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => BigInteger.Parse(s)));
                     }
@@ -94,7 +95,7 @@ namespace EsotericIDE.Languages
 
         public override LanguageSettings Settings
         {
-            get { return _settings; }
+            get => _settings;
             set { _settings = (BrainfuckSettings) value; }
         }
     }

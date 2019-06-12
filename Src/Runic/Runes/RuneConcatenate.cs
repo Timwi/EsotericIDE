@@ -1,3 +1,4 @@
+using EsotericIDE.Runic.Math;
 using System;
 using System.Text;
 
@@ -7,30 +8,19 @@ namespace EsotericIDE.Runic.Runes
     {
         public bool Execute(Pointer pointer, IRunicContext context)
         {
-            char modifier = context.GetModifier(pointer.position.x, pointer.position.y);
-            if (modifier == '͍')
+            if(context.GetModifier(pointer.position.x,pointer.position.y) == '͍')
             {
-                var result = new StringBuilder();
-                bool cont = false;
-                do
+                string result = "";
+                object o = pointer.Pop();
+                while(o is char && pointer.GetStackSize() > 0)
                 {
-                    cont = false;
-                    if (pointer.GetStackSize() > 0)
-                    {
-                        object o = pointer.Pop();
-                        if (o is char)
-                        {
-                            result.Insert(0, o.ToString());
-                            cont = true;
-                        }
-                        else
-                        {
-                            pointer.Push(o);
-                        }
-                    }
-                } while (cont);
-                if (result.Length > 0)
-                    pointer.Push(result.ToString());
+                    result += (char)o;
+                    o = pointer.Pop();
+                }
+                if(o is char) result += (char)o;
+                else pointer.Push(o);
+                result = result.Reverse();
+                pointer.Push(result);
             }
             else
             {

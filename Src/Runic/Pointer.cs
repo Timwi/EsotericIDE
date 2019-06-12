@@ -189,7 +189,13 @@ namespace EsotericIDE.Runic
 
         public void PopDiscardStack()
         {
-            stack = PopStack();
+            if(substacks.Count > 0)
+            {
+                List<object> o = substacks[substacks.Count - 1];
+                substacks.RemoveAt(substacks.Count - 1);
+                return;
+            }
+            mana = 0;
         }
 
         public void CloneTopSubStack()

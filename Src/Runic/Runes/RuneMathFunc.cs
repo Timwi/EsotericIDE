@@ -129,7 +129,9 @@ namespace EsotericIDE.Runic.Runes
             {
                 if(number % i == 0)
                     return false;
-            }
+				if(number % (i+2) == 0)
+					return false;
+			}
             return true;
         }
         public IExecutableRune Register()

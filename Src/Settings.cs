@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
+using RT.PostBuild;
+using RT.Serialization;
 using RT.Util;
-using RT.Util.ExtensionMethods;
 using RT.Util.Forms;
-using RT.Util.Serialization;
 
 namespace EsotericIDE
 {

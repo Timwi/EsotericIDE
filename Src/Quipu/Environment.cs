@@ -43,9 +43,8 @@ namespace EsotericIDE.Quipu
         {
             if (Stack.Count == 0)
                 throw new InvalidOperationException("Stack underflow.");
-            BigInteger result;
             var raw = Stack.Pop();
-            return (raw is BigInteger ? (BigInteger) raw : BigInteger.TryParse((string) raw, out result) ? result : Ut.Throw<BigInteger>(new InvalidOperationException("Value is not a valid integer.")));
+            return raw is BigInteger bigInt ? bigInt : BigInteger.TryParse((string) raw, out var result) ? result : throw new InvalidOperationException("Value is not a valid integer.");
         }
 
         protected override IEnumerable<Position> GetProgram()

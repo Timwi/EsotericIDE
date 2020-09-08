@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using EsotericIDE.Hexagony;
 using RT.Util;
-using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
+using RT.Util.Forms;
 
 namespace EsotericIDE.Languages
 {

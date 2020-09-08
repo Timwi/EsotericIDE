@@ -37,6 +37,38 @@
     <ApplicationIcon>Resources\EsotericIDEIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="RT.CommandLine, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.CommandLine.2.0.1668\lib\netstandard2.0\RT.CommandLine.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Json, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Json.2.0.1668\lib\netstandard2.0\RT.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Lingo.Base, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Lingo.Base.2.0.1668\lib\netstandard2.0\RT.Lingo.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.PostBuild, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.PostBuild.2.0.1668\lib\netstandard2.0\RT.PostBuild.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Serialization, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.2.0.1668\lib\netstandard2.0\RT.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Serialization.Binary, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.Binary.2.0.1668\lib\netstandard2.0\RT.Serialization.Binary.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Serialization.Json, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.Json.2.0.1668\lib\netstandard2.0\RT.Serialization.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Serialization.Xml, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.Xml.2.0.1668\lib\netstandard2.0\RT.Serialization.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Util, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Util.2.0.1668\lib\net472\RT.Util.dll</HintPath>
+    </Reference>
+    <Reference Include="RT.Util.Core, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Util.Core.2.0.1668\lib\netstandard2.0\RT.Util.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -48,6 +80,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutBox.cs">
@@ -216,14 +249,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\EsotericIDEIcon.ico" />
     <None Include="Resources\EsotericIDELogo.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\RT.Util\Src\RT.Util.csproj">
-      <Project>{8d0fe79c-ad8d-475c-9e6f-9cae85365b5d}</Project>
-      <Name>RT.Util</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

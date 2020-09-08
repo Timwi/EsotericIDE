@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using RT.Util;
-using RT.Util.CommandLine;
+using RT.CommandLine;
+using RT.PostBuild;
 using RT.Util.Consoles;
 using RT.Util.ExtensionMethods;
 

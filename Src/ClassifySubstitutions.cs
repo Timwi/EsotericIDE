@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
-using EsotericIDE.Hexagony;
+using RT.Serialization;
 using RT.Util.ExtensionMethods;
-using RT.Util.Serialization;
 
 namespace EsotericIDE
 {

@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using RT.Util.Serialization;
+using RT.Serialization;
 
 namespace EsotericIDE
 {

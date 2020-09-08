@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using RT.Util;
-using RT.Util.Dialogs;
+using RT.Util.Forms;
 
 namespace EsotericIDE.Runic
 {

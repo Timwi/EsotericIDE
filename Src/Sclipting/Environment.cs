@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using RT.Util;
+using RT.Serialization;
 using RT.Util.ExtensionMethods;
 
 namespace EsotericIDE.Sclipting

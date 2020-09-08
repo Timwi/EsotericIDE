@@ -113,12 +113,12 @@ namespace EsotericIDE.Languages
                         pointedToFrom.SequenceEqual(_inverse) ? Instruction.Inverse :
                         pointedToFrom.SequenceEqual(_noop) ? Instruction.NoOp :
                         pointedToFrom.SequenceEqual(_label) ? Instruction.Label :
-                        Ut.Throw<Instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1))
+                        throw new CompileException("Invalid combination of arrows pointing at arrow.", i, 1)
                     : // double arrow
                         pointedToFrom.SequenceEqual(_splitter[0]) || pointedToFrom.SequenceEqual(_splitter[1]) ? Instruction.Splitter :
                         pointedToFrom.SequenceEqual(_isZero[0]) || pointedToFrom.SequenceEqual(_isZero[1]) ? Instruction.IsZero :
                         pointedToFrom.SequenceEqual(_isEmpty[0]) || pointedToFrom.SequenceEqual(_isEmpty[1]) ? Instruction.IsEmpty :
-                        Ut.Throw<Instruction>(new CompileException("Invalid combination of arrows pointing at arrow.", i, 1)));
+                        throw new CompileException("Invalid combination of arrows pointing at arrow.", i, 1));
             });
 
             // STEP 3: For each node, determine which other nodes it is pointing to and are pointing to it

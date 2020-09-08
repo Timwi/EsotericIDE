@@ -1,12 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Windows.Forms;
 using EsotericIDE.Sclipting;
 using RT.Util;
-using RT.Util.Dialogs;
 using RT.Util.ExtensionMethods;
+using RT.Util.Forms;
 
 namespace EsotericIDE.Languages
 {

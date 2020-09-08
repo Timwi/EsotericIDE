@@ -1,6 +1,5 @@
 ﻿using System.Xml.Linq;
-using RT.Util;
-using RT.Util.Serialization;
+using RT.Serialization;
 
 namespace EsotericIDE.StackCats
 {
@@ -18,8 +17,7 @@ namespace EsotericIDE.StackCats
             var el = element.Element("ImplicitlyMirror");
             if (el == null)
                 return;
-            object m;
-            if (!ExactConvert.Try(typeof(MirrorType), el.Value, out m))
+            if (!ExactConvert.Try(typeof(MirrorType), el.Value, out var m))
                 el.Remove();
         }
     }

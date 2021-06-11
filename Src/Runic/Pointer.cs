@@ -189,7 +189,7 @@ namespace EsotericIDE.Runic
 
         public void PopDiscardStack()
         {
-            if(substacks.Count > 0)
+            if (substacks.Count > 0)
             {
                 List<object> o = substacks[substacks.Count - 1];
                 substacks.RemoveAt(substacks.Count - 1);

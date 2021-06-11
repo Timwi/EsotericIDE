@@ -64,74 +64,75 @@ namespace EsotericIDE.Runic.Runes
                     case '+':
                         char[] digits = x.ToString().ToCharArray();
                         int sum = 0;
-                        foreach(char d in digits)
+                        foreach (char d in digits)
                         {
-                            sum += (d-48);
+                            sum += (d - 48);
                         }
                         pointer.Push(sum);
                         break;
                     case '*':
                         digits = x.ToString().ToCharArray();
                         sum = 1;
-                        foreach(char d in digits)
+                        foreach (char d in digits)
                         {
                             sum *= (d - 48);
                         }
                         pointer.Push(sum);
                         break;
                     case '!':
-                        int number = (int)x;
-                        if(number == 0)
+                        int number = (int) x;
+                        if (number == 0)
                         {
                             pointer.Push(1);
                             break;
                         }
                         double fact = number;
-                        for(int i = number - 1; i >= 1; i--)
+                        for (int i = number - 1; i >= 1; i--)
                         {
                             fact *= i;
                         }
                         pointer.Push(fact);
                         break;
                     case '‼':
-                        number = (int)x;
-                        if(number == 0)
+                        number = (int) x;
+                        if (number == 0)
                         {
                             pointer.Push(1);
                             break;
                         }
                         fact = number;
-                        for(int i = number - 2; i >= 1; i-=2)
+                        for (int i = number - 2; i >= 1; i -= 2)
                         {
                             fact *= i;
                         }
                         pointer.Push(fact);
                         break;
                     case 'P':
-                        pointer.Push(IsPrime((int)x) ? 1 : 0);
+                        pointer.Push(IsPrime((int) x) ? 1 : 0);
                         break;
                 }
             }
             return true;
         }
 
-        private bool IsPrime(int number) {
-            if(number < 2)
+        private bool IsPrime(int number)
+        {
+            if (number < 2)
                 return false;
-            if(number == 2)
+            if (number == 2)
                 return true;
-            if(number % 2 == 0)
+            if (number % 2 == 0)
                 return false;
-            if(number % 3 == 0)
+            if (number % 3 == 0)
                 return false;
             double sq = System.Math.Sqrt(number);
-            for(int i = 5; i <= sq; i += 6)
+            for (int i = 5; i <= sq; i += 6)
             {
-                if(number % i == 0)
+                if (number % i == 0)
                     return false;
-				if(number % (i+2) == 0)
-					return false;
-			}
+                if (number % (i + 2) == 0)
+                    return false;
+            }
             return true;
         }
         public IExecutableRune Register()

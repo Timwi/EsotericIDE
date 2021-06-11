@@ -1,6 +1,5 @@
-using EsotericIDE.Runic.Math;
 using System;
-using System.Text;
+using EsotericIDE.Runic.Math;
 
 namespace EsotericIDE.Runic.Runes
 {
@@ -8,16 +7,16 @@ namespace EsotericIDE.Runic.Runes
     {
         public bool Execute(Pointer pointer, IRunicContext context)
         {
-            if(context.GetModifier(pointer.position.x,pointer.position.y) == '͍')
+            if (context.GetModifier(pointer.position.x, pointer.position.y) == '͍')
             {
                 string result = "";
                 object o = pointer.Pop();
-                while(o is char && pointer.GetStackSize() > 0)
+                while (o is char && pointer.GetStackSize() > 0)
                 {
-                    result += (char)o;
+                    result += (char) o;
                     o = pointer.Pop();
                 }
-                if(o is char) result += (char)o;
+                if (o is char) result += (char) o;
                 else pointer.Push(o);
                 result = result.Reverse();
                 pointer.Push(result);

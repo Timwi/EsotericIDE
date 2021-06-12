@@ -10,15 +10,15 @@ using RT.Util;
 [assembly: AssemblyTitle("Esoteric IDE")]
 [assembly: AssemblyDescription("IDE (Interpreter/Debugger Engine) for esoteric programming languages")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("CuteBits")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Esoteric IDE")]
-[assembly: AssemblyCopyright("Copyright © CuteBits 2011")]
+[assembly: AssemblyCopyright("Copyright © Timwi 2011–2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("1c40df55-4404-4c9e-8d71-99c6310999fd")]
-[assembly: AssemblyVersion("1.0.0.34")]
-[assembly: AssemblyFileVersion("1.0.0.34")]
+[assembly: AssemblyVersion("1.1.2")]
+[assembly: AssemblyFileVersion("1.1.2")]
 
 namespace EsotericIDE
 {

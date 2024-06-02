@@ -42,35 +42,35 @@
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="RT.CommandLine, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.CommandLine.2.0.1668\lib\netstandard2.0\RT.CommandLine.dll</HintPath>
+    <Reference Include="RT.CommandLine, Version=2.1.163.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.CommandLine.2.1.163\lib\netstandard2.0\RT.CommandLine.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Json, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Json.2.0.1668\lib\netstandard2.0\RT.Json.dll</HintPath>
+    <Reference Include="RT.Json, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Json.2.0.1768\lib\netstandard2.0\RT.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Lingo.Base, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Lingo.Base.2.0.1668\lib\netstandard2.0\RT.Lingo.Base.dll</HintPath>
+    <Reference Include="RT.Lingo.Base, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Lingo.Base.2.0.1768\lib\netstandard2.0\RT.Lingo.Base.dll</HintPath>
     </Reference>
-    <Reference Include="RT.PostBuild, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.PostBuild.2.0.1668\lib\netstandard2.0\RT.PostBuild.dll</HintPath>
+    <Reference Include="RT.PostBuild, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.PostBuild.2.0.1768\lib\netstandard2.0\RT.PostBuild.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Serialization, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Serialization.2.0.1668\lib\netstandard2.0\RT.Serialization.dll</HintPath>
+    <Reference Include="RT.Serialization, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.2.0.1768\lib\netstandard2.0\RT.Serialization.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Serialization.Binary, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Serialization.Binary.2.0.1668\lib\netstandard2.0\RT.Serialization.Binary.dll</HintPath>
+    <Reference Include="RT.Serialization.Binary, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.Binary.2.0.1768\lib\netstandard2.0\RT.Serialization.Binary.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Serialization.Json, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Serialization.Json.2.0.1668\lib\netstandard2.0\RT.Serialization.Json.dll</HintPath>
+    <Reference Include="RT.Serialization.Json, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.Json.2.0.1768\lib\netstandard2.0\RT.Serialization.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Serialization.Xml, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Serialization.Xml.2.0.1668\lib\netstandard2.0\RT.Serialization.Xml.dll</HintPath>
+    <Reference Include="RT.Serialization.Xml, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Serialization.Xml.2.0.1768\lib\netstandard2.0\RT.Serialization.Xml.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Util, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Util.2.0.1668\lib\net472\RT.Util.dll</HintPath>
+    <Reference Include="RT.Util, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Util.2.0.1768\lib\net472\RT.Util.dll</HintPath>
     </Reference>
-    <Reference Include="RT.Util.Core, Version=2.0.1668.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RT.Util.Core.2.0.1668\lib\netstandard2.0\RT.Util.Core.dll</HintPath>
+    <Reference Include="RT.Util.Core, Version=2.0.1768.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RT.Util.Core.2.0.1768\lib\netstandard2.0\RT.Util.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -116,6 +116,36 @@
     <Compile Include="Labyrinth\Labyrinth.cs" />
     <Compile Include="Labyrinth\Settings.cs" />
     <Compile Include="Labyrinth\Turn.cs" />
+    <Compile Include="Ndim\Commands\AndCommand.cs" />
+    <Compile Include="Ndim\Commands\AssignCommand.cs" />
+    <Compile Include="Ndim\Commands\AssignHereCommand.cs" />
+    <Compile Include="Ndim\Commands\ChangePointerDirectionRandomCommand.cs" />
+    <Compile Include="Ndim\Commands\ChangePointerDirectionCommand.cs" />
+    <Compile Include="Ndim\Commands\DivideCommand.cs" />
+    <Compile Include="Ndim\Commands\DuplicateCommand.cs" />
+    <Compile Include="Ndim\Commands\EndCommand.cs" />
+    <Compile Include="Ndim\Commands\GreaterThanCommand.cs" />
+    <Compile Include="Ndim\Commands\IfCommand.cs" />
+    <Compile Include="Ndim\Commands\InputCommand.cs" />
+    <Compile Include="Ndim\Commands\JumpCommand.cs" />
+    <Compile Include="Ndim\Commands\MinusCommand.cs" />
+    <Compile Include="Ndim\Commands\MultiplyCommand.cs" />
+    <Compile Include="Ndim\Commands\NotCommand.cs" />
+    <Compile Include="Ndim\Commands\OrCommand.cs" />
+    <Compile Include="Ndim\Commands\PlusCommand.cs" />
+    <Compile Include="Ndim\Commands\PopCommand.cs" />
+    <Compile Include="Ndim\Commands\PowerCommand.cs" />
+    <Compile Include="Ndim\Commands\PrintCharCommand.cs" />
+    <Compile Include="Ndim\Commands\PrintCommand.cs" />
+    <Compile Include="Ndim\Commands\PushCommand.cs" />
+    <Compile Include="Ndim\Commands\LessThanCommand.cs" />
+    <Compile Include="Ndim\Commands\SwapCommand.cs" />
+    <Compile Include="Ndim\Commands\ToggleEatCommand.cs" />
+    <Compile Include="Ndim\Commands\Value.cs" />
+    <Compile Include="Ndim\Coordinate.cs" />
+    <Compile Include="Ndim\NdimCommand.cs" />
+    <Compile Include="Ndim\NdimPointer.cs" />
+    <Compile Include="Ndim\NdimStack.cs" />
     <Compile Include="Runic\Direction.cs" />
     <Compile Include="Runic\IRunicContext.cs" />
     <Compile Include="Runic\Math\Extentions.cs" />
@@ -193,6 +223,8 @@
     <Compile Include="Sclipting\Util.cs" />
     <Compile Include="StackCats\Settings.cs" />
     <Compile Include="StackCats\StackCats.cs" />
+    <Compile Include="Ndim\NdimEnv.cs" />
+    <Compile Include="Ndim\Ndim.cs" />
     <Compile Include="Whitespace\NumberInputSemantics.cs" />
     <Compile Include="Whitespace\CharacterSemantics.cs" />
     <Compile Include="Whitespace\Instruction.cs" />
@@ -260,7 +292,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(TargetPath)" --post-build-check "$(SolutionDir)."</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

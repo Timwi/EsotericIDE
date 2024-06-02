@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
-using RT.PostBuild;
 using RT.Serialization;
-using RT.Util;
 using RT.Util.Forms;
 
 namespace EsotericIDE
 {
-    [Settings("EsotericIDE", SettingsKind.UserSpecific)]
-    sealed class Settings : SettingsBase
+    sealed class Settings
     {
         public ManagedForm.Settings FormSettings = new ManagedForm.Settings();
         public string LastLanguageName;
@@ -22,13 +19,6 @@ namespace EsotericIDE
 
         [ClassifyNotNull]
         public Dictionary<string, LanguageSettings> LanguageSettings = new Dictionary<string, LanguageSettings>();
-
-#if DEBUG
-        private static void PostBuildCheck(IPostBuildReporter rep)
-        {
-            SettingsUtil.PostBuildStep<Settings>(rep);
-        }
-#endif
     }
 
     public abstract class LanguageSettings { }

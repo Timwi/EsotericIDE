@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -37,13 +38,14 @@ namespace EsotericIDE
 
             Classify.DefaultOptions.AddTypeSubstitution(new ClassifyColorSubstitute());
 
-            SettingsUtil.LoadSettings(out Settings);
+            var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EsotericIDE", "EsotericIDE.Settings.xml");
+            Settings = ClassifyXml.DeserializeFile<Settings>(settingsPath);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Mainform(Settings, args));
 
-            Settings.Save(onFailure: SettingsOnFailure.ShowRetryWithCancel);
+            ClassifyXml.SerializeToFile(Settings, settingsPath);
             return 0;
         }
     }

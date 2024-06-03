@@ -557,25 +557,35 @@ namespace EsotericIDE
 
         private string _timerPreviousSource = "";
         private int _timerPreviousCursorPosition = -1;
+        private int _timerPreviousSelectionLength = -1;
 
         private void tick(object _, EventArgs __)
         {
             var cursorPos = txtSource.SelectionStart;
+            var selLen = txtSource.SelectionLength;
             var source = txtSource.Text;
 
-            if (cursorPos == _timerPreviousCursorPosition && source == _timerPreviousSource)
+            if (cursorPos == _timerPreviousCursorPosition && selLen == _timerPreviousSelectionLength && source == _timerPreviousSource)
                 return;
             _timerPreviousCursorPosition = cursorPos;
+            _timerPreviousSelectionLength = selLen;
             if (_env == null)
             {
                 if (_timerPreviousSource != source)
                     _anyChanges = true;
                 _timerPreviousSource = source;
             }
-            if (cursorPos < 0 || cursorPos > source.Length)
-                lblInfo.Text = "";
-            else
-                lblInfo.Text = _currentLanguage.GetInfo(source, cursorPos);
+
+            var newLines = txtSource.Text.Substring(0, txtSource.SelectionStart).SelectIndexWhere(ch => ch == '\n');
+            var curLine = newLines.Count() + 1;
+            var curLineStartIndex = new[] { -1 }.Concat(newLines).Last() + 1;
+            var status = $"Ln {curLine} Col {txtSource.SelectionStart - curLineStartIndex + 1}";
+            if (selLen > 0)
+                status += $" Sel {selLen}";
+
+            if (cursorPos >= 0 && cursorPos <= source.Length && _currentLanguage.GetInfo(source, cursorPos) is string info && !string.IsNullOrWhiteSpace(info))
+                status += " │ " + info;
+            lblInfo.Text = status;
         }
 
         private void goToCurrentInstruction(object _ = null, EventArgs __ = null)

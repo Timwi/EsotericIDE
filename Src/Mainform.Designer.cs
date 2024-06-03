@@ -77,6 +77,7 @@
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.ctMenu = new System.Windows.Forms.MenuStrip();
             this.cmbLanguage = new System.Windows.Forms.ToolStripComboBox();
+            this.goToLineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.ctSplit)).BeginInit();
             this.ctSplit.Panel1.SuspendLayout();
             this.ctSplit.Panel2.SuspendLayout();
@@ -306,7 +307,8 @@
             this.miOutput,
             this.miOutputFont,
             this.miSep5,
-            this.miBreakpoints});
+            this.miBreakpoints,
+            this.goToLineToolStripMenuItem});
             this.mnuView.Name = "mnuView";
             this.mnuView.Size = new System.Drawing.Size(44, 23);
             this.mnuView.Text = "&View";
@@ -314,7 +316,7 @@
             // miSourceFont
             // 
             this.miSourceFont.Name = "miSourceFont";
-            this.miSourceFont.Size = new System.Drawing.Size(217, 22);
+            this.miSourceFont.Size = new System.Drawing.Size(180, 22);
             this.miSourceFont.Text = "&Source Font...";
             this.miSourceFont.Click += new System.EventHandler(this.font);
             // 
@@ -323,60 +325,60 @@
             this.miWordwrap.Checked = true;
             this.miWordwrap.CheckState = System.Windows.Forms.CheckState.Checked;
             this.miWordwrap.Name = "miWordwrap";
-            this.miWordwrap.Size = new System.Drawing.Size(177, 22);
+            this.miWordwrap.Size = new System.Drawing.Size(180, 22);
             this.miWordwrap.Text = "Wo&rdwrap source";
             this.miWordwrap.Click += new System.EventHandler(this.toggleWordwrap);
             // 
             // miSep3
             // 
             this.miSep3.Name = "miSep3";
-            this.miSep3.Size = new System.Drawing.Size(214, 6);
+            this.miSep3.Size = new System.Drawing.Size(177, 6);
             // 
             // miWatch
             // 
             this.miWatch.Name = "miWatch";
             this.miWatch.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
-            this.miWatch.Size = new System.Drawing.Size(177, 22);
+            this.miWatch.Size = new System.Drawing.Size(180, 22);
             this.miWatch.Text = "&Watch";
             this.miWatch.Click += new System.EventHandler(this.viewWatch);
             // 
             // miWatchFont
             // 
             this.miWatchFont.Name = "miWatchFont";
-            this.miWatchFont.Size = new System.Drawing.Size(177, 22);
+            this.miWatchFont.Size = new System.Drawing.Size(180, 22);
             this.miWatchFont.Text = "W&atch Font...";
             this.miWatchFont.Click += new System.EventHandler(this.font);
             // 
             // miSep4
             // 
             this.miSep4.Name = "miSep4";
-            this.miSep4.Size = new System.Drawing.Size(214, 6);
+            this.miSep4.Size = new System.Drawing.Size(177, 6);
             // 
             // miOutput
             // 
             this.miOutput.Name = "miOutput";
             this.miOutput.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.U)));
-            this.miOutput.Size = new System.Drawing.Size(177, 22);
+            this.miOutput.Size = new System.Drawing.Size(180, 22);
             this.miOutput.Text = "&Output";
             this.miOutput.Click += new System.EventHandler(this.viewOutput);
             // 
             // miOutputFont
             // 
             this.miOutputFont.Name = "miOutputFont";
-            this.miOutputFont.Size = new System.Drawing.Size(217, 22);
+            this.miOutputFont.Size = new System.Drawing.Size(180, 22);
             this.miOutputFont.Text = "O&utput Font...";
             this.miOutputFont.Click += new System.EventHandler(this.font);
             // 
             // miSep5
             // 
             this.miSep5.Name = "miSep5";
-            this.miSep5.Size = new System.Drawing.Size(214, 6);
+            this.miSep5.Size = new System.Drawing.Size(177, 6);
             // 
             // miBreakpoints
             // 
             this.miBreakpoints.Name = "miBreakpoints";
             this.miBreakpoints.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.B)));
-            this.miBreakpoints.Size = new System.Drawing.Size(177, 22);
+            this.miBreakpoints.Size = new System.Drawing.Size(180, 22);
             this.miBreakpoints.Text = "&Breakpoints";
             this.miBreakpoints.Click += new System.EventHandler(this.viewBreakpoints);
             // 
@@ -477,7 +479,7 @@
             this.miSaveWhenRun.Checked = true;
             this.miSaveWhenRun.CheckState = System.Windows.Forms.CheckState.Checked;
             this.miSaveWhenRun.Name = "miSaveWhenRun";
-            this.miSaveWhenRun.Size = new System.Drawing.Size(309, 22);
+            this.miSaveWhenRun.Size = new System.Drawing.Size(300, 22);
             this.miSaveWhenRun.Text = "&Save when Run";
             this.miSaveWhenRun.Click += new System.EventHandler(this.toggleSaveWhenRun);
             // 
@@ -525,6 +527,14 @@
             this.cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbLanguage.Name = "cmbLanguage";
             this.cmbLanguage.Size = new System.Drawing.Size(121, 23);
+            // 
+            // goToLineToolStripMenuItem
+            // 
+            this.goToLineToolStripMenuItem.Name = "goToLineToolStripMenuItem";
+            this.goToLineToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.G)));
+            this.goToLineToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.goToLineToolStripMenuItem.Text = "&Go To Line...";
+            this.goToLineToolStripMenuItem.Click += new System.EventHandler(this.viewGoToLine);
             // 
             // Mainform
             // 
@@ -605,6 +615,7 @@
         private System.Windows.Forms.ToolStripMenuItem miSelectProgrammingLanguage;
         private System.Windows.Forms.ToolStripMenuItem miWordwrap;
         private System.Windows.Forms.ToolStripMenuItem miRevert;
+        private System.Windows.Forms.ToolStripMenuItem goToLineToolStripMenuItem;
     }
 }
 

@@ -741,5 +741,23 @@ namespace EsotericIDE
         public string GetSelectedText() { return txtSource.SelectedText; }
         public void InsertText(string text) { txtSource.SelectedText = text; }
         public ExecutionEnvironment GetEnvironment() { return _env; }
+
+        private void viewGoToLine(object sender, EventArgs e)
+        {
+            var curLine = txtSource.Text.Substring(0, txtSource.SelectionStart).Count(ch => ch == '\n') + 1;
+            var lineStr = InputBox.GetLine("Enter a line number:", curLine.ToString(), "Go To Line");
+            if (lineStr == null)
+                return;
+            if (!int.TryParse(lineStr, out var line))
+            {
+                DlgMessage.Show("Please type an integer.", DlgType.Error);
+                return;
+            }
+            var numLines = txtSource.Text.Count(ch => ch == '\n') + 1;
+            line = Math.Min(Math.Max(line, 1), numLines);
+            txtSource.SelectionStart = new[] { -1 }.Concat(txtSource.Text.SelectIndexWhere(ch => ch == '\n')).Take(line).Last() + 1;
+            txtSource.SelectionLength = 0;
+            txtSource.ScrollToCaret();
+        }
     }
 }

@@ -4,10 +4,9 @@
     {
         public SwapCommand(Position position) : base(position) { }
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             ndim.Stack.Swap();
-            return false;
         }
 
         public override string ToString() => "sw";

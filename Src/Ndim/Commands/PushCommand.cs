@@ -6,10 +6,9 @@
 
         private readonly int _value;
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             ndim.Stack.Push(_value);
-            return false;
         }
 
         public override string ToString() => _value.ToString();

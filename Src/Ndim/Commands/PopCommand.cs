@@ -4,10 +4,9 @@
     {
         public PopCommand(Position position) : base(position) { }
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             ndim.Stack.Pop();
-            return false;
         }
 
         public override string ToString() => "pop";

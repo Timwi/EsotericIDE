@@ -8,10 +8,9 @@ namespace EsotericIDE.Ndim
 
         private readonly int _newDirection;
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             ndim.Pointer.SetDirection(_newDirection);
-            return true;
         }
         public override string ToString() => $"{(_newDirection < 0 ? "←" : "→")}{Math.Abs(_newDirection)}";
     }

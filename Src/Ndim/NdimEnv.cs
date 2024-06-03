@@ -23,8 +23,8 @@ namespace EsotericIDE.Ndim
         public NdimStack Stack => _stack;
         public NdimPointer Pointer => _pointer;
         public bool Ended = false;
-        public Coordinate? JumpPosition;
         public bool EatMode = false;
+        public int[] Mins = null, Maxs = null;
 
         public NdimEnv(string source, Queue<int> input)
         {
@@ -158,33 +158,31 @@ namespace EsotericIDE.Ndim
 
         protected override IEnumerable<Position> GetProgram()
         {
-            KeyValuePair<Coordinate, NdimCommand>[] candidateCmds = null;
-            int ix = -1;
-
-            void refreshCandidates()
-            {
-                var axis = Math.Abs(Pointer.Direction) - 1;
-                candidateCmds = _space.Where(kvp => kvp.Key.Vector.All((c, ax) => ax == axis || c == Pointer.Position.Vector[ax])).OrderBy(kvp => kvp.Key.Vector[axis]).ToArray();
-                ix = Pointer.Direction > 0
-                    ? candidateCmds.IndexOf(kvp => kvp.Key.Vector[axis] >= Pointer.Position.Vector[axis])
-                    : candidateCmds.LastIndexOf(kvp => kvp.Key.Vector[axis] <= Pointer.Position.Vector[axis]);
-                if (ix == -1)
-                    ix = Pointer.Direction > 0 ? 0 : candidateCmds.Length - 1;
-            }
-            refreshCandidates();
+            Mins = new int[_dimensions];
+            Maxs = new int[_dimensions];
+            foreach (var (coord, _) in _space)
+                for (var d = 0; d < _dimensions; d++)
+                {
+                    Mins[d] = Math.Min(Mins[d], coord.Vector[d]);
+                    Maxs[d] = Math.Max(Maxs[d], coord.Vector[d]);
+                }
 
             while (!Ended)
             {
-                Pointer.SetPosition(candidateCmds[ix].Key);
-                yield return candidateCmds[ix].Value.Position ?? _posEnd;
-                if (JumpPosition == null || JumpPosition.Value != candidateCmds[ix].Key)
+                if (_space.TryGetValue(Pointer.Position, out var cmd))
                 {
-                    if (candidateCmds[ix].Value.Execute(this))
-                        refreshCandidates();
+                    yield return cmd.Position;
+                    var prevPos = Pointer.Position;
+                    cmd.Execute(this);
+                    if (EatMode)
+                        _space.Remove(prevPos);
                 }
-                else
-                    JumpPosition = null;
-                ix = Pointer.Direction > 0 ? (ix + 1) % candidateCmds.Length : (ix + candidateCmds.Length - 1) % candidateCmds.Length;
+                Pointer.MoveNext();
+                var d = Math.Abs(Pointer.Direction) - 1;
+                if (Pointer.Position.Vector[d] < Mins[d])
+                    Pointer.SetPosition(Pointer.Position.WithValue(d, Maxs[d]));
+                else if (Pointer.Position.Vector[d] > Maxs[d])
+                    Pointer.SetPosition(Pointer.Position.WithValue(d, Mins[d]));
             }
         }
 

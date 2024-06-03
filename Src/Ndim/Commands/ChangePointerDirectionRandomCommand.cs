@@ -6,13 +6,12 @@ namespace EsotericIDE.Ndim
     {
         public ChangePointerDirectionRandomCommand(Position position) : base(position) { }
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             var newDirection = Rnd.Next(0, ndim.Dimensions);
             if (Rnd.Next(0, 2) != 0)
                 newDirection *= -1;
             ndim.Pointer.SetDirection(newDirection);
-            return true;
         }
         public override string ToString() => "?";
     }

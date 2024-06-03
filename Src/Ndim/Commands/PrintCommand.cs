@@ -4,10 +4,9 @@
     {
         public PrintCommand(Position position) : base(position) { }
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             ndim.Print(ndim.Stack.Pop().ToString());
-            return false;
         }
 
         public override string ToString() => "pr";

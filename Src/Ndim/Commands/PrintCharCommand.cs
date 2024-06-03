@@ -4,10 +4,9 @@
     {
         public PrintCharCommand(Position position) : base(position) { }
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             ndim.Print(char.ConvertFromUtf32(ndim.Stack.Pop()));
-            return false;
         }
 
         public override string ToString() => "pc";

@@ -6,15 +6,14 @@
 
         private readonly int _value;
 
-        public override bool Execute(NdimEnv ndim)
+        public override void Execute(NdimEnv ndim)
         {
             if (ndim.Stack.Pop() == _value)
                 ndim.Pointer.TurnRight();
             else
                 ndim.Pointer.TurnLeft();
-            return true;
         }
 
-        public override string ToString() => "if";
+        public override string ToString() => $"{_value}?";
     }
 }

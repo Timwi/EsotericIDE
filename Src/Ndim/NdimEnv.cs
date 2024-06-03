@@ -40,7 +40,7 @@ namespace EsotericIDE.Ndim
             var commandRegex = new Regex(@"^\s*(?<everything>
                 (?:
                     (?:(?<dim>\d+)dim\s*;\s*)|
-                    (?<comment>//[^\n]*\n)|
+                    (?<comment>//[^\n]*(?:\n|$))|
                     (?<cmd>
                         (?:
                             (?<chp>-?\d+)|

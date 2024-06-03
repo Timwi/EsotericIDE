@@ -25,13 +25,14 @@ In chronological order of implementation in Esoteric IDE:
 * **[Stack Cats](http://esolangs.org/wiki/Stack_Cats)** — Reversible programming language in which every program must be a mirror image of itself.
 * **[Whitespace](http://esolangs.org/wiki/Whitespace)** — Only space, tab and newline are significant.
 * **[Runic](https://github.com/Draco18s/RunicEnchantments/tree/Console)** — Two-dimensional stack-based language with multiple instruction pointers, limited memory per pointer, and unicode modifier symbols.
+* **[Ndim](https://esolangs.org/wiki/Ndim)** — Multidimensional language inspired by Befunge in which values you want to keep in memory must be written into the code space.
 
 ## How to compile
 
 You have several options:
 
-* Download the full source from the [Releases](https://github.com/Timwi/EsotericIDE/releases) page. This contains the source for Esoteric IDE and all its dependencies, but not the git repo.
-* Clone this and [RT.Util](https://github.com/RT-Projects/RT.Util) from github. Place the two repos at the same level in your folder hierarchy.
+* Clone and compile.
+* Download the full source from the [Releases](https://github.com/Timwi/EsotericIDE/releases) page. This contains the source for Esoteric IDE, but not the git repo.
 * If you just want compiled binaries of the newest commit (as opposed to the newest release), you can download those from the [artifacts page on AppVeyor](https://ci.appveyor.com/project/Timwi/esotericide/build/artifacts).
 
 [![Build status](https://ci.appveyor.com/api/projects/status/eqb0yyunhhsta8mq?svg=true)](https://ci.appveyor.com/project/Timwi/esotericide)

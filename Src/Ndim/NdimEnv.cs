@@ -153,14 +153,7 @@ namespace EsotericIDE.Ndim
 
         public void RegisterCommandOrValue(Coordinate coord, NdimCommand command)
         {
-            if (_space.ContainsKey(coord) && !(command is Value))
-                throw new ArgumentException($"There can only be one command at each coordinate. Coordinate <{coord}> is already occupied.");
             _space[coord] = command;
-        }
-
-        public void UnregisterCommandOrValue(Coordinate coord)
-        {
-            _space.Remove(coord);
         }
 
         protected override IEnumerable<Position> GetProgram()
